@@ -1,0 +1,4 @@
+[submodule "rtos"]
+	path = fwk_rtos
+	url = git@github.com:shuchitak/fwk_rtos.git
+	branch = feature/device_control_spi_support
