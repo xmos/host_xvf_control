@@ -24,7 +24,7 @@ int main(int argc, char ** argv)
     if (cmd != nullptr)
     {
         Command command;
-        command.do_command(cmd, argv, argc);
+        command.do_command(cmd, argv, args_left);
     }
     else
     {
