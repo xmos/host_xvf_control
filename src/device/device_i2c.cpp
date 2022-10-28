@@ -39,5 +39,8 @@ control_ret_t Device::device_set(control_resid_t res_id, control_cmd_t cmd_id, c
 
 Device::~Device()
 {
-    control_cleanup_i2c();
+    if(device_initialised)
+    {
+        control_cleanup_i2c();
+    }
 }

@@ -5,8 +5,8 @@
 #include <inttypes.h>
 #include "command_map.hpp"
 
-#define AEC_RES_ID 0x11
-#define PP_RES_ID 0x21
+#define AEC_RES_ID 0x21
+#define PP_RES_ID 0x11
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
