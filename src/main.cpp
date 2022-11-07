@@ -7,6 +7,13 @@ using namespace std;
 
 int main(int argc, char ** argv)
 {
+    if(argc == 1)
+    {
+        cout << "Use --help to get the list of options for this application." << endl
+        << "Or use --list-commands to print the list of commands and their info." << endl;
+        return 0;
+    }
+    
     control_ret_t ret = CONTROL_ERROR;
 
     int cmd_indx = 1;
