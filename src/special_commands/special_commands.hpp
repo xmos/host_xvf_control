@@ -9,5 +9,6 @@
 
 void print_options_list(void);
 void print_command_list(void);
+void dump_params(void);
 
 #endif

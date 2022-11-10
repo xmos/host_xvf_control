@@ -43,6 +43,10 @@ int main(int argc, char ** argv)
         {
             print_options_list();
         }
+        if(opt->long_name == "--dump-params")
+        {
+            dump_params();
+        }
     }
 
     return ret;

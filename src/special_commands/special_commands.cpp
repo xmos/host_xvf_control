@@ -24,3 +24,12 @@ void print_command_list(void)
         << ". "<< cmd.info << "." << endl;
     }
 }
+
+void dump_params(void)
+{
+    Command command;
+    for(cmd_t cmd : commands)
+    {
+        command.do_command(&cmd, nullptr, 0);
+    }
+}
