@@ -37,11 +37,11 @@ int main(int argc, char ** argv)
     {
         if(opt->long_name == "--help")
         {
-            print_command_list();
+            print_options_list();
         }
         if(opt->long_name == "--list-commands")
         {
-            print_options_list();
+            print_command_list();
         }
         if(opt->long_name == "--dump-params")
         {

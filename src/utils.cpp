@@ -158,10 +158,10 @@ cmd_param_t command_bytes_to_value(cmd_t * cmd, void * data, int index)
     switch(size_bytes)
     {
     case 1:
-        memcpy(&value.ui8, data + index * size_bytes, size_bytes);
+        memcpy(&value.ui8, static_cast<uint8_t*>(data) + index * size_bytes, size_bytes);
         break;
     case 4:
-        memcpy(&value.i32, data + index * size_bytes, size_bytes);
+        memcpy(&value.i32, static_cast<uint8_t*>(data) + index * size_bytes, size_bytes);
         break;
     }
 
@@ -174,10 +174,10 @@ void command_bytes_from_value(cmd_t * cmd, void * data, int index, cmd_param_t v
     switch(num_bytes)
     {
     case 1:
-        memcpy(data + index * num_bytes, &value.ui8, num_bytes);
+        memcpy(static_cast<uint8_t*>(data) + index * num_bytes, &value.ui8, num_bytes);
         break;
     case 4:
-        memcpy(data + index * num_bytes, &value.i32, num_bytes);
+        memcpy(static_cast<uint8_t*>(data) + index * num_bytes, &value.i32, num_bytes);
         break;
     }
 }
