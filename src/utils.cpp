@@ -3,8 +3,41 @@
 
 #include "utils.hpp"
 #include <cstring>
+#if defined(__unix__)
+#include <libgen.h>         // dirname
+#include <unistd.h>         // readlink
+#include <linux/limits.h>   // PATH_MAX
+#elif defined(__APPLE__)
+#error "Unsupported Operating System"
+#elif defined(_WIN32)
+#error "Unsupported Operating System"
+#else
+#error "Unknown Operating System"
+#endif
 
 using namespace std;
+
+
+string get_dynamic_lib_path(void)
+{
+    string lib_path_str;
+    string dir_path_str;
+#ifdef __unix__
+    #define DYN_LIB_NAME "/libcommand_map.so"
+    char* dir_path;
+    char result[PATH_MAX];
+    ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+    if (count != -1) {
+        dir_path = dirname(result);
+    }
+    dir_path_str = dir_path;
+#elif defined(__APPLE__)
+#elif defined(_WIN32)
+#endif
+    lib_path_str = dir_path_str + DYN_LIB_NAME;
+
+    return lib_path_str;
+}
 
 string command_param_type_name(cmd_param_type_t type)
 {
@@ -181,4 +214,3 @@ void command_bytes_from_value(cmd_t * cmd, void * data, int index, cmd_param_t v
         break;
     }
 }
-

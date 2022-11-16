@@ -43,6 +43,7 @@ struct opt_t {
     int num_args;
 };
 
+std::string get_dynamic_lib_path(void);
 std::string command_param_type_name(cmd_param_type_t type);
 std::string command_rw_type_name(cmd_rw_t rw);
 control_ret_t check_num_args(cmd_t * cmd, int args_left);

@@ -39,9 +39,12 @@ target_link_libraries(framework_rtos_sw_services_device_control_host_spi INTERFA
 target_compile_definitions(framework_rtos_sw_services_device_control_host_spi INTERFACE USE_SPI=1 RPI=1)
 add_library(rtos::sw_services::device_control_host_spi ALIAS framework_rtos_sw_services_device_control_host_spi)
 
+add_library(command_map SHARED command_map.cpp)
+target_include_directories(command_map PUBLIC ${DEVICE_CONTROL_PATH}/api)
+target_link_options(command_map PRIVATE -fPIC)
+
 set(COMMON_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/main.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/command_map.cpp
     ${CMAKE_CURRENT_LIST_DIR}/utils.cpp
     ${CMAKE_CURRENT_LIST_DIR}/command/command.cpp
     ${CMAKE_CURRENT_LIST_DIR}/special_commands/special_commands.cpp
@@ -72,6 +75,7 @@ target_include_directories(application_xvf3800_hostapp_i2c
 target_link_libraries(application_xvf3800_hostapp_i2c 
     PUBLIC 
         rtos::sw_services::device_control_host_i2c
+        dl
 )
 
 # SPI slave hostapp
@@ -91,6 +95,7 @@ target_include_directories(application_xvf3800_hostapp_spi
 target_link_libraries(application_xvf3800_hostapp_spi 
     PUBLIC 
         rtos::sw_services::device_control_host_spi
+        dl
 )
 
 message(STATUS "Building with ${CMAKE_C_COMPILER_ID}")
