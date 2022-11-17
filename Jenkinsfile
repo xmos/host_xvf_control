@@ -19,7 +19,7 @@ pipeline {
                     // checkout repo
                     checkout scm
                     // fetch submodules
-                    sh 'git submodule update --init --recursive --jobs 4'
+                    sh 'git submodule update --init --jobs 4'
                     // build
                     dir('build') {
                         sh 'cmake -S .. && make'
