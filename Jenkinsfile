@@ -15,8 +15,6 @@ pipeline {
             }
             steps {
                 runningOn(env.NODE_NAME)
-                // checkout repo
-                checkout scm
                 // fetch submodules
                 sh 'git submodule update --init --jobs 4'
                 // build
