@@ -51,21 +51,21 @@ int main(int argc, char ** argv)
     if (cmd != nullptr)
     {
         Command command;
-        command.do_command(cmd, argv, args_left);
+        ret = command.do_command(cmd, argv, args_left);
     }
     else
     {
         if(opt->long_name == "--help")
         {
-            print_options_list();
+            ret = print_options_list();
         }
         if(opt->long_name == "--list-commands")
         {
-            print_command_list(commands, num_commands);
+            ret = print_command_list(commands, num_commands);
         }
         if(opt->long_name == "--dump-params")
         {
-            dump_params(commands, num_commands);
+            ret = dump_params(commands, num_commands);
         }
     }
 

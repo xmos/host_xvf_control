@@ -42,16 +42,17 @@ cmd_t * command_lookup(const string str, cmd_t * commands, size_t size)
     return nullptr;
 }
 
-void print_options_list(void)
+control_ret_t print_options_list(void)
 {
     for(opt_t opt : options)
     {
         cout << "Use " << opt.short_name <<  " or " << opt.long_name
         << " to " << opt.info << "." << endl;
     }
+    return CONTROL_SUCCESS;
 }
 
-void print_command_list(cmd_t * commands, size_t size)
+control_ret_t print_command_list(cmd_t * commands, size_t size)
 {
     for(size_t i = 0; i < size; i ++)
     {
@@ -61,13 +62,16 @@ void print_command_list(cmd_t * commands, size_t size)
         << " values of type " << command_param_type_name(cmd->type)
         << ". "<< cmd->info << "." << endl;
     }
+    return CONTROL_SUCCESS;
 }
 
-void dump_params(cmd_t * commands, size_t size)
+control_ret_t dump_params(cmd_t * commands, size_t size)
 {
+    control_ret_t ret = CONTROL_ERROR;
     Command command;
     for(size_t i = 0; i < size; i ++)
     {
-        command.do_command(&commands[i], nullptr, 0);
+        ret = command.do_command(&commands[i], nullptr, 0);
     }
+    return ret;
 }
