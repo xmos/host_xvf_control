@@ -58,41 +58,41 @@ set(COMMON_INCLUDES
 )
 
 # I2C slave hostapp
-add_executable(application_xvf3800_hostapp_i2c)
+add_executable(xvf_host_rpi_i2c)
 
-target_sources(application_xvf3800_hostapp_i2c 
+target_sources(xvf_host_rpi_i2c 
     PRIVATE
         ${COMMON_SOURCES}
         device/device_i2c.cpp
 
 )
 
-target_include_directories(application_xvf3800_hostapp_i2c 
+target_include_directories(xvf_host_rpi_i2c 
     PUBLIC
         ${COMMON_INCLUDES}
 )
 
-target_link_libraries(application_xvf3800_hostapp_i2c 
+target_link_libraries(xvf_host_rpi_i2c 
     PUBLIC 
         rtos::sw_services::device_control_host_i2c
         dl
 )
 
 # SPI slave hostapp
-add_executable(application_xvf3800_hostapp_spi)
+add_executable(xvf_host_rpi_spi)
 
-target_sources(application_xvf3800_hostapp_spi
+target_sources(xvf_host_rpi_spi
     PRIVATE
         ${COMMON_SOURCES}
         device/device_spi.cpp
 )
 
-target_include_directories(application_xvf3800_hostapp_spi 
+target_include_directories(xvf_host_rpi_spi
     PUBLIC
         ${COMMON_INCLUDES}
 )
 
-target_link_libraries(application_xvf3800_hostapp_spi 
+target_link_libraries(xvf_host_rpi_spi
     PUBLIC 
         rtos::sw_services::device_control_host_spi
         dl
