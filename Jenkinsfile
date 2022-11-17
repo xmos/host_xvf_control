@@ -13,20 +13,18 @@ pipeline {
             agent {
                 label 'armv7l&&raspian'
             }
-            stage('Build') {
-                steps {
-                    runningOn(env.NODE_NAME)
-                    // checkout repo
-                    checkout scm
-                    // fetch submodules
-                    sh 'git submodule update --init --jobs 4'
-                    // build
-                    dir('build') {
-                        sh 'cmake -S .. && make'
-                        dir('src') {
-                            // archive RPI binaries
-                            archiveArtifacts artifacts: 'xvf_host_rpi_*', fingerprint: true
-                        }
+            steps {
+                runningOn(env.NODE_NAME)
+                // checkout repo
+                checkout scm
+                // fetch submodules
+                sh 'git submodule update --init --jobs 4'
+                // build
+                dir('build') {
+                    sh 'cmake -S .. && make'
+                    dir('src') {
+                        // archive RPI binaries
+                        archiveArtifacts artifacts: 'xvf_host_rpi_*', fingerprint: true
                     }
                 }
             }
