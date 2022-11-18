@@ -4,11 +4,12 @@
 #ifndef SPECIAL_COMMANDS_H_
 #define SPECIAL_COMMANDS_H_
 
-#include "command_map.hpp"
 #include "command.hpp"
 
-void print_options_list(void);
-void print_command_list(void);
-void dump_params(void);
+cmd_t * command_lookup(const std::string str, cmd_t * commands, size_t size);
+opt_t * option_lookup(const std::string str);
+control_ret_t print_options_list(void);
+control_ret_t print_command_list(cmd_t * commands, size_t size);
+control_ret_t dump_params(cmd_t * commands, size_t size);
 
 #endif
