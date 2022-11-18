@@ -39,9 +39,11 @@ target_link_libraries(framework_rtos_sw_services_device_control_host_spi INTERFA
 target_compile_definitions(framework_rtos_sw_services_device_control_host_spi INTERFACE USE_SPI=1 RPI=1)
 add_library(rtos::sw_services::device_control_host_spi ALIAS framework_rtos_sw_services_device_control_host_spi)
 
-add_library(command_map SHARED command_map.cpp)
-target_include_directories(command_map PUBLIC ${DEVICE_CONTROL_PATH}/api)
-target_link_options(command_map PRIVATE -fPIC)
+if(TEST_BUILD)
+    add_library(command_map SHARED command_map_dummy.cpp)
+    target_include_directories(command_map PUBLIC ${DEVICE_CONTROL_PATH}/api)
+    target_link_options(command_map PRIVATE -fPIC)
+endif()
 
 set(COMMON_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/main.cpp
@@ -58,41 +60,41 @@ set(COMMON_INCLUDES
 )
 
 # I2C slave hostapp
-add_executable(xvf_host_rpi_i2c)
+add_executable(xvf_hostapp_rpi_i2c)
 
-target_sources(xvf_host_rpi_i2c 
+target_sources(xvf_hostapp_rpi_i2c 
     PRIVATE
         ${COMMON_SOURCES}
         device/device_i2c.cpp
 
 )
 
-target_include_directories(xvf_host_rpi_i2c 
+target_include_directories(xvf_hostapp_rpi_i2c 
     PUBLIC
         ${COMMON_INCLUDES}
 )
 
-target_link_libraries(xvf_host_rpi_i2c 
+target_link_libraries(xvf_hostapp_rpi_i2c 
     PUBLIC 
         rtos::sw_services::device_control_host_i2c
         dl
 )
 
 # SPI slave hostapp
-add_executable(xvf_host_rpi_spi)
+add_executable(xvf_hostapp_rpi_spi)
 
-target_sources(xvf_host_rpi_spi
+target_sources(xvf_hostapp_rpi_spi
     PRIVATE
         ${COMMON_SOURCES}
         device/device_spi.cpp
 )
 
-target_include_directories(xvf_host_rpi_spi
+target_include_directories(xvf_hostapp_rpi_spi
     PUBLIC
         ${COMMON_INCLUDES}
 )
 
-target_link_libraries(xvf_host_rpi_spi
+target_link_libraries(xvf_hostapp_rpi_spi
     PUBLIC 
         rtos::sw_services::device_control_host_spi
         dl
