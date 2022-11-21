@@ -18,12 +18,12 @@ void Command::init_device()
 control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_values)
 {
     int read_attempts = 0;
-    cmd->cmd_id |= 0x80; // setting 8th bit for read commands
+    control_cmd_t cmd_id = cmd->cmd_id | 0x80; // setting 8th bit for read commands
 
     size_t data_len = sizeof(cmd_param_t) * cmd->num_values + 1; // one extra for the status
     uint8_t * data = new uint8_t[data_len];
 
-    control_ret_t ret = device.device_get(cmd->res_id, cmd->cmd_id, data, data_len);
+    control_ret_t ret = device.device_get(cmd->res_id, cmd_id, data, data_len);
     read_attempts++;
 
     while(1){
@@ -43,7 +43,7 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
             }
             else if(data[0] == SERVICER_COMMAND_RETRY)
             {
-                ret = device.device_get(cmd->res_id, cmd->cmd_id, data, data_len);
+                ret = device.device_get(cmd->res_id, cmd_id, data, data_len);
                 read_attempts++;
             }
             else{
@@ -88,7 +88,6 @@ control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left)
 
     if(args_left == 0) // READ
     {
-        cmd->cmd_id |= 0x80; // setting 8th bit for read commands
         ret = command_get(cmd, cmd_values, cmd->num_values);
         cout << cmd->cmd_name;
         for(int i = 0; i < cmd->num_values; i++)
