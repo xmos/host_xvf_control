@@ -2,6 +2,7 @@
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #include "special_commands.hpp"
+#include <cassert>
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 using namespace std;
@@ -208,9 +209,10 @@ control_ret_t get_aec_filter(const char *filename, cmd_t * commands, size_t num_
             get_one_filter(mic_index, far_index, filter_name, filter_length, commands, num_commands);
         }
     }
+    return CONTROL_SUCCESS;
 }
 
-void special_cmd_nlmodel_buffer(const char* filename, int32_t flag_buffer_get, cmd_t * commands, size_t num_commands)
+control_ret_t special_cmd_nlmodel_buffer(const char* filename, int32_t flag_buffer_get, cmd_t * commands, size_t num_commands)
 {
     Command command;
     command.init_device(); // Initialise the device
@@ -286,4 +288,5 @@ void special_cmd_nlmodel_buffer(const char* filename, int32_t flag_buffer_get, c
     }
     fclose(fp);
     delete []nlm_buffer;
+    return CONTROL_SUCCESS;
 }
