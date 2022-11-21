@@ -18,6 +18,7 @@ void Command::init_device()
 control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_values)
 {
     int read_attempts = 0;
+    cmd->cmd_id |= 0x80; // setting 8th bit for read commands
 
     size_t data_len = sizeof(cmd_param_t) * cmd->num_values + 1; // one extra for the status
     uint8_t * data = new uint8_t[data_len];
@@ -26,20 +27,28 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
     read_attempts++;
 
     while(1){
-        if (ret != CONTROL_SUCCESS){break;}
+        if (ret != CONTROL_SUCCESS) {
+            //printf("ERROR: control_read_command() returned error status %d\n", ret);
+            break;
+        }
         else{
-            if(read_attempts == 1000){cout << "Read is taking a while.." << endl;}
-            if(data[0] != CONTROL_SUCCESS)
-            {
-                ret = device.device_get(cmd->res_id, cmd->cmd_id, data, data_len);
-                read_attempts++;
-            }
-            else
+            if(read_attempts == 1000){cout << "ERROR: Read is taking a while.." << endl;}
+            if(data[0] == CONTROL_SUCCESS)
             {
                 for (int i = 0; i < cmd->num_values; i++)
                 {
                     values[i] = command_bytes_to_value(cmd, &data[1], i);
                 }
+                break;
+            }
+            else if(data[0] == SERVICER_COMMAND_RETRY)
+            {
+                ret = device.device_get(cmd->res_id, cmd->cmd_id, data, data_len);
+                read_attempts++;
+            }
+            else{
+                printf("ERROR: read command returned control_ret_t error %d\n", data[0]);
+                ret = (control_ret_t)data[0];
                 break;
             }
         }
