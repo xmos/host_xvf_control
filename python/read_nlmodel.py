@@ -12,9 +12,8 @@ def read_nlm_buffer(nlm_file, gen_set_file):
     nlm_buf = np.reshape(buf[2:], (rows, cols))
     print(nlm_buf)
 
-    if gen_set_file:
-        set_file_name = os.path.splitext(nlm_file)[0] + "_set" + os.path.splitext(nlm_file)[1]
-        buf[2:].tofile(set_file_name)
+    if gen_set_file != None:
+        buf[2:].tofile(gen_set_file)
 
 
 if __name__ == "__main__":
@@ -22,7 +21,7 @@ if __name__ == "__main__":
     parser.add_argument('--nlmodel-file', '-f',
                         help='Binary file containing NLModel buffer read from the device',
                         default=Path( __file__ ).parent / "../nlm_buffer.bin")
-    parser.add_argument('--generate-set-file', '-s', action='store_true', help='Generate a .bin file that can be used for testing the set NLModel command')
+    parser.add_argument('--generate-set-file', '-s', help='Generate a .bin file that can be used for testing the set NLModel command', default=None)
     
     args = parser.parse_args()
 
