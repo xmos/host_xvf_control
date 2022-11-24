@@ -46,11 +46,9 @@ Device::~Device()
     }
 }
 
-Device dev;
-
 extern "C"{
-Device * make_Dev()
+unique_ptr<Device> make_Dev()
 {
-    return &dev;
+    return make_unique<Device>();
 }
 }

@@ -9,7 +9,8 @@ using factory_error = std::runtime_error;
 class factory {
     public:
         factory(const char * filename);
-        Device * make_dev;
+        using device_t = std::unique_ptr<Device> (*)();
+        device_t make_dev;
     private:
         void * handle;
         template<typename T>

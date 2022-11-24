@@ -85,8 +85,8 @@ int main(int argc, char ** argv)
     }
 
     factory fact(lib_name);
-    Device * device = fact.make_dev;
-    Command command(device);
+    auto device = fact.make_dev();
+    Command command(device.get());
 
     if (cmd != nullptr)
     {

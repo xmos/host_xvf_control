@@ -22,7 +22,7 @@ class Device
 };
 
 extern "C" {
-Device * make_Dev();
+std::unique_ptr<Device> make_Dev();
 }
 
 #endif
