@@ -8,17 +8,17 @@
 using namespace std;
 
 opt_t options[] = {
-            {"--help",                 "-h", "print this options menu",          0},
-            {"--list-commands",        "-l", "print the list of commands",       0},
-            {"--vendor-id",            "-v", "set USB Vendor ID",                1},
-            {"--product-id",           "-p", "set USB Product ID",               1},
-            {"--dump-params",          "-d", "print all the parameters",         0},
-            {"--skip-version-check",   "-s", "skip version check",               0},
-            {"--execute-command-list", "-e", "execute commands from .txt file",  1},
-            {"--use",                  "-u", "use specific protocol",            1}
-            {"--get-aec-filter",       "-get-filter", "Get AEC filter", 0}, // TODO pass filename as an option
-            {"--get-nlmodel-buffer",   "-get-nlm", "Get NLModel filter", 0},
-            {"--set-nlmodel-buffer",   "-set-nlm", "Set NLModel filter", 0},
+            {"--help",                 "-h",          "print this options menu",          0},
+            {"--list-commands",        "-l",          "print the list of commands",       0},
+            {"--vendor-id",            "-v",          "set USB Vendor ID",                1},
+            {"--product-id",           "-p",          "set USB Product ID",               1},
+            {"--dump-params",          "-d",          "print all the parameters",         0},
+            {"--skip-version-check",   "-s",          "skip version check",               0},
+            {"--execute-command-list", "-e",          "execute commands from .txt file",  1},
+            {"--use",                  "-u",          "use specific protocol",            1},
+            {"--get-aec-filter",       "-get-filter", "Get AEC filter",                   0},
+            {"--get-nlmodel-buffer",   "-get-nlm",    "Get NLModel filter",               0},
+            {"--set-nlmodel-buffer",   "-set-nlm",    "Set NLModel filter",               0}
 };
 
 opt_t * option_lookup(const string str)
@@ -91,9 +91,8 @@ void assert_on_cmd_error(cmd_t *cmd, control_ret_t ret)
     }
 }
 
-void get_or_set_full_buffer(cmd_param_t *buffer, int32_t buffer_length, cmd_t *start_coeff_index_cmd, cmd_t *filter_cmd, bool flag_buffer_get)
+void get_or_set_full_buffer(Command * command, cmd_param_t *buffer, int32_t buffer_length, cmd_t *start_coeff_index_cmd, cmd_t *filter_cmd, bool flag_buffer_get)
 {
-    Command command;
     control_ret_t ret;
     int32_t num_filter_read_commands = buffer_length / filter_cmd->num_values;
     int32_t last_remaining_coeffs = buffer_length - (num_filter_read_commands*filter_cmd->num_values);
@@ -113,17 +112,17 @@ void get_or_set_full_buffer(cmd_param_t *buffer, int32_t buffer_length, cmd_t *s
         }
         cmd_param_t coeff;
         coeff.i32 = start_coeff;
-        ret = command.command_set(start_coeff_index_cmd, &coeff, 1);
+        ret = command->command_set(start_coeff_index_cmd, &coeff, 1);
         assert_on_cmd_error(start_coeff_index_cmd, ret);
 
         if(flag_buffer_get == true) // Read from the device into the buffer
         {
-            ret = command.command_get(filter_cmd, &buffer[start_coeff], filter_cmd->num_values);
+            ret = command->command_get(filter_cmd, &buffer[start_coeff], filter_cmd->num_values);
             assert_on_cmd_error(filter_cmd, ret);
         }
         else // Write buffer to the device
         {
-            ret = command.command_set(filter_cmd, &buffer[start_coeff], filter_cmd->num_values);
+            ret = command->command_set(filter_cmd, &buffer[start_coeff], filter_cmd->num_values);
             assert_on_cmd_error(filter_cmd, ret);
         }
 
@@ -132,9 +131,8 @@ void get_or_set_full_buffer(cmd_param_t *buffer, int32_t buffer_length, cmd_t *s
     filter_cmd->num_values = backup_num_values; 
 }
 
-void get_one_filter(int32_t mic_index, int32_t far_index, std::string filename, uint32_t buffer_length, cmd_t * commands, size_t num_commands)
+void get_one_filter(Comamnd * command, int32_t mic_index, int32_t far_index, string filename, uint32_t buffer_length, cmd_t * commands, size_t num_commands)
 {
-    Command command;
     control_ret_t ret;
     printf("filename = %s\n", filename.c_str());
 
@@ -151,13 +149,13 @@ void get_one_filter(int32_t mic_index, int32_t far_index, std::string filename, 
     cmd_param_t far_mic_index[2];
     far_mic_index[0].i32 = far_index;
     far_mic_index[1].i32 = mic_index;
-    ret = command.command_set(far_mic_index_cmd, far_mic_index, far_mic_index_cmd->num_values);
+    ret = command->command_set(far_mic_index_cmd, far_mic_index, far_mic_index_cmd->num_values);
     assert_on_cmd_error(far_mic_index_cmd, ret);
 
     cmd_param_t *aec_filter = new cmd_param_t[buffer_length];
 
     // Read the full buffer from the device
-    get_or_set_full_buffer(aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, true);
+    get_or_set_full_buffer(command, aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, true);
     
     // Write filter to file
     FILE *fp = fopen(filename.c_str(), "wb");
@@ -169,10 +167,9 @@ void get_one_filter(int32_t mic_index, int32_t far_index, std::string filename, 
     delete []aec_filter;
 }
 
-control_ret_t get_aec_filter(const char *filename, cmd_t * commands, size_t num_commands)
+control_ret_t get_aec_filter(Command * command, const char *filename, cmd_t * commands, size_t num_commands)
 {
-    Command command;
-    command.init_device(); // Initialise the device
+    command->init_device(); // Initialise the device
 
     printf("In get_aec_filter()\n");
     control_ret_t ret;
@@ -183,17 +180,17 @@ control_ret_t get_aec_filter(const char *filename, cmd_t * commands, size_t num_
     assert(num_farends_cmd != NULL);
     cmd_param_t num_mics, num_farends;
 
-    ret = command.command_get(num_mics_cmd, &num_mics, num_mics_cmd->num_values);
+    ret = command->command_get(num_mics_cmd, &num_mics, num_mics_cmd->num_values);
     assert_on_cmd_error(num_mics_cmd, ret);
 
-    ret = command.command_get(num_farends_cmd, &num_farends, num_farends_cmd->num_values);
+    ret = command->command_get(num_farends_cmd, &num_farends, num_farends_cmd->num_values);
     assert_on_cmd_error(num_farends_cmd, ret);
 
      // Get AEC filter length
     cmd_t *aec_filter_length_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_LENGTH", commands, num_commands);
     assert(aec_filter_length_cmd != NULL);
     cmd_param_t filt;
-    ret = command.command_get(aec_filter_length_cmd, &filt, aec_filter_length_cmd->num_values);
+    ret = command->command_get(aec_filter_length_cmd, &filt, aec_filter_length_cmd->num_values);
     assert_on_cmd_error(aec_filter_length_cmd, ret);
 
     uint32_t filter_length = filt.i32;
@@ -206,18 +203,17 @@ control_ret_t get_aec_filter(const char *filename, cmd_t * commands, size_t num_
         for(int far_index=0; far_index<1/*num_farends.i32*/; far_index++)
         {
             // Get AEC filter for the (mic_index, far_index) pair
-            std::string filter_name = filename;
-            filter_name = filter_name + "_m" + std::to_string(mic_index) + "_f" + std::to_string(far_index) + ".bin";
+            string filter_name = filename;
+            filter_name = filter_name + "_m" + to_string(mic_index) + "_f" + to_string(far_index) + ".bin";
             get_one_filter(mic_index, far_index, filter_name, filter_length, commands, num_commands);
         }
     }
     return CONTROL_SUCCESS;
 }
 
-control_ret_t special_cmd_nlmodel_buffer(const char* filename, int32_t flag_buffer_get, cmd_t * commands, size_t num_commands)
+control_ret_t special_cmd_nlmodel_buffer(Command * command, const char* filename, bool flag_buffer_get, cmd_t * commands, size_t num_commands)
 {
-    Command command;
-    command.init_device(); // Initialise the device
+    command->init_device(); // Initialise the device
     printf("In special_cmd_nlmodel_buffer()\n");
     control_ret_t ret;
     printf("filename = %s, flag_buffer_get = %d\n", filename, flag_buffer_get);
@@ -237,7 +233,7 @@ control_ret_t special_cmd_nlmodel_buffer(const char* filename, int32_t flag_buff
     // Get buffer length
     int32_t NLM_buffer_length;
     cmd_param_t nRowCol[2];
-    ret = command.command_get(nlm_buffer_length_cmd, nRowCol, nlm_buffer_length_cmd->num_values);
+    ret = command->command_get(nlm_buffer_length_cmd, nRowCol, nlm_buffer_length_cmd->num_values);
     assert_on_cmd_error(nlm_buffer_length_cmd, ret);
 
     NLM_buffer_length = nRowCol[0].i32 * nRowCol[1].i32;
@@ -246,12 +242,12 @@ control_ret_t special_cmd_nlmodel_buffer(const char* filename, int32_t flag_buff
     // Set start of special command sequence
     cmd_param_t start_buffer_read;
     start_buffer_read.i32 = 1;
-    ret = command.command_set(nlm_buffer_start_command, &start_buffer_read, nlm_buffer_start_command->num_values);
+    ret = command->command_set(nlm_buffer_start_command, &start_buffer_read, nlm_buffer_start_command->num_values);
     assert_on_cmd_error(nlm_buffer_start_command, ret);
 
     cmd_param_t *nlm_buffer = new cmd_param_t[NLM_buffer_length];
 
-    std::string fname = filename;
+    string fname = filename;
     //fname = fname + ".bin";
     FILE *fp;
     if(!flag_buffer_get) // read NLModel buffer from file and write to the device
@@ -268,12 +264,12 @@ control_ret_t special_cmd_nlmodel_buffer(const char* filename, int32_t flag_buff
             fread(&nlm_buffer[i].f, sizeof(float), 1, fp);
         }
         // Write the full buffer to the device
-        get_or_set_full_buffer(nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, false);
+        get_or_set_full_buffer(command, nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
     }
     else // Read NLModel buffer from device and write to the file
     {
         // Read the full buffer from the device
-        get_or_set_full_buffer(nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, true);
+        get_or_set_full_buffer(commnad, nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
     
         // Write filter to file
         fp = fopen(fname.c_str(), "wb");

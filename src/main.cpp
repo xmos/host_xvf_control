@@ -108,15 +108,15 @@ int main(int argc, char ** argv)
         }
         if(opt->long_name == "--get-aec-filter")
         {
-            ret = get_aec_filter("aec_filter", commands, num_commands);
+            ret = get_aec_filter(&command, "aec_filter", commands, num_commands);
         }
         if(opt->long_name == "--get-nlmodel-buffer")
         {
-            ret = special_cmd_nlmodel_buffer("nlm_buffer.bin", 1, commands, num_commands);
+            ret = special_cmd_nlmodel_buffer(&command, "nlm_buffer.bin", true, commands, num_commands);
         }
         if(opt->long_name == "--set-nlmodel-buffer")
         {
-            ret = special_cmd_nlmodel_buffer("nlm_buffer_set.bin", 0, commands, num_commands);
+            ret = special_cmd_nlmodel_buffer(&command, "nlm_buffer_set.bin", false, commands, num_commands);
         }
     }
 
