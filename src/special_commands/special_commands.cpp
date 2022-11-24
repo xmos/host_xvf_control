@@ -46,7 +46,6 @@ void load_command_map_dll()
 
 opt_t * option_lookup(const string str)
 {
-    cout << "looking for an option with name : " << str << endl;
     for(int i = 0; i < ARRAY_SIZE(options); i++)
     {
         opt_t * opt = &options[i];
@@ -54,7 +53,6 @@ opt_t * option_lookup(const string str)
         {
             return opt;
         }
-        cout << "option " << opt->short_name << " does not match" << endl;
     }
     return nullptr;
 }
