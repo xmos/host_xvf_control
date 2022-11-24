@@ -11,12 +11,12 @@ class Command
 {
     private:
         Device device;
+        
+    public:
+        control_ret_t do_command(cmd_t * cmd, char ** argv, int args_left);
         void init_device();
         control_ret_t command_get(cmd_t * cmd, cmd_param_t * values, int num_values);
         control_ret_t command_set(cmd_t * cmd, const cmd_param_t * values, int num_values);
-
-    public:
-        control_ret_t do_command(cmd_t * cmd, char ** argv, int args_left);
 };
 
 #endif
