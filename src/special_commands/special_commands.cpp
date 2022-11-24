@@ -131,7 +131,7 @@ void get_or_set_full_buffer(Command * command, cmd_param_t *buffer, int32_t buff
     filter_cmd->num_values = backup_num_values; 
 }
 
-void get_one_filter(Comamnd * command, int32_t mic_index, int32_t far_index, string filename, uint32_t buffer_length, cmd_t * commands, size_t num_commands)
+void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, string filename, uint32_t buffer_length, cmd_t * commands, size_t num_commands)
 {
     control_ret_t ret;
     printf("filename = %s\n", filename.c_str());
@@ -205,7 +205,7 @@ control_ret_t get_aec_filter(Command * command, const char *filename, cmd_t * co
             // Get AEC filter for the (mic_index, far_index) pair
             string filter_name = filename;
             filter_name = filter_name + "_m" + to_string(mic_index) + "_f" + to_string(far_index) + ".bin";
-            get_one_filter(mic_index, far_index, filter_name, filter_length, commands, num_commands);
+            get_one_filter(command, mic_index, far_index, filter_name, filter_length, commands, num_commands);
         }
     }
     return CONTROL_SUCCESS;
@@ -269,7 +269,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, const char* filename
     else // Read NLModel buffer from device and write to the file
     {
         // Read the full buffer from the device
-        get_or_set_full_buffer(commnad, nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
+        get_or_set_full_buffer(command, nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
     
         // Write filter to file
         fp = fopen(fname.c_str(), "wb");
