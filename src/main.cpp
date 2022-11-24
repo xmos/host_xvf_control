@@ -34,10 +34,45 @@ int main(int argc, char ** argv)
 
     commands = get_command_map();
     num_commands = get_num_commands();
-    
+
+    cout << "got commad map" << endl;
     control_ret_t ret = CONTROL_ERROR;
 
-    int cmd_indx = 1;
+    opt_t * first_opt = option_lookup(argv[1]);
+    cout << "option name " << first_opt->long_name << endl;
+    if (first_opt == nullptr)
+    {
+        cout << "First argument to this application should be -u or -h or -l" << endl;
+        return CONTROL_ERROR;
+    }
+    else if (first_opt->long_name == "--help")
+    {
+        return print_options_list();
+    }
+    else if (first_opt->long_name == "--list_commands")
+    {
+        return print_command_list(commands, num_commands);
+    }
+    else if (first_opt->long_name != "--use")
+    {
+        cout << "First argument to this application should be -u or -h or -l" << endl;
+        return CONTROL_ERROR;
+    }
+    cout << "fetched option name" << endl;
+    // Protocol name should be in argv[2]
+    string name = argv[2];
+    char lib_name[20];
+
+    if ((name == "i2c") || (name == "I2C"))
+    {
+        sprintf(lib_name, "%s", "./libdevice_i2c.so\0");
+    }
+    if ((name == "spi") || (name == "SPI"))
+    {
+        sprintf(lib_name, "%s", "./libdevice_spi.so\0");
+    }
+    cout << "libname : " << lib_name << endl;
+    int cmd_indx = 3;
     int args_left = argc - cmd_indx - 1;
 
     cmd_t * cmd = command_lookup(argv[cmd_indx], commands, num_commands);
@@ -49,7 +84,7 @@ int main(int argc, char ** argv)
         return CONTROL_BAD_COMMAND;
     }
 
-    factory fact("./libdevice_i2c.so");
+    factory fact(lib_name);
     Device * device = fact.make_dev;
     Command command(device);
 

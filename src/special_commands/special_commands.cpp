@@ -13,11 +13,13 @@ opt_t options[] = {
             {"--product-id",           "-p", "set USB Product ID",               1},
             {"--dump-params",          "-d", "print all the parameters",         0},
             {"--skip-version-check",   "-s", "skip version check",               0},
-            {"--execute-command-list", "-e", "execute commands from .txt file",  1}
+            {"--execute-command-list", "-e", "execute commands from .txt file",  1},
+            {"--use",                  "-u", "use specific protocol",            1}
 };
 
 opt_t * option_lookup(const string str)
 {
+    cout << "looking for an option with name : " << str << endl;
     for(int i = 0; i < ARRAY_SIZE(options); i++)
     {
         opt_t * opt = &options[i];
@@ -25,6 +27,7 @@ opt_t * option_lookup(const string str)
         {
             return opt;
         }
+        cout << "option " << opt->short_name << " does not match" << endl;
     }
     return nullptr;
 }
