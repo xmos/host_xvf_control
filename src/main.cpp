@@ -16,7 +16,7 @@ int main(int argc, char ** argv)
     }
 
     control_ret_t ret = CONTROL_ERROR;
-    
+    load_command_map_dll();
     opt_t * first_opt = option_lookup(argv[1]);
 
     if (first_opt == nullptr)
@@ -28,7 +28,7 @@ int main(int argc, char ** argv)
     {
         return print_options_list();
     }
-    else if (first_opt->long_name == "--list_commands")
+    else if (first_opt->long_name == "--list-commands")
     {
         return print_command_list();
     }
@@ -49,7 +49,7 @@ int main(int argc, char ** argv)
     {
         sprintf(lib_name, "%s", "./libdevice_spi.so\0");
     }
-    cout << "libname : " << lib_name << endl;
+
     int cmd_indx = 3;
     int args_left = argc - cmd_indx - 1;
 
