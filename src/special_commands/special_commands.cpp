@@ -15,9 +15,9 @@ opt_t options[] = {
             {"--dump-params",          "-d", "print all the parameters",         0},
             {"--skip-version-check",   "-s", "skip version check",               0},
             {"--execute-command-list", "-e", "execute commands from .txt file",  1},
-            {"--get-aec-filter",       "--get-aec-filter", "Get AEC filter", 0}, // TODO pass filename as an option
-            {"--get-nlmodel-buffer",   "--get-nlmodel-buffer", "Get NLModel filter", 0},
-            {"--set-nlmodel-buffer",   "--set-nlmodel-buffer", "Set NLModel filter", 0},
+            {"--get-aec-filter",       "-get-filter", "Get AEC filter", 0}, // TODO pass filename as an option
+            {"--get-nlmodel-buffer",   "-get-nlm", "Get NLModel filter", 0},
+            {"--set-nlmodel-buffer",   "-set-nlm", "Set NLModel filter", 0},
 };
 
 opt_t * option_lookup(const string str)
@@ -89,7 +89,7 @@ void assert_on_cmd_error(cmd_t *cmd, control_ret_t ret)
     }
 }
 
-void get_or_set_full_buffer(cmd_param_t *buffer, int32_t buffer_length, cmd_t *start_coeff_index_cmd, cmd_t *filter_cmd, int flag_buffer_get)
+void get_or_set_full_buffer(cmd_param_t *buffer, int32_t buffer_length, cmd_t *start_coeff_index_cmd, cmd_t *filter_cmd, bool flag_buffer_get)
 {
     Command command;
     control_ret_t ret;
@@ -114,7 +114,7 @@ void get_or_set_full_buffer(cmd_param_t *buffer, int32_t buffer_length, cmd_t *s
         ret = command.command_set(start_coeff_index_cmd, &coeff, 1);
         assert_on_cmd_error(start_coeff_index_cmd, ret);
 
-        if(flag_buffer_get) // Read from the device into the buffer
+        if(flag_buffer_get == true) // Read from the device into the buffer
         {
             ret = command.command_get(filter_cmd, &buffer[start_coeff], filter_cmd->num_values);
             assert_on_cmd_error(filter_cmd, ret);
@@ -155,7 +155,7 @@ void get_one_filter(int32_t mic_index, int32_t far_index, std::string filename, 
     cmd_param_t *aec_filter = new cmd_param_t[buffer_length];
 
     // Read the full buffer from the device
-    get_or_set_full_buffer(aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, 1);
+    get_or_set_full_buffer(aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, true);
     
     // Write filter to file
     FILE *fp = fopen(filename.c_str(), "wb");
@@ -266,12 +266,12 @@ control_ret_t special_cmd_nlmodel_buffer(const char* filename, int32_t flag_buff
             fread(&nlm_buffer[i].f, sizeof(float), 1, fp);
         }
         // Write the full buffer to the device
-        get_or_set_full_buffer(nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, 0);
+        get_or_set_full_buffer(nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, false);
     }
     else // Read NLModel buffer from device and write to the file
     {
         // Read the full buffer from the device
-        get_or_set_full_buffer(nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, 1);
+        get_or_set_full_buffer(nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, true);
     
         // Write filter to file
         fp = fopen(fname.c_str(), "wb");
