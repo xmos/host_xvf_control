@@ -55,6 +55,21 @@ target_link_libraries(device_i2c
 )
 target_link_options(device_i2c PRIVATE -fPIC)
 
+add_library(device_spi SHARED)
+target_sources(device_spi
+    PRIVATE
+        device/device_spi.cpp
+)
+target_include_directories(device_spi
+    PUBLIC
+        device
+        ${DEVICE_CONTROL_PATH}/host
+)
+target_link_libraries(device_spi
+    PUBLIC  
+        rtos::sw_services::device_control_host_spi
+)
+
 if(TEST_BUILD)
     add_library(command_map SHARED command_map_dummy.cpp)
     target_include_directories(command_map PUBLIC ${DEVICE_CONTROL_PATH}/api)
