@@ -2,6 +2,7 @@
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #include "special_commands.hpp"
+#include "dlfcn.h"
 #include <cassert>
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
@@ -21,6 +22,28 @@ opt_t options[] = {
             {"--set-nlmodel-buffer",   "-set-nlm",    "Set NLModel filter",               0}
 };
 
+cmd_t * commands;
+size_t num_commands;
+
+void load_command_map_dll()
+{
+    string dyn_lib_path = get_dynamic_lib_path();
+    void * sofile = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
+    if(!sofile)
+    {
+        printf("%s\n", dlerror());
+        exit(EXIT_FAILURE);
+    }
+    cmd_t* (*get_command_map)();
+    get_command_map = (cmd_t* (*)())dlsym(sofile, "get_command_map");
+
+    uint32_t (*get_num_commands)();
+    get_num_commands = (uint32_t (*)())dlsym(sofile, "get_num_commands");
+
+    commands = get_command_map();
+    num_commands = get_num_commands();
+}
+
 opt_t * option_lookup(const string str)
 {
     cout << "looking for an option with name : " << str << endl;
@@ -36,9 +59,9 @@ opt_t * option_lookup(const string str)
     return nullptr;
 }
 
-cmd_t * command_lookup(const string str, cmd_t * commands, size_t size)
+cmd_t * command_lookup(const string str)
 {
-    for (size_t i = 0; i < size; i++)
+    for (size_t i = 0; i < num_commands; i++)
     {
         cmd_t * cmd = &commands[i];
         if (str == cmd->cmd_name)
@@ -49,7 +72,7 @@ cmd_t * command_lookup(const string str, cmd_t * commands, size_t size)
     return nullptr;
 }
 
-control_ret_t print_options_list(void)
+control_ret_t print_options_list()
 {
     for(opt_t opt : options)
     {
@@ -59,9 +82,9 @@ control_ret_t print_options_list(void)
     return CONTROL_SUCCESS;
 }
 
-control_ret_t print_command_list(cmd_t * commands, size_t size)
+control_ret_t print_command_list()
 {
-    for(size_t i = 0; i < size; i ++)
+    for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t * cmd = &commands[i];
         cout << cmd->cmd_name << " is " << command_rw_type_name(cmd->rw)
@@ -72,10 +95,10 @@ control_ret_t print_command_list(cmd_t * commands, size_t size)
     return CONTROL_SUCCESS;
 }
 
-control_ret_t dump_params(Command * command, cmd_t * commands, size_t size)
+control_ret_t dump_params(Command * command)
 {
     control_ret_t ret = CONTROL_ERROR;
-    for(size_t i = 0; i < size; i ++)
+    for(size_t i = 0; i < num_commands; i ++)
     {
         ret = command->do_command(&commands[i], nullptr, 0);
     }
@@ -131,18 +154,18 @@ void get_or_set_full_buffer(Command * command, cmd_param_t *buffer, int32_t buff
     filter_cmd->num_values = backup_num_values; 
 }
 
-void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, string filename, uint32_t buffer_length, cmd_t * commands, size_t num_commands)
+void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, string filename, uint32_t buffer_length)
 {
     control_ret_t ret;
     printf("filename = %s\n", filename.c_str());
 
-    cmd_t *far_mic_index_cmd = command_lookup("SPECIAL_CMD_AEC_FAR_MIC_INDEX", commands, num_commands); // Start cmd
+    cmd_t *far_mic_index_cmd = command_lookup("SPECIAL_CMD_AEC_FAR_MIC_INDEX"); // Start cmd
     assert(far_mic_index_cmd != NULL);
     
-    cmd_t *start_coeff_index_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_COEFF_START_OFFSET", commands, num_commands); // Set start offset
+    cmd_t *start_coeff_index_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_COEFF_START_OFFSET"); // Set start offset
     assert(start_coeff_index_cmd != NULL);
 
-    cmd_t *filter_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_COEFFS", commands, num_commands); // Get buffer cmd
+    cmd_t *filter_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_COEFFS"); // Get buffer cmd
     assert(filter_cmd != NULL);
 
     // Set start of special command sequence
@@ -167,16 +190,16 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
     delete []aec_filter;
 }
 
-control_ret_t get_aec_filter(Command * command, const char *filename, cmd_t * commands, size_t num_commands)
+control_ret_t get_aec_filter(Command * command, const char *filename)
 {
     command->init_device(); // Initialise the device
 
     printf("In get_aec_filter()\n");
     control_ret_t ret;
-    cmd_t *num_mics_cmd = command_lookup("AEC_NUM_MICS", commands, num_commands);
+    cmd_t *num_mics_cmd = command_lookup("AEC_NUM_MICS");
     assert(num_mics_cmd != NULL);
 
-    cmd_t *num_farends_cmd = command_lookup("AEC_NUM_FARENDS", commands, num_commands);
+    cmd_t *num_farends_cmd = command_lookup("AEC_NUM_FARENDS");
     assert(num_farends_cmd != NULL);
     cmd_param_t num_mics, num_farends;
 
@@ -187,7 +210,7 @@ control_ret_t get_aec_filter(Command * command, const char *filename, cmd_t * co
     assert_on_cmd_error(num_farends_cmd, ret);
 
      // Get AEC filter length
-    cmd_t *aec_filter_length_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_LENGTH", commands, num_commands);
+    cmd_t *aec_filter_length_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_LENGTH");
     assert(aec_filter_length_cmd != NULL);
     cmd_param_t filt;
     ret = command->command_get(aec_filter_length_cmd, &filt, aec_filter_length_cmd->num_values);
@@ -205,29 +228,29 @@ control_ret_t get_aec_filter(Command * command, const char *filename, cmd_t * co
             // Get AEC filter for the (mic_index, far_index) pair
             string filter_name = filename;
             filter_name = filter_name + "_m" + to_string(mic_index) + "_f" + to_string(far_index) + ".bin";
-            get_one_filter(command, mic_index, far_index, filter_name, filter_length, commands, num_commands);
+            get_one_filter(command, mic_index, far_index, filter_name, filter_length);
         }
     }
     return CONTROL_SUCCESS;
 }
 
-control_ret_t special_cmd_nlmodel_buffer(Command * command, const char* filename, bool flag_buffer_get, cmd_t * commands, size_t num_commands)
+control_ret_t special_cmd_nlmodel_buffer(Command * command, const char* filename, bool flag_buffer_get)
 {
     command->init_device(); // Initialise the device
     printf("In special_cmd_nlmodel_buffer()\n");
     control_ret_t ret;
     printf("filename = %s, flag_buffer_get = %d\n", filename, flag_buffer_get);
 
-    cmd_t *nlm_buffer_start_command = command_lookup("SPECIAL_CMD_NLMODEL_START", commands, num_commands); // Start cmd
+    cmd_t *nlm_buffer_start_command = command_lookup("SPECIAL_CMD_NLMODEL_START"); // Start cmd
     assert(nlm_buffer_start_command != NULL);
     
-    cmd_t *nlm_buffer_length_cmd = command_lookup("SPECIAL_CMD_PP_NLMODEL_NROW_NCOL", commands, num_commands); // Get buffer length
+    cmd_t *nlm_buffer_length_cmd = command_lookup("SPECIAL_CMD_PP_NLMODEL_NROW_NCOL"); // Get buffer length
     assert(nlm_buffer_length_cmd != NULL);
 
-    cmd_t *start_coeff_index_cmd = command_lookup("SPECIAL_CMD_NLMODEL_COEFF_START_OFFSET", commands, num_commands); // Set start offset
+    cmd_t *start_coeff_index_cmd = command_lookup("SPECIAL_CMD_NLMODEL_COEFF_START_OFFSET"); // Set start offset
     assert(start_coeff_index_cmd != NULL);
 
-    cmd_t *filter_cmd = command_lookup("SPECIAL_CMD_PP_NLMODEL", commands, num_commands); // buffer cmd
+    cmd_t *filter_cmd = command_lookup("SPECIAL_CMD_PP_NLMODEL"); // buffer cmd
     assert(filter_cmd != NULL);
 
     // Get buffer length

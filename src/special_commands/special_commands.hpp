@@ -6,13 +6,13 @@
 
 #include "command.hpp"
 
-cmd_t * command_lookup(const std::string str, cmd_t * commands, size_t size);
+void load_command_map_dll();
+cmd_t * command_lookup(const std::string str);
 opt_t * option_lookup(const std::string str);
-control_ret_t print_options_list(void);
-control_ret_t print_command_list(cmd_t * commands, size_t size);
-control_ret_t dump_params(Command * command, cmd_t * commands, size_t size);
-
-control_ret_t get_aec_filter(Command * command, const char * filename, cmd_t * commands, size_t size);
-control_ret_t special_cmd_nlmodel_buffer(Command * command, const char * filename, bool flag_buffer_get, cmd_t * commands, size_t num_commands);
+control_ret_t print_options_list();
+control_ret_t print_command_list();
+control_ret_t dump_params(Command * command);
+control_ret_t get_aec_filter(Command * command, const char * filename);
+control_ret_t special_cmd_nlmodel_buffer(Command * command, const char * filename, bool flag_buffer_get);
 
 #endif

@@ -3,12 +3,8 @@
 
 #include "special_commands.hpp"
 #include "factory.hpp"
-#include "dlfcn.h"
 
 using namespace std;
-
-cmd_t * commands;
-size_t num_commands;
 
 int main(int argc, char ** argv)
 {
@@ -19,27 +15,10 @@ int main(int argc, char ** argv)
         return 0;
     }
 
-    string dyn_lib_path = get_dynamic_lib_path();
-    void * sofile = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
-    if(!sofile)
-    {
-        printf("%s\n", dlerror());
-        exit(EXIT_FAILURE);
-    }
-    cmd_t* (*get_command_map)();
-    get_command_map = (cmd_t* (*)())dlsym(sofile, "get_command_map");
-
-    uint32_t (*get_num_commands)();
-    get_num_commands = (uint32_t (*)())dlsym(sofile, "get_num_commands");
-
-    commands = get_command_map();
-    num_commands = get_num_commands();
-
-    cout << "got commad map" << endl;
     control_ret_t ret = CONTROL_ERROR;
-
+    
     opt_t * first_opt = option_lookup(argv[1]);
-    cout << "option name " << first_opt->long_name << endl;
+
     if (first_opt == nullptr)
     {
         cout << "First argument to this application should be -u or -h or -l" << endl;
@@ -51,15 +30,14 @@ int main(int argc, char ** argv)
     }
     else if (first_opt->long_name == "--list_commands")
     {
-        return print_command_list(commands, num_commands);
+        return print_command_list();
     }
     else if (first_opt->long_name != "--use")
     {
         cout << "First argument to this application should be -u or -h or -l" << endl;
         return CONTROL_ERROR;
     }
-    cout << "fetched option name" << endl;
-    // Protocol name should be in argv[2]
+
     string name = argv[2];
     char lib_name[20];
 
@@ -75,7 +53,7 @@ int main(int argc, char ** argv)
     int cmd_indx = 3;
     int args_left = argc - cmd_indx - 1;
 
-    cmd_t * cmd = command_lookup(argv[cmd_indx], commands, num_commands);
+    cmd_t * cmd = command_lookup(argv[cmd_indx]);
     opt_t * opt = option_lookup(argv[cmd_indx]);
 
     if ((cmd == nullptr) && (opt == nullptr))
@@ -100,23 +78,23 @@ int main(int argc, char ** argv)
         }
         if(opt->long_name == "--list-commands")
         {
-            ret = print_command_list(commands, num_commands);
+            ret = print_command_list();
         }
         if(opt->long_name == "--dump-params")
         {
-            ret = dump_params(&command, commands, num_commands);
+            ret = dump_params(&command);
         }
         if(opt->long_name == "--get-aec-filter")
         {
-            ret = get_aec_filter(&command, "aec_filter", commands, num_commands);
+            ret = get_aec_filter(&command, "aec_filter");
         }
         if(opt->long_name == "--get-nlmodel-buffer")
         {
-            ret = special_cmd_nlmodel_buffer(&command, "nlm_buffer.bin", true, commands, num_commands);
+            ret = special_cmd_nlmodel_buffer(&command, "nlm_buffer.bin", true);
         }
         if(opt->long_name == "--set-nlmodel-buffer")
         {
-            ret = special_cmd_nlmodel_buffer(&command, "nlm_buffer_set.bin", false, commands, num_commands);
+            ret = special_cmd_nlmodel_buffer(&command, "nlm_buffer_set.bin", false);
         }
     }
 
