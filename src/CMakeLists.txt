@@ -39,6 +39,22 @@ target_link_libraries(framework_rtos_sw_services_device_control_host_spi INTERFA
 target_compile_definitions(framework_rtos_sw_services_device_control_host_spi INTERFACE USE_SPI=1 RPI=1)
 add_library(rtos::sw_services::device_control_host_spi ALIAS framework_rtos_sw_services_device_control_host_spi)
 
+add_library(device_i2c SHARED)
+target_sources(device_i2c
+    PRIVATE
+        device/device_i2c.cpp
+)
+target_include_directories(device_i2c
+    PUBLIC
+        device
+        ${DEVICE_CONTROL_PATH}/host
+)
+target_link_libraries(device_i2c
+    PUBLIC  
+        rtos::sw_services::device_control_host_i2c
+)
+target_link_options(device_i2c PRIVATE -fPIC)
+
 if(TEST_BUILD)
     add_library(command_map SHARED command_map_dummy.cpp)
     target_include_directories(command_map PUBLIC ${DEVICE_CONTROL_PATH}/api)
@@ -50,6 +66,7 @@ set(COMMON_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/utils.cpp
     ${CMAKE_CURRENT_LIST_DIR}/command/command.cpp
     ${CMAKE_CURRENT_LIST_DIR}/special_commands/special_commands.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/device/factory.cpp
 )
 
 set(COMMON_INCLUDES
@@ -57,47 +74,28 @@ set(COMMON_INCLUDES
     ${CMAKE_CURRENT_LIST_DIR}/device
     ${CMAKE_CURRENT_LIST_DIR}/command
     ${CMAKE_CURRENT_LIST_DIR}/special_commands
+    ${DEVICE_CONTROL_PATH}/api
 )
 
-# I2C slave hostapp
-add_executable(xvf_hostapp_rpi_i2c)
-
-target_sources(xvf_hostapp_rpi_i2c 
-    PRIVATE
-        ${COMMON_SOURCES}
-        device/device_i2c.cpp
-
-)
-
-target_include_directories(xvf_hostapp_rpi_i2c 
-    PUBLIC
-        ${COMMON_INCLUDES}
-)
-
-target_link_libraries(xvf_hostapp_rpi_i2c 
-    PUBLIC 
-        rtos::sw_services::device_control_host_i2c
-        dl
-)
 
 # SPI slave hostapp
-add_executable(xvf_hostapp_rpi_spi)
+add_executable(xvf_hostapp_rpi)
 
-target_sources(xvf_hostapp_rpi_spi
+target_sources(xvf_hostapp_rpi
     PRIVATE
         ${COMMON_SOURCES}
-        device/device_spi.cpp
 )
-
-target_include_directories(xvf_hostapp_rpi_spi
+target_include_directories(xvf_hostapp_rpi
     PUBLIC
         ${COMMON_INCLUDES}
 )
-
-target_link_libraries(xvf_hostapp_rpi_spi
+target_link_libraries(xvf_hostapp_rpi
     PUBLIC 
-        rtos::sw_services::device_control_host_spi
         dl
+)
+target_link_options(xvf_hostapp_rpi
+    PRIVATE
+        -rdynamic
 )
 
 message(STATUS "Building with ${CMAKE_C_COMPILER_ID}")

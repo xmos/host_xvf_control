@@ -65,13 +65,12 @@ control_ret_t print_command_list(cmd_t * commands, size_t size)
     return CONTROL_SUCCESS;
 }
 
-control_ret_t dump_params(cmd_t * commands, size_t size)
+control_ret_t dump_params(Command * command, cmd_t * commands, size_t size)
 {
     control_ret_t ret = CONTROL_ERROR;
-    Command command;
     for(size_t i = 0; i < size; i ++)
     {
-        ret = command.do_command(&commands[i], nullptr, 0);
+        ret = command->do_command(&commands[i], nullptr, 0);
     }
     return ret;
 }

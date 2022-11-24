@@ -5,9 +5,11 @@
 
 using namespace std;
 
+Command::Command(Device * _dev) : device(_dev) {}
+
 void Command::init_device()
 {
-    control_ret_t ret = device.device_init();
+    control_ret_t ret = device->device_init();
     if (ret != CONTROL_SUCCESS)
     {
         cout << "Could not connect to the device" << endl;
@@ -22,7 +24,7 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
     size_t data_len = sizeof(cmd_param_t) * cmd->num_values + 1; // one extra for the status
     uint8_t * data = new uint8_t[data_len];
 
-    control_ret_t ret = device.device_get(cmd->res_id, cmd->cmd_id, data, data_len);
+    control_ret_t ret = device->device_get(cmd->res_id, cmd->cmd_id, data, data_len);
     read_attempts++;
 
     while(1){
@@ -31,7 +33,7 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
             if(read_attempts == 1000){cout << "Read is taking a while.." << endl;}
             if(data[0] != CONTROL_SUCCESS)
             {
-                ret = device.device_get(cmd->res_id, cmd->cmd_id, data, data_len);
+                ret = device->device_get(cmd->res_id, cmd->cmd_id, data, data_len);
                 read_attempts++;
             }
             else
@@ -58,7 +60,7 @@ control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int 
         command_bytes_from_value(cmd, data, i, values[i]);
     }
 
-    control_ret_t ret = device.device_set(cmd->res_id, cmd->cmd_id, data, data_len);
+    control_ret_t ret = device->device_set(cmd->res_id, cmd->cmd_id, data, data_len);
 
     delete []data;
 

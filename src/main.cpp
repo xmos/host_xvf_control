@@ -2,6 +2,7 @@
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #include "special_commands.hpp"
+#include "factory.hpp"
 #include "dlfcn.h"
 
 using namespace std;
@@ -48,9 +49,12 @@ int main(int argc, char ** argv)
         return CONTROL_BAD_COMMAND;
     }
 
+    factory fact("./libdevice_i2c.so");
+    Device * device = fact.make_dev;
+    Command command(device);
+
     if (cmd != nullptr)
     {
-        Command command;
         ret = command.do_command(cmd, argv, args_left);
     }
     else
@@ -65,7 +69,7 @@ int main(int argc, char ** argv)
         }
         if(opt->long_name == "--dump-params")
         {
-            ret = dump_params(commands, num_commands);
+            ret = dump_params(&command, commands, num_commands);
         }
     }
 

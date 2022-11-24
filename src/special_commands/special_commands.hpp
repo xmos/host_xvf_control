@@ -10,6 +10,6 @@ cmd_t * command_lookup(const std::string str, cmd_t * commands, size_t size);
 opt_t * option_lookup(const std::string str);
 control_ret_t print_options_list(void);
 control_ret_t print_command_list(cmd_t * commands, size_t size);
-control_ret_t dump_params(cmd_t * commands, size_t size);
+control_ret_t dump_params(Command * command, cmd_t * commands, size_t size);
 
 #endif
