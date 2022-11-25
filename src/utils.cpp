@@ -18,12 +18,11 @@
 using namespace std;
 
 
-string get_dynamic_lib_path(void)
+string get_dynamic_lib_path(string lib_name)
 {
     string lib_path_str;
     string dir_path_str;
 #ifdef __unix__
-    #define DYN_LIB_NAME "/libcommand_map.so"
     char* dir_path;
     char result[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
@@ -31,10 +30,11 @@ string get_dynamic_lib_path(void)
         dir_path = dirname(result);
     }
     dir_path_str = dir_path;
+    lib_name += ".so"
 #elif defined(__APPLE__)
 #elif defined(_WIN32)
 #endif
-    lib_path_str = dir_path_str + DYN_LIB_NAME;
+    lib_path_str = dir_path_str + lib_name;
 
     return lib_path_str;
 }

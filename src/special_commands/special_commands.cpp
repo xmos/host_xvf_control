@@ -29,7 +29,7 @@ size_t num_commands;
 
 void load_command_map_dll()
 {
-    string dyn_lib_path = get_dynamic_lib_path();
+    string dyn_lib_path = get_dynamic_lib_path("/libcommand_map");
     void * sofile = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
     if(!sofile)
     {

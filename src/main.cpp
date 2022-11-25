@@ -16,7 +16,6 @@ int main(int argc, char ** argv)
     }
 
     control_ret_t ret = CONTROL_ERROR;
-    load_command_map_dll();
     opt_t * first_opt = option_lookup(argv[1]);
 
     if (first_opt == nullptr)
@@ -39,15 +38,15 @@ int main(int argc, char ** argv)
     }
 
     string name = argv[2];
-    char lib_name[20];
+    string lib_name;
 
     if ((name == "i2c") || (name == "I2C"))
     {
-        sprintf(lib_name, "%s", "./libdevice_i2c.so\0");
+        lib_name = "/device_i2c";
     }
     if ((name == "spi") || (name == "SPI"))
     {
-        sprintf(lib_name, "%s", "./libdevice_spi.so\0");
+        lib_name = "/device_spi";
     }
 
     int cmd_indx = 3;
@@ -62,7 +61,8 @@ int main(int argc, char ** argv)
         return CONTROL_BAD_COMMAND;
     }
 
-    factory fact(lib_name);
+    string device_lib_path = get_dynamic_lib_path(lib_name);
+    factory fact(device_lib_path.c_str());
     auto device = fact.make_dev();
     Command command(device.get());
 
