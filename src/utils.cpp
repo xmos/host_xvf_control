@@ -30,7 +30,7 @@ string get_dynamic_lib_path(string lib_name)
         dir_path = dirname(result);
     }
     dir_path_str = dir_path;
-    lib_name += ".so"
+    lib_name += ".so";
 #elif defined(__APPLE__)
 #elif defined(_WIN32)
 #endif
