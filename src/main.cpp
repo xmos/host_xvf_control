@@ -16,7 +16,7 @@ int main(int argc, char ** argv)
     }
 
     control_ret_t ret = CONTROL_ERROR;
-    load_command_map_dll()
+    load_command_map_dll();
     opt_t * first_opt = option_lookup(argv[1]);
 
     if (first_opt == nullptr)
