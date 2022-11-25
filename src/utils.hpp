@@ -39,8 +39,8 @@ struct opt_t {
     std::string short_name;
     // Option info
     std::string info;
-    // Number of arguments required by the option
-    int num_args;
+    // Second line of info
+    std::string more_info;
 };
 
 std::string get_dynamic_lib_path(void);

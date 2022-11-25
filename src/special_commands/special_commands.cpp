@@ -4,22 +4,24 @@
 #include "special_commands.hpp"
 #include "dlfcn.h"
 #include <cassert>
+#include <iomanip>
+
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 using namespace std;
 
 opt_t options[] = {
-            {"--help",                 "-h",          "print this options menu",          0},
-            {"--list-commands",        "-l",          "print the list of commands",       0},
-            {"--vendor-id",            "-v",          "set USB Vendor ID",                1},
-            {"--product-id",           "-p",          "set USB Product ID",               1},
-            {"--dump-params",          "-d",          "print all the parameters",         0},
-            {"--skip-version-check",   "-s",          "skip version check",               0},
-            {"--execute-command-list", "-e",          "execute commands from .txt file",  1},
-            {"--use",                  "-u",          "use specific protocol",            1},
-            {"--get-aec-filter",       "-get-filter", "Get AEC filter",                   0},
-            {"--get-nlmodel-buffer",   "-get-nlm",    "Get NLModel filter",               0},
-            {"--set-nlmodel-buffer",   "-set-nlm",    "Set NLModel filter",               0}
+            {"--help",                 "-h",          "display this information",            "0"                                        },
+            {"--list-commands",        "-l",          "print the list of commands",          "0"                                        },
+            {"--vendor-id",            "-v",          "set USB Vendor ID",                   "0"                                        },
+            {"--product-id",           "-p",          "set USB Product ID",                  "0"                                        },
+            {"--dump-params",          "-d",          "print all the parameters",            "0"                                        },
+            {"--skip-version-check",   "-s",          "skip version check",                  "0"                                        },
+            {"--execute-command-list", "-e",          "execute commands from .txt file",     "0"                                        },
+            {"--use",                  "-u",          "use specific harware protocol,",      "I2C and SPI are available to use"         },
+            {"--get-aec-filter",       "-gF",         "get AEC filter into a filename,",     "default is aec_filter"                    },
+            {"--get-nlmodel-buffer",   "-gN",         "get NLModel filter into .bin file,",  "default is nlm_buffer.bin"                },
+            {"--set-nlmodel-buffer",   "-sN",         "set NLModel filter from .bin file,",  "default is nlm_buffer.bin"                }
 };
 
 cmd_t * commands;
@@ -70,12 +72,40 @@ cmd_t * command_lookup(const string str)
     return nullptr;
 }
 
-control_ret_t print_options_list()
+control_ret_t print_help_menu()
 {
+    size_t longest_short_opt = 0;
+    size_t longest_long_opt = 0;
     for(opt_t opt : options)
     {
-        cout << "Use " << opt.short_name <<  " or " << opt.long_name
-        << " to " << opt.info << "." << endl;
+        size_t short_len = opt.short_name.length();
+        size_t long_len = opt.long_name.length();
+        longest_short_opt = (short_len > longest_short_opt) ? short_len : longest_short_opt;
+        longest_long_opt = (long_len > longest_long_opt) ? long_len : longest_long_opt;
+    }
+    size_t long_opt_offset = longest_short_opt + 5;
+    size_t info_offset = long_opt_offset + longest_long_opt + 4;
+
+    cout << "usage: xvf_hostapp_rpi [ -h | --help ]" << endl
+    << setw(47) << "[ -l | --list-commands ]" << endl
+    << setw(68) << "[ -u | --use <protocol>] [ command | option ]" << endl
+    << "Options:" << endl; 
+    for(opt_t opt : options)
+    {
+        size_t short_len = opt.short_name.length();
+        size_t long_len = opt.long_name.length();
+        size_t info_len = opt.info.length();
+        int first_space = long_opt_offset - short_len + long_len;
+        int second_space = info_offset - long_len - long_opt_offset + info_len;
+
+        cout << "  " << opt.short_name <<  "," << setw(first_space) << opt.long_name
+        << setw(second_space) << opt.info << endl;
+        if(opt.more_info != "0")
+        {
+            size_t more_info_len = opt.more_info.length();
+            int space = info_offset + more_info_len + 3; // +3 since we used two spaces and a comma in the line before
+            cout << setw(space) << opt.more_info << endl;
+        }
     }
     return CONTROL_SUCCESS;
 }
@@ -126,7 +156,6 @@ void get_or_set_full_buffer(Command * command, cmd_param_t *buffer, int32_t buff
     unsigned backup_num_values = filter_cmd->num_values; // Save a copy of num_values for the get_filter cmd in case we overwrite it for the last chunk
     for(int i=0; i<num_filter_read_commands; i++)
     {
-        //printf("reading from start_coeff %d\n", start_coeff);
         if((i == (num_filter_read_commands-1)) && (last_remaining_coeffs))
         {
             filter_cmd->num_values = last_remaining_coeffs;
@@ -158,13 +187,13 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
     printf("filename = %s\n", filename.c_str());
 
     cmd_t *far_mic_index_cmd = command_lookup("SPECIAL_CMD_AEC_FAR_MIC_INDEX"); // Start cmd
-    assert(far_mic_index_cmd != NULL);
+    assert(far_mic_index_cmd != nullptr);
     
     cmd_t *start_coeff_index_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_COEFF_START_OFFSET"); // Set start offset
-    assert(start_coeff_index_cmd != NULL);
+    assert(start_coeff_index_cmd != nullptr);
 
     cmd_t *filter_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_COEFFS"); // Get buffer cmd
-    assert(filter_cmd != NULL);
+    assert(filter_cmd != nullptr);
 
     // Set start of special command sequence
     cmd_param_t far_mic_index[2];
@@ -179,7 +208,12 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
     get_or_set_full_buffer(command, aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, true);
     
     // Write filter to file
-    FILE *fp = fopen(filename.c_str(), "wb");
+    FILE * fp;
+    if ((fp = fopen(filename.c_str(), "wb")) == NULL)
+    {
+        cout << "Failed to open " << filename << endl;
+        exit(CONTROL_ERROR);
+    }
     for(int i=0; i<buffer_length; i++)
     {
         fwrite(&aec_filter[i].f, sizeof(float), 1, fp); // It's annoying having to write byte by byte
@@ -188,17 +222,17 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
     delete []aec_filter;
 }
 
-control_ret_t get_aec_filter(Command * command, const char *filename)
+control_ret_t get_aec_filter(Command * command, const char * filename)
 {
     command->init_device(); // Initialise the device
 
     printf("In get_aec_filter()\n");
     control_ret_t ret;
     cmd_t *num_mics_cmd = command_lookup("AEC_NUM_MICS");
-    assert(num_mics_cmd != NULL);
+    assert(num_mics_cmd != nullptr);
 
     cmd_t *num_farends_cmd = command_lookup("AEC_NUM_FARENDS");
-    assert(num_farends_cmd != NULL);
+    assert(num_farends_cmd != nullptr);
     cmd_param_t num_mics, num_farends;
 
     ret = command->command_get(num_mics_cmd, &num_mics, num_mics_cmd->num_values);
@@ -209,7 +243,7 @@ control_ret_t get_aec_filter(Command * command, const char *filename)
 
      // Get AEC filter length
     cmd_t *aec_filter_length_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_LENGTH");
-    assert(aec_filter_length_cmd != NULL);
+    assert(aec_filter_length_cmd != nullptr);
     cmd_param_t filt;
     ret = command->command_get(aec_filter_length_cmd, &filt, aec_filter_length_cmd->num_values);
     assert_on_cmd_error(aec_filter_length_cmd, ret);
@@ -232,7 +266,7 @@ control_ret_t get_aec_filter(Command * command, const char *filename)
     return CONTROL_SUCCESS;
 }
 
-control_ret_t special_cmd_nlmodel_buffer(Command * command, const char* filename, bool flag_buffer_get)
+control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get, const char* filename)
 {
     command->init_device(); // Initialise the device
     printf("In special_cmd_nlmodel_buffer()\n");
@@ -240,16 +274,16 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, const char* filename
     printf("filename = %s, flag_buffer_get = %d\n", filename, flag_buffer_get);
 
     cmd_t *nlm_buffer_start_command = command_lookup("SPECIAL_CMD_NLMODEL_START"); // Start cmd
-    assert(nlm_buffer_start_command != NULL);
+    assert(nlm_buffer_start_command != nullptr);
     
     cmd_t *nlm_buffer_length_cmd = command_lookup("SPECIAL_CMD_PP_NLMODEL_NROW_NCOL"); // Get buffer length
-    assert(nlm_buffer_length_cmd != NULL);
+    assert(nlm_buffer_length_cmd != nullptr);
 
     cmd_t *start_coeff_index_cmd = command_lookup("SPECIAL_CMD_NLMODEL_COEFF_START_OFFSET"); // Set start offset
-    assert(start_coeff_index_cmd != NULL);
+    assert(start_coeff_index_cmd != nullptr);
 
     cmd_t *filter_cmd = command_lookup("SPECIAL_CMD_PP_NLMODEL"); // buffer cmd
-    assert(filter_cmd != NULL);
+    assert(filter_cmd != nullptr);
 
     // Get buffer length
     int32_t NLM_buffer_length;
@@ -268,12 +302,14 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, const char* filename
 
     cmd_param_t *nlm_buffer = new cmd_param_t[NLM_buffer_length];
 
-    string fname = filename;
-    //fname = fname + ".bin";
-    FILE *fp;
+    FILE * fp;
     if(!flag_buffer_get) // read NLModel buffer from file and write to the device
     {
-        fp = fopen(fname.c_str(), "rb");
+        if((fp = fopen(filename, "rb")) == NULL)
+        {
+            cout << "Failed to open " << filename << endl;
+            exit(CONTROL_ERROR);
+        }
         fseek(fp, 0, SEEK_END);
         int32_t size = ftell(fp);
         fseek(fp, 0, SEEK_SET);
@@ -293,7 +329,11 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, const char* filename
         get_or_set_full_buffer(command, nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
     
         // Write filter to file
-        fp = fopen(fname.c_str(), "wb");
+        if((fp = fopen(filename, "wb")) == NULL)
+        {
+            cout << "Failed to open " << filename << endl;
+            exit(CONTROL_ERROR);
+        }
         float rows = (float)nRowCol[0].i32;
         float cols = (float)nRowCol[1].i32;
         // Write the number of rows and number of columns as the first 2*sizeof(int32_t) bytes in the file

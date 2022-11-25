@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
     }
     else if (first_opt->long_name == "--help")
     {
-        return print_options_list();
+        return print_help_menu();
     }
     else if (first_opt->long_name == "--list_commands")
     {
@@ -74,7 +74,7 @@ int main(int argc, char ** argv)
     {
         if(opt->long_name == "--help")
         {
-            ret = print_options_list();
+            ret = print_help_menu();
         }
         if(opt->long_name == "--list-commands")
         {
@@ -86,15 +86,36 @@ int main(int argc, char ** argv)
         }
         if(opt->long_name == "--get-aec-filter")
         {
-            ret = get_aec_filter(&command, "aec_filter");
+            if(argv[cmd_indx + 1] == NULL)
+            {
+                ret = get_aec_filter(&command);
+            }
+            else
+            {
+                ret = get_aec_filter(&command, argv[cmd_indx + 1]);
+            } 
         }
         if(opt->long_name == "--get-nlmodel-buffer")
         {
-            ret = special_cmd_nlmodel_buffer(&command, "nlm_buffer.bin", true);
+            if(argv[cmd_indx + 1] == NULL)
+            {
+                ret = special_cmd_nlmodel_buffer(&command, true);
+            }
+            else
+            {
+                ret = special_cmd_nlmodel_buffer(&command, true, argv[cmd_indx + 1]);
+            }
         }
         if(opt->long_name == "--set-nlmodel-buffer")
         {
-            ret = special_cmd_nlmodel_buffer(&command, "nlm_buffer_set.bin", false);
+            if(argv[cmd_indx + 1] == NULL)
+            {
+                ret = special_cmd_nlmodel_buffer(&command, false);
+            }
+            else
+            {
+                ret = special_cmd_nlmodel_buffer(&command, false, argv[cmd_indx + 1]);
+            }
         }
     }
 
