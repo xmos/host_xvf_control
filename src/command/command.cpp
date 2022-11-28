@@ -60,14 +60,31 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
 
 control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int num_values)
 {
+    int write_attempts = 0;
     size_t data_len = sizeof(cmd_param_t) * cmd->num_values;
     uint8_t * data = new uint8_t[data_len];
 
     for (int i = 0; i < cmd->num_values; i++) {
         command_bytes_from_value(cmd, data, i, values[i]);
     }
-
     control_ret_t ret = device.device_set(cmd->res_id, cmd->cmd_id, data, data_len);
+    write_attempts++;
+    while(1){
+        if(write_attempts == 1000){cout << "ERROR: Write is taking a while.." << endl;}
+        if(ret == CONTROL_SUCCESS)
+        {
+            break;
+        }
+        else if(ret == SERVICER_COMMAND_RETRY)
+        {
+            ret = device.device_set(cmd->res_id, cmd->cmd_id, data, data_len);
+            write_attempts++;
+        }
+        else{
+            printf("ERROR: write command returned control_ret_t error %d\n", ret);
+            break;
+        }
+    }
 
     delete []data;
 
