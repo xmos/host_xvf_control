@@ -199,10 +199,10 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
     if(flag_buffer_get == true)
     {
         // Read the full buffer from the device
-        get_or_set_full_buffer(aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
+        get_or_set_full_buffer(command, aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
 
         // Write filter to file
-        if((fp = fopen(filename, "wb")) == NULL)
+        if((fp = fopen(filename.c_str(), "wb")) == NULL)
         {
             cout << "Failed to open " << filename << endl;
             exit(CONTROL_ERROR);
@@ -214,7 +214,7 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
     }
     else
     {
-        if((fp = fopen(filename, "rb")) == NULL)
+        if((fp = fopen(filename.c_str(), "rb")) == NULL)
         {
             cout << "Failed to open " << filename << endl;
             exit(CONTROL_ERROR);
@@ -229,7 +229,7 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
         {
             fread(&aec_filter[i].f, sizeof(float), 1, fp);
         }
-        get_or_set_full_buffer(aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
+        get_or_set_full_buffer(command, aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
     }
     fclose(fp);
     delete []aec_filter;
@@ -273,7 +273,7 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
             // Get AEC filter for the (far_index, mic_index) pair
             string filter_name = filename;
             filter_name = filter_name + ".f" + to_string(far_index) + ".m" + to_string(mic_index) ;
-            get_one_filter(mic_index, far_index, filter_name, filter_length, commands, num_commands, flag_buffer_get);
+            get_one_filter(command, mic_index, far_index, filter_name, filter_length, flag_buffer_get);
         }
     }
     return CONTROL_SUCCESS;
