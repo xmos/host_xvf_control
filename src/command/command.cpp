@@ -93,7 +93,7 @@ control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int 
     return ret;
 }
 
-control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left)
+control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left, int arg_indx)
 {
     init_device();
     
@@ -118,9 +118,9 @@ control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left)
     }
     else // WRITE
     {
-        for(int i = 2; i < 2 + args_left; i++)
+        for(int i = arg_indx; i < arg_indx + args_left; i++)
         {
-            cmd_values[i - 2] = cmd_arg_str_to_val(cmd, argv[i]);
+            cmd_values[i - arg_indx] = cmd_arg_str_to_val(cmd, argv[i]);
         }
         ret = command_set(cmd, cmd_values, cmd->num_values);
     }

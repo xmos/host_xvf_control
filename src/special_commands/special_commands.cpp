@@ -129,7 +129,7 @@ control_ret_t dump_params(Command * command)
     control_ret_t ret = CONTROL_ERROR;
     for(size_t i = 0; i < num_commands; i ++)
     {
-        ret = command->do_command(&commands[i], nullptr, 0);
+        ret = command->do_command(&commands[i], nullptr, 0, 0);
     }
     return ret;
 }

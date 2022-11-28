@@ -51,6 +51,7 @@ int main(int argc, char ** argv)
     }
 
     int cmd_indx = 3;
+    int arg_indx = cmd_indx + 1;
     int args_left = argc - cmd_indx - 1;
 
     cmd_t * cmd = command_lookup(argv[cmd_indx]);
@@ -69,7 +70,7 @@ int main(int argc, char ** argv)
 
     if (cmd != nullptr)
     {
-        ret = command.do_command(cmd, argv, args_left);
+        ret = command.do_command(cmd, argv, args_left, arg_indx);
     }
     else
     {
@@ -87,46 +88,46 @@ int main(int argc, char ** argv)
         }
         if(opt->long_name == "--get-aec-filter")
         {
-            if(argv[cmd_indx + 1] == NULL)
+            if(argv[arg_indx] == NULL)
             {
                 ret = special_cmd_aec_filter(&command, true);
             }
             else
             {
-                ret = special_cmd_aec_filter(&command, true, argv[cmd_indx + 1]);
+                ret = special_cmd_aec_filter(&command, true, argv[arg_indx]);
             } 
         }
         if(opt->long_name == "--set-aec-filter")
         {
-            if(argv[cmd_indx + 1] == NULL)
+            if(argv[arg_indx] == NULL)
             {
                 ret = special_cmd_aec_filter(&command, false);
             }
             else
             {
-                ret = special_cmd_aec_filter(&command, false, argv[cmd_indx + 1]);
+                ret = special_cmd_aec_filter(&command, false, argv[arg_indx]);
             }
         }        
         if(opt->long_name == "--get-nlmodel-buffer")
         {
-            if(argv[cmd_indx + 1] == NULL)
+            if(argv[arg_indx] == NULL)
             {
                 ret = special_cmd_nlmodel_buffer(&command, true);
             }
             else
             {
-                ret = special_cmd_nlmodel_buffer(&command, true, argv[cmd_indx + 1]);
+                ret = special_cmd_nlmodel_buffer(&command, true, argv[arg_indx]);
             }
         }
         if(opt->long_name == "--set-nlmodel-buffer")
         {
-            if(argv[cmd_indx + 1] == NULL)
+            if(argv[arg_indx] == NULL)
             {
                 ret = special_cmd_nlmodel_buffer(&command, false);
             }
             else
             {
-                ret = special_cmd_nlmodel_buffer(&command, false, argv[cmd_indx + 1]);
+                ret = special_cmd_nlmodel_buffer(&command, false, argv[arg_indx]);
             }
         }
     }
