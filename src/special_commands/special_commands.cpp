@@ -19,7 +19,8 @@ opt_t options[] = {
             {"--skip-version-check",   "-s",          "skip version check",                  "0"                                        },
             {"--execute-command-list", "-e",          "execute commands from .txt file",     "0"                                        },
             {"--use",                  "-u",          "use specific harware protocol,",      "I2C and SPI are available to use"         },
-            {"--get-aec-filter",       "-gF",         "get AEC filter into a filename,",     "default is aec_filter"                    },
+            {"--get-aec-filter",       "-gF",         "get AEC filter into .bin files,",     "default is aec_filter.bin.fx.mx"          },
+            {"--set-aec-filter",       "-sF",         "set AEC filter from .bin files,",     "default is aec_filter.bin.fx.mx"          },
             {"--get-nlmodel-buffer",   "-gN",         "get NLModel filter into .bin file,",  "default is nlm_buffer.bin"                },
             {"--set-nlmodel-buffer",   "-sN",         "set NLModel filter from .bin file,",  "default is nlm_buffer.bin"                }
 };
@@ -145,26 +146,17 @@ void assert_on_cmd_error(cmd_t *cmd, control_ret_t ret)
 void get_or_set_full_buffer(Command * command, cmd_param_t *buffer, int32_t buffer_length, cmd_t *start_coeff_index_cmd, cmd_t *filter_cmd, bool flag_buffer_get)
 {
     control_ret_t ret;
-    int32_t num_filter_read_commands = buffer_length / filter_cmd->num_values;
-    int32_t last_remaining_coeffs = buffer_length - (num_filter_read_commands*filter_cmd->num_values);
-    if(last_remaining_coeffs)
-    {
-        num_filter_read_commands += 1;
-    }
+    int32_t num_filter_read_commands = (buffer_length + filter_cmd->num_values - 1) / filter_cmd->num_values;
 
     int32_t start_coeff = 0;
-    unsigned backup_num_values = filter_cmd->num_values; // Save a copy of num_values for the get_filter cmd in case we overwrite it for the last chunk
     for(int i=0; i<num_filter_read_commands; i++)
     {
-        if((i == (num_filter_read_commands-1)) && (last_remaining_coeffs))
-        {
-            filter_cmd->num_values = last_remaining_coeffs;
-        }
         cmd_param_t coeff;
         coeff.i32 = start_coeff;
         ret = command->command_set(start_coeff_index_cmd, &coeff, 1);
         assert_on_cmd_error(start_coeff_index_cmd, ret);
 
+        //printf("start coeff = %d, num_values = %d\n", start_coeff, filter_cmd->num_values);
         if(flag_buffer_get == true) // Read from the device into the buffer
         {
             ret = command->command_get(filter_cmd, &buffer[start_coeff], filter_cmd->num_values);
@@ -178,10 +170,9 @@ void get_or_set_full_buffer(Command * command, cmd_param_t *buffer, int32_t buff
 
         start_coeff += filter_cmd->num_values;
     }
-    filter_cmd->num_values = backup_num_values; 
 }
 
-void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, string filename, uint32_t buffer_length)
+void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, string filename, uint32_t buffer_length, bool flag_buffer_get)
 {
     control_ret_t ret;
     printf("filename = %s\n", filename.c_str());
@@ -201,32 +192,54 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
     far_mic_index[1].i32 = mic_index;
     ret = command->command_set(far_mic_index_cmd, far_mic_index, far_mic_index_cmd->num_values);
     assert_on_cmd_error(far_mic_index_cmd, ret);
-
-    cmd_param_t *aec_filter = new cmd_param_t[buffer_length];
-
-    // Read the full buffer from the device
-    get_or_set_full_buffer(command, aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, true);
     
-    // Write filter to file
-    FILE * fp;
-    if ((fp = fopen(filename.c_str(), "wb")) == NULL)
+    int32_t len = ((buffer_length + (filter_cmd->num_values - 1))/filter_cmd->num_values) * filter_cmd->num_values;
+    cmd_param_t *aec_filter = new cmd_param_t[len];
+    FILE * fp; 
+    if(flag_buffer_get == true)
     {
-        cout << "Failed to open " << filename << endl;
-        exit(CONTROL_ERROR);
+        // Read the full buffer from the device
+        get_or_set_full_buffer(aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
+
+        // Write filter to file
+        if((fp = fopen(filename, "wb")) == NULL)
+        {
+            cout << "Failed to open " << filename << endl;
+            exit(CONTROL_ERROR);
+        }
+        for(int i=0; i<buffer_length; i++)
+        {
+            fwrite(&aec_filter[i].f, sizeof(float), 1, fp); // It's annoying having to write byte by byte
+        }
     }
-    for(int i=0; i<buffer_length; i++)
+    else
     {
-        fwrite(&aec_filter[i].f, sizeof(float), 1, fp); // It's annoying having to write byte by byte
+        if((fp = fopen(filename, "rb")) == NULL)
+        {
+            cout << "Failed to open " << filename << endl;
+            exit(CONTROL_ERROR);
+        }
+        fseek(fp, 0, SEEK_END);
+        int32_t size = ftell(fp);
+        fseek(fp, 0, SEEK_SET);
+        printf("Writing filter of size %d\n",size);
+
+        // Read from file intp the nlm_buffer buffer. Will need to be done byte by byte since nlm_buffer is of type cmd_param_t
+        for(int i=0; i<size; i++)
+        {
+            fread(&aec_filter[i].f, sizeof(float), 1, fp);
+        }
+        get_or_set_full_buffer(aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
     }
     fclose(fp);
     delete []aec_filter;
 }
 
-control_ret_t get_aec_filter(Command * command, const char * filename)
+control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, const char *filename)
 {
     command->init_device(); // Initialise the device
 
-    printf("In get_aec_filter()\n");
+    printf("In special_cmd_aec_filter()\n");
     control_ret_t ret;
     cmd_t *num_mics_cmd = command_lookup("AEC_NUM_MICS");
     assert(num_mics_cmd != nullptr);
@@ -253,14 +266,14 @@ control_ret_t get_aec_filter(Command * command, const char * filename)
 
     // TODO attempt to run for only one (mic, farend) pair due to timing violation this
     // command is causing in AEC. Will re-enable getting all filters once we have the chunkwise API.
-    for(int mic_index=0; mic_index<1/*num_mics.i32*/; mic_index++)
+    for(int far_index=0; far_index<num_farends.i32; far_index++)
     {
-        for(int far_index=0; far_index<1/*num_farends.i32*/; far_index++)
+        for(int mic_index=0; mic_index<num_mics.i32; mic_index++)
         {
-            // Get AEC filter for the (mic_index, far_index) pair
+            // Get AEC filter for the (far_index, mic_index) pair
             string filter_name = filename;
-            filter_name = filter_name + "_m" + to_string(mic_index) + "_f" + to_string(far_index) + ".bin";
-            get_one_filter(command, mic_index, far_index, filter_name, filter_length);
+            filter_name = filter_name + ".f" + to_string(far_index) + ".m" + to_string(mic_index) ;
+            get_one_filter(mic_index, far_index, filter_name, filter_length, commands, num_commands, flag_buffer_get);
         }
     }
     return CONTROL_SUCCESS;
@@ -300,10 +313,13 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
     ret = command->command_set(nlm_buffer_start_command, &start_buffer_read, nlm_buffer_start_command->num_values);
     assert_on_cmd_error(nlm_buffer_start_command, ret);
 
-    cmd_param_t *nlm_buffer = new cmd_param_t[NLM_buffer_length];
+    int32_t len = ((NLM_buffer_length + (filter_cmd->num_values - 1))/filter_cmd->num_values) * filter_cmd->num_values;
+    printf("len = %d\n",len);
+    cmd_param_t *nlm_buffer = new cmd_param_t[len];
 
-    FILE * fp;
-    if(!flag_buffer_get) // read NLModel buffer from file and write to the device
+    string fname = filename;
+    FILE *fp;
+    if(flag_buffer_get == false) // read NLModel buffer from file and write to the device
     {
         if((fp = fopen(filename, "rb")) == NULL)
         {

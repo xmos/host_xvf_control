@@ -89,13 +89,24 @@ int main(int argc, char ** argv)
         {
             if(argv[cmd_indx + 1] == NULL)
             {
-                ret = get_aec_filter(&command);
+                ret = special_cmd_aec_filter(&command, true);
             }
             else
             {
-                ret = get_aec_filter(&command, argv[cmd_indx + 1]);
+                ret = special_cmd_aec_filter(&command, true, argv[cmd_indx + 1]);
             } 
         }
+        if(opt->long_name == "--set-aec-filter")
+        {
+            if(argv[cmd_indx + 1] == NULL)
+            {
+                ret = special_cmd_aec_filter(&command, false);
+            }
+            else
+            {
+                ret = special_cmd_aec_filter(&command, false, argv[cmd_indx + 1]);
+            }
+        }        
         if(opt->long_name == "--get-nlmodel-buffer")
         {
             if(argv[cmd_indx + 1] == NULL)
