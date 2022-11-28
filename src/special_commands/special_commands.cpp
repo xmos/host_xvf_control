@@ -183,7 +183,7 @@ control_ret_t special_cmd_aec_filter(const char *filename, bool flag_buffer_get,
     Command command;
     command.init_device(); // Initialise the device
 
-    printf("In get_aec_filter()\n");
+    printf("In special_cmd_aec_filter()\n");
     control_ret_t ret;
     cmd_t *num_mics_cmd = command_lookup("AEC_NUM_MICS", commands, num_commands);
     assert(num_mics_cmd != NULL);
