@@ -2,6 +2,7 @@
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #include "device.hpp"
+#include "device_control_host.h"
 
 using namespace std;
 
@@ -43,4 +44,11 @@ Device::~Device()
     {
         control_cleanup_i2c();
     }
+}
+
+extern "C"{
+unique_ptr<Device> make_Dev()
+{
+    return make_unique<Device>();
+}
 }

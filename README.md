@@ -1,6 +1,6 @@
-# XVF_HOST Repository
+# HOST_XVF_CONTROL Repository
 
-XVF_HOST is host control reference application to be used for XVF3800 and onwards.
+HOST_XVF_CONTROL is host control reference application to be used for XVF3800 and onwards.
 
 ## Cloning
 

@@ -5,9 +5,11 @@
 
 using namespace std;
 
+Command::Command(Device * _dev) : device(_dev) {}
+
 void Command::init_device()
 {
-    control_ret_t ret = device.device_init();
+    control_ret_t ret = device->device_init();
     if (ret != CONTROL_SUCCESS)
     {
         cout << "Could not connect to the device" << endl;
@@ -23,7 +25,7 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
     size_t data_len = sizeof(cmd_param_t) * cmd->num_values + 1; // one extra for the status
     uint8_t * data = new uint8_t[data_len];
 
-    control_ret_t ret = device.device_get(cmd->res_id, cmd_id, data, data_len);
+    control_ret_t ret = device->device_get(cmd->res_id, cmd_id, data, data_len);
     read_attempts++;
 
     while(1){
@@ -43,7 +45,7 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
             }
             else if(data[0] == SERVICER_COMMAND_RETRY)
             {
-                ret = device.device_get(cmd->res_id, cmd_id, data, data_len);
+                ret = device->device_get(cmd->res_id, cmd_id, data, data_len);
                 read_attempts++;
             }
             else{
@@ -67,7 +69,7 @@ control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int 
     for (int i = 0; i < cmd->num_values; i++) {
         command_bytes_from_value(cmd, data, i, values[i]);
     }
-    control_ret_t ret = device.device_set(cmd->res_id, cmd->cmd_id, data, data_len);
+    control_ret_t ret = device->device_set(cmd->res_id, cmd->cmd_id, data, data_len);
     write_attempts++;
     while(1){
         if(write_attempts == 1000){cout << "ERROR: Write is taking a while.." << endl;}
@@ -77,7 +79,7 @@ control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int 
         }
         else if(ret == SERVICER_COMMAND_RETRY)
         {
-            ret = device.device_set(cmd->res_id, cmd->cmd_id, data, data_len);
+            ret = device->device_set(cmd->res_id, cmd->cmd_id, data, data_len);
             write_attempts++;
         }
         else{
@@ -91,7 +93,7 @@ control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int 
     return ret;
 }
 
-control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left)
+control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left, int arg_indx)
 {
     init_device();
     
@@ -116,9 +118,9 @@ control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left)
     }
     else // WRITE
     {
-        for(int i = 2; i < 2 + args_left; i++)
+        for(int i = arg_indx; i < arg_indx + args_left; i++)
         {
-            cmd_values[i - 2] = cmd_arg_str_to_val(cmd, argv[i]);
+            cmd_values[i - arg_indx] = cmd_arg_str_to_val(cmd, argv[i]);
         }
         ret = command_set(cmd, cmd_values, cmd->num_values);
     }

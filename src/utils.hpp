@@ -39,11 +39,11 @@ struct opt_t {
     std::string short_name;
     // Option info
     std::string info;
-    // Number of arguments required by the option
-    int num_args;
+    // Second line of info
+    std::string more_info;
 };
 
-std::string get_dynamic_lib_path(void);
+std::string get_dynamic_lib_path(std::string lib_name);
 std::string command_param_type_name(cmd_param_type_t type);
 std::string command_rw_type_name(cmd_rw_t rw);
 control_ret_t check_num_args(cmd_t * cmd, int args_left);
