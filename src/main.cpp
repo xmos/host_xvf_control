@@ -132,7 +132,7 @@ int main(int argc, char ** argv)
         }
         if(opt->long_name == "--test-control-interface")
         {
-            ret = test_control_interface(&command);
+            ret = test_control_interface(&command, argv[arg_indx]);
         }
     }
 

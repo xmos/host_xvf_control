@@ -23,7 +23,7 @@ opt_t options[] = {
             {"--set-aec-filter",       "-sF",         "set AEC filter from .bin files,",     "default is aec_filter.bin.fx.mx"          },
             {"--get-nlmodel-buffer",   "-gN",         "get NLModel filter into .bin file,",  "default is nlm_buffer.bin"                },
             {"--set-nlmodel-buffer",   "-sN",         "set NLModel filter from .bin file,",  "default is nlm_buffer.bin"                },
-            {"--test-control-interface", "-tc",        "test control interface", "0"}
+            {"--test-control-interface", "-tc",        "test control interface"}
 };
 
 cmd_t * commands;
@@ -371,22 +371,34 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
     return CONTROL_SUCCESS;
 }
 
-control_ret_t test_control_interface(Command * command)
+control_ret_t test_control_interface(Command * command, const char* filename)
 {
     command->init_device(); // Initialise the device
     control_ret_t ret;
     cmd_t *read_test_cmd = command_lookup("TEST_CONTROL");
-    cmd_param_t *test_buffer = new cmd_param_t[read_test_cmd->num_values];
-    ret = command->command_get(read_test_cmd, test_buffer, read_test_cmd->num_values);
-    if(ret != CONTROL_SUCCESS)
+    int test_frames = 50;
+    cmd_param_t *test_buffer = new cmd_param_t[read_test_cmd->num_values * test_frames];
+    for(int n=0; n<test_frames; n++)
     {
-        printf("ERROR: TEST_CONTROL cmd. %d error returned\n", ret);
+	    ret = command->command_get(read_test_cmd, &test_buffer[n*read_test_cmd->num_values], read_test_cmd->num_values);
+	    if(ret != CONTROL_SUCCESS)
+	    {
+		    printf("ERROR: TEST_CONTROL cmd. %d error returned\n", ret);
+            assert(0);
+	    }
     }
-    for(int i=0; i<read_test_cmd->num_values; i++)
+    FILE *fp;
+    printf("filename is %s\n",filename);
+    if((fp = fopen(filename, "wb")) == NULL)
     {
-        printf("0x%x ", test_buffer->ui8);
+        cout << "Failed to open " << filename << endl;
+        exit(CONTROL_ERROR);
     }
-    printf("\n");
+    for(int i=0; i<test_frames*read_test_cmd->num_values; i++)
+    {
+        fwrite(&test_buffer[i].ui8, sizeof(uint8_t), 1, fp);
+    }
+    fclose(fp);
     delete []test_buffer;
     return ret;
 }
