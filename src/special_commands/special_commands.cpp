@@ -22,7 +22,8 @@ opt_t options[] = {
             {"--get-aec-filter",       "-gF",         "get AEC filter into .bin files,",     "default is aec_filter.bin.fx.mx"          },
             {"--set-aec-filter",       "-sF",         "set AEC filter from .bin files,",     "default is aec_filter.bin.fx.mx"          },
             {"--get-nlmodel-buffer",   "-gN",         "get NLModel filter into .bin file,",  "default is nlm_buffer.bin"                },
-            {"--set-nlmodel-buffer",   "-sN",         "set NLModel filter from .bin file,",  "default is nlm_buffer.bin"                }
+            {"--set-nlmodel-buffer",   "-sN",         "set NLModel filter from .bin file,",  "default is nlm_buffer.bin"                },
+            {"--test-control-interface", "-tc",        "test control interface", "0"}
 };
 
 cmd_t * commands;
@@ -368,4 +369,24 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
     fclose(fp);
     delete []nlm_buffer;
     return CONTROL_SUCCESS;
+}
+
+control_ret_t test_control_interface(Command * command)
+{
+    command->init_device(); // Initialise the device
+    control_ret_t ret;
+    cmd_t *read_test_cmd = command_lookup("TEST_CONTROL");
+    cmd_param_t *test_buffer = new cmd_param_t[read_test_cmd->num_values];
+    ret = command->command_get(read_test_cmd, test_buffer, read_test_cmd->num_values);
+    if(ret != CONTROL_SUCCESS)
+    {
+        printf("ERROR: TEST_CONTROL cmd. %d error returned\n", ret);
+    }
+    for(int i=0; i<read_test_cmd->num_values; i++)
+    {
+        printf("0x%x ", test_buffer->ui8);
+    }
+    printf("\n");
+    delete []test_buffer;
+    return ret;
 }

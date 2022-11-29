@@ -130,6 +130,10 @@ int main(int argc, char ** argv)
                 ret = special_cmd_nlmodel_buffer(&command, false, argv[arg_indx]);
             }
         }
+        if(opt->long_name == "--test-control-interface")
+        {
+            ret = test_control_interface(&command);
+        }
     }
 
     return ret;

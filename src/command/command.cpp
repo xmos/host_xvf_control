@@ -22,7 +22,7 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
     int read_attempts = 0;
     control_cmd_t cmd_id = cmd->cmd_id | 0x80; // setting 8th bit for read commands
 
-    size_t data_len = sizeof(cmd_param_t) * cmd->num_values + 1; // one extra for the status
+    size_t data_len = get_num_bytes_from_type(cmd->type) * cmd->num_values + 1; // one extra for the status
     uint8_t * data = new uint8_t[data_len];
 
     control_ret_t ret = device->device_get(cmd->res_id, cmd_id, data, data_len);
