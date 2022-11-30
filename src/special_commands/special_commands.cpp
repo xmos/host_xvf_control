@@ -190,7 +190,7 @@ control_ret_t execute_cmd_list(Command * command, const char * filename)
         {
             strcpy(&buff[i], word.c_str());
             line_ch[num] = &buff[i];
-            i += word.length();
+            i += word.length() + 1;
             num++;
         }
         int cmd_indx = 0;
