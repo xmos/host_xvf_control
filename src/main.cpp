@@ -86,6 +86,17 @@ int main(int argc, char ** argv)
         {
             ret = dump_params(&command);
         }
+        if(opt->long_name == "--execute-command-list")
+        {
+            if(argv[arg_indx] == NULL)
+            {
+                ret = execute_cmd_list(&command);
+            }
+            else
+            {
+                ret = execute_cmd_list(&command, argv[arg_indx]);
+            }
+        }
         if(opt->long_name == "--get-aec-filter")
         {
             if(argv[arg_indx] == NULL)
