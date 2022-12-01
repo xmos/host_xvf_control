@@ -21,7 +21,7 @@ control_ret_t Device::device_init()
     control_ret_t ret = CONTROL_SUCCESS;
     if(!device_initialised)
     {
-        ret = control_init_spi_pi(SPI_MODE_1, BCM2835_SPI_CLOCK_DIVIDER_1024);
+        ret = control_init_spi_pi(SPI_MODE_0, BCM2835_SPI_CLOCK_DIVIDER_1024);
         device_initialised = true;
     }
     return ret;
