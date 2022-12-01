@@ -4,6 +4,7 @@
 #include "special_commands.hpp"
 #include "dlfcn.h"
 #include <cassert>
+#include <fstream>
 #include <iomanip>
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
@@ -13,11 +14,8 @@ using namespace std;
 opt_t options[] = {
             {"--help",                 "-h",          "display this information",            "0"                                        },
             {"--list-commands",        "-l",          "print the list of commands",          "0"                                        },
-            {"--vendor-id",            "-v",          "set USB Vendor ID",                   "0"                                        },
-            {"--product-id",           "-p",          "set USB Product ID",                  "0"                                        },
             {"--dump-params",          "-d",          "print all the parameters",            "0"                                        },
-            {"--skip-version-check",   "-s",          "skip version check",                  "0"                                        },
-            {"--execute-command-list", "-e",          "execute commands from .txt file",     "0"                                        },
+            {"--execute-command-list", "-e",          "execute commands from .txt file,",    "one command per line, don't need -u *"    },
             {"--use",                  "-u",          "use specific harware protocol,",      "I2C and SPI are available to use"         },
             {"--get-aec-filter",       "-gF",         "get AEC filter into .bin files,",     "default is aec_filter.bin.fx.mx"          },
             {"--set-aec-filter",       "-sF",         "set AEC filter from .bin files,",     "default is aec_filter.bin.fx.mx"          },
@@ -113,13 +111,42 @@ control_ret_t print_help_menu()
 
 control_ret_t print_command_list()
 {
+    size_t longest_command = 0;
+    size_t longest_rw = 10; // READ/WRITE
+    size_t longest_args = 2; // double digits
+    size_t longest_type = 5; // int32, uint8
+    size_t longest_info = 0;
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t * cmd = &commands[i];
-        cout << cmd->cmd_name << " is " << command_rw_type_name(cmd->rw)
-        << " and requires/returns " << cmd->num_values
-        << " values of type " << command_param_type_name(cmd->type)
-        << ". "<< cmd->info << "." << endl;
+        size_t name_len = cmd->cmd_name.length();
+        size_t info_len = cmd->info.length();
+        longest_command = (longest_command < name_len) ? name_len : longest_command;
+        longest_info = (longest_info < info_len) ? info_len : longest_info;
+    }
+    size_t rw_offset = longest_command + 2;
+    size_t args_offset = rw_offset + longest_rw + 2;
+    size_t type_offset = args_offset + longest_args + 2;
+    size_t info_offset = type_offset + longest_type + 2;
+
+    for(size_t i = 0; i < num_commands; i ++)
+    {
+        // name   rw   args   type   info
+        cmd_t * cmd = &commands[i];
+        size_t name_len = cmd->cmd_name.length();
+        string rw = command_rw_type_name(cmd->rw);
+        size_t rw_len = rw.length();
+        size_t args_len = to_string(cmd->num_values).length();
+        string type = command_param_type_name(cmd->type);
+        size_t type_len = type.length();
+        size_t info_len = cmd->info.length();
+        int first_space = rw_offset - name_len + rw_len;
+        int second_space = args_offset - rw_len - rw_offset + args_len;
+        int third_space = type_offset - args_len - args_offset + type_len;
+        int fourth_space = info_offset - type_len - type_offset + info_len;
+        cout << cmd->cmd_name << setw(first_space) << rw
+        << setw(second_space) << cmd->num_values << setw(third_space)
+        << type << setw(fourth_space) << cmd->info << endl;
     }
     return CONTROL_SUCCESS;
 }
@@ -135,6 +162,62 @@ control_ret_t dump_params(Command * command)
             ret = command->do_command(&commands[i], nullptr, 0, 0);
         }
     }
+    return ret;
+}
+
+control_ret_t execute_cmd_list(Command * command, const char * filename)
+{
+    control_ret_t ret = CONTROL_ERROR;
+    size_t largest_command = 0;
+    for(size_t i = 0; i < num_commands; i++)
+    {
+        cmd_t * cmd = &commands[i];
+        size_t num_args = cmd->num_values;
+        largest_command = (num_args > largest_command) ? num_args : largest_command;
+    }
+    largest_command++; // +1 for the command name
+    ifstream file(filename);
+    string line;
+    while(getline(file, line))
+    {
+        //TODO: think about -e use cases whether 128 bytes per line is enough
+        size_t max_line_len = 128;
+        char buff[max_line_len];
+        int i = 0;
+        char * line_ch[largest_command];
+        int num = 0;
+        stringstream ss(line);
+        string word;
+        while(ss >> word)
+        {
+            strcpy(&buff[i], word.c_str());
+            line_ch[num] = &buff[i];
+            i += word.length() + 1;
+            if(i > max_line_len)
+            {
+                cout << "Line:" << endl << line
+                << endl << "Exceeded " << max_line_len
+                << " characters limit" << endl;
+                return CONTROL_BAD_COMMAND;
+            }
+            num++;
+        }
+        int cmd_indx = 0;
+        int arg_indx = cmd_indx + 1;
+        int args_left = num - 1;
+        cmd_t * cmd = command_lookup(line_ch[cmd_indx]);
+        if(cmd == nullptr)
+        {
+            cout << "Command " << line_ch[cmd_indx] << " does not exit." << endl;
+            return CONTROL_BAD_COMMAND;
+        }
+        ret = command->do_command(cmd, line_ch, args_left, arg_indx);
+        if(ret != CONTROL_SUCCESS)
+        {
+            cout << "Command " << cmd->cmd_name << " returns error " << ret << endl;
+        }
+    }
+    file.close();
     return ret;
 }
 
