@@ -180,7 +180,9 @@ control_ret_t execute_cmd_list(Command * command, const char * filename)
     string line;
     while(getline(file, line))
     {
-        char buff[128];
+        //TODO: think about -e use cases whether 128 bytes per line is enough
+        size_t max_line_len = 128;
+        char buff[max_line_len];
         int i = 0;
         char * line_ch[largest_command];
         int num = 0;
@@ -191,6 +193,13 @@ control_ret_t execute_cmd_list(Command * command, const char * filename)
             strcpy(&buff[i], word.c_str());
             line_ch[num] = &buff[i];
             i += word.length() + 1;
+            if(i > max_line_len)
+            {
+                cout << "Line:" << endl << line
+                << endl << "Exceeded " << max_line_len
+                << " characters limit" << endl;
+                return CONTROL_BAD_COMMAND;
+            }
             num++;
         }
         int cmd_indx = 0;
