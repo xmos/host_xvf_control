@@ -75,7 +75,7 @@ string command_rw_type_name(cmd_rw_t rw)
         break;
 
     case CMD_WO:
-        tstr = "WRITE_ONLY";
+        tstr = "WRITE ONLY";
         break;
 
     case CMD_RW:
