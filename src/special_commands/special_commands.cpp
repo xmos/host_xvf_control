@@ -21,7 +21,7 @@ opt_t options[] = {
             {"--set-aec-filter",       "-sF",         "set AEC filter from .bin files,",     "default is aec_filter.bin.fx.mx"          },
             {"--get-nlmodel-buffer",   "-gN",         "get NLModel filter into .bin file,",  "default is nlm_buffer.bin"                },
             {"--set-nlmodel-buffer",   "-sN",         "set NLModel filter from .bin file,",  "default is nlm_buffer.bin"                },
-            {"--test-control-interface", "-tc",        "test control interface"}
+            {"--test-control-interface", "-tc",        "test control interface",             "default is test_buffer.bin"               }
 };
 
 cmd_t * commands;
