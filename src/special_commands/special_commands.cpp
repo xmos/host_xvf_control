@@ -21,7 +21,7 @@ opt_t options[] = {
             {"--set-aec-filter",       "-sF",         "set AEC filter from .bin files,",     "default is aec_filter.bin.fx.mx"          },
             {"--get-nlmodel-buffer",   "-gN",         "get NLModel filter into .bin file,",  "default is nlm_buffer.bin"                },
             {"--set-nlmodel-buffer",   "-sN",         "set NLModel filter from .bin file,",  "default is nlm_buffer.bin"                },
-            {"--test-control-interface", "-tc",        "test control interface",             "default is test_buffer.bin"               }
+            {"--test-control-interface", "-tc",       "test control interface",              "default is test_buffer.bin"               }
 };
 
 cmd_t * commands;
@@ -458,30 +458,49 @@ control_ret_t test_control_interface(Command * command, const char* filename)
 {
     command->init_device(); // Initialise the device
     control_ret_t ret;
-    cmd_t *read_test_cmd = command_lookup("TEST_CONTROL");
+    cmd_t * test_cmd = command_lookup("TEST_CONTROL");
     int test_frames = 50;
-    cmd_param_t *test_buffer = new cmd_param_t[read_test_cmd->num_values * test_frames];
-    for(int n=0; n<test_frames; n++)
+    cmd_param_t * test_in_buffer = new cmd_param_t[test_cmd->num_values * test_frames];
+    cmd_param_t * test_out_buffer = new cmd_param_t[test_cmd->num_values * test_frames];
+    FILE * fp_in;
+    if((fp_in = fopen("test_input_buf.bin\0", "rb")) == NULL)
     {
-	    ret = command->command_get(read_test_cmd, &test_buffer[n*read_test_cmd->num_values], read_test_cmd->num_values);
+        cout << "Failed to open " << filename << endl;
+        exit(CONTROL_ERROR);
+    }
+    for(int i = 0; i < test_frames * test_cmd->num_values; i++)
+    {
+        fread(&test_in_buffer[i].ui8, sizeof(uint8_t), 1, fp_in);
+    }
+    fclose(fp_in);
+    for(int n = 0; n < test_frames; n++)
+    {
+        ret = command->command_set(test_cmd, &test_in_buffer[n * test_cmd->num_values], test_cmd->num_values);
+        if(ret != CONTROL_SUCCESS)
+	    {
+		    printf("ERROR: TEST_CONTROL cmd. %d error returned\n", ret);
+            assert(0);
+	    }
+	    ret = command->command_get(test_cmd, &test_out_buffer[n * test_cmd->num_values], test_cmd->num_values);
 	    if(ret != CONTROL_SUCCESS)
 	    {
 		    printf("ERROR: TEST_CONTROL cmd. %d error returned\n", ret);
             assert(0);
 	    }
     }
-    FILE *fp;
+    delete []test_in_buffer;
+    FILE * fp_out;
     printf("filename is %s\n",filename);
-    if((fp = fopen(filename, "wb")) == NULL)
+    if((fp_out = fopen(filename, "wb")) == NULL)
     {
         cout << "Failed to open " << filename << endl;
         exit(CONTROL_ERROR);
     }
-    for(int i=0; i<test_frames*read_test_cmd->num_values; i++)
+    for(int i = 0; i < test_frames * test_cmd->num_values; i++)
     {
-        fwrite(&test_buffer[i].ui8, sizeof(uint8_t), 1, fp);
+        fwrite(&test_out_buffer[i].ui8, sizeof(uint8_t), 1, fp_out);
     }
-    fclose(fp);
-    delete []test_buffer;
+    fclose(fp_out);
+    delete []test_out_buffer;
     return ret;
 }
