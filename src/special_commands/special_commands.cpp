@@ -477,16 +477,16 @@ control_ret_t test_control_interface(Command * command, const char* filename)
     {
         ret = command->command_set(test_cmd, &test_in_buffer[n * test_cmd->num_values], test_cmd->num_values);
         if(ret != CONTROL_SUCCESS)
-	    {
-		    printf("ERROR: TEST_CONTROL cmd. %d error returned\n", ret);
+        {
+            printf("ERROR: TEST_CONTROL cmd. %d error returned\n", ret);
             assert(0);
-	    }
-	    ret = command->command_get(test_cmd, &test_out_buffer[n * test_cmd->num_values], test_cmd->num_values);
-	    if(ret != CONTROL_SUCCESS)
-	    {
-		    printf("ERROR: TEST_CONTROL cmd. %d error returned\n", ret);
+        }
+        ret = command->command_get(test_cmd, &test_out_buffer[n * test_cmd->num_values], test_cmd->num_values);
+        if(ret != CONTROL_SUCCESS)
+        {
+            printf("ERROR: TEST_CONTROL cmd. %d error returned\n", ret);
             assert(0);
-	    }
+        }
     }
     delete []test_in_buffer;
     FILE * fp_out;
