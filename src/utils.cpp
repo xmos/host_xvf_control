@@ -44,11 +44,15 @@ string command_param_type_name(cmd_param_type_t type)
     string tstr;
 
     switch (type)
-    { 
+    {
+    case TYPE_CHAR:
+        tstr = "char";
+        break;
+
     case TYPE_UINT8:
         tstr = "uint8";
         break;
-    
+
     case TYPE_INT32:
         tstr = "int32";
         break;
@@ -120,6 +124,9 @@ cmd_param_t cmd_arg_str_to_val(cmd_t * cmd, const char * str)
     try{
         switch(cmd->type)
         {
+        case TYPE_CHAR:
+            cout << "TYPE_CHAR commands can only be READ_ONLY" << endl;
+            exit(CONTROL_BAD_COMMAND);
         case TYPE_UINT8:
         {
             int32_t tmp = stoi(str);
@@ -153,13 +160,13 @@ void print_arg(cmd_t * cmd, cmd_param_t val)
         cout << to_string(val.ui8);
         break;
     case TYPE_UINT8:
-        cout << val.ui8;
+        cout << " " << static_cast<int>(val.ui8);
         break;
     case TYPE_FLOAT:
-        cout << val.f;
+        cout << " " << val.f;
         break;
     case TYPE_INT32:
-        cout << val.i32;
+        cout << " " << val.i32;
         break;
     }
 }
@@ -169,6 +176,7 @@ unsigned get_num_bytes_from_type(cmd_param_type_t type)
     unsigned num_bytes;
     switch(type)
     {
+    case TYPE_CHAR:
     case TYPE_UINT8:
         num_bytes = 1;
         break;

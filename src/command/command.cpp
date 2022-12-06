@@ -111,7 +111,6 @@ control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left, int 
         cout << cmd->cmd_name;
         for(int i = 0; i < cmd->num_values; i++)
         {
-            cout << " ";
             print_arg(cmd, cmd_values[i]);
         }
         cout << endl;
