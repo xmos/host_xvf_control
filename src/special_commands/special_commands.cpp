@@ -12,16 +12,16 @@
 using namespace std;
 
 opt_t options[] = {
-            {"--help",                 "-h",          "display this information",            "0"                                        },
-            {"--list-commands",        "-l",          "print the list of commands",          "0"                                        },
-            {"--dump-params",          "-d",          "print all the parameters",            "0"                                        },
-            {"--execute-command-list", "-e",          "execute commands from .txt file,",    "one command per line, don't need -u *"    },
-            {"--use",                  "-u",          "use specific harware protocol,",      "I2C and SPI are available to use"         },
-            {"--get-aec-filter",       "-gF",         "get AEC filter into .bin files,",     "default is aec_filter.bin.fx.mx"          },
-            {"--set-aec-filter",       "-sF",         "set AEC filter from .bin files,",     "default is aec_filter.bin.fx.mx"          },
-            {"--get-nlmodel-buffer",   "-gN",         "get NLModel filter into .bin file,",  "default is nlm_buffer.bin"                },
-            {"--set-nlmodel-buffer",   "-sN",         "set NLModel filter from .bin file,",  "default is nlm_buffer.bin"                },
-            {"--test-control-interface", "-tc",       "test control interface",              "default is test_buffer.bin"               }
+            {"--help",                    "-h",        "display this information",            "0"                                        },
+            {"--list-commands",           "-l",        "print the list of commands",          "0"                                        },
+            {"--dump-params",             "-d",        "print all the parameters",            "0"                                        },
+            {"--execute-command-list",    "-e",        "execute commands from .txt file,",    "one command per line, don't need -u *"    },
+            {"--use",                     "-u",        "use specific harware protocol,",      "I2C and SPI are available to use"         },
+            {"--get-aec-filter",          "-gF",       "get AEC filter into .bin files,",     "default is aec_filter.bin.fx.mx"          },
+            {"--set-aec-filter",          "-sF",       "set AEC filter from .bin files,",     "default is aec_filter.bin.fx.mx"          },
+            {"--get-nlmodel-buffer",      "-gN",       "get NLModel filter into .bin file,",  "default is nlm_buffer.bin"                },
+            {"--set-nlmodel-buffer",      "-sN",       "set NLModel filter from .bin file,",  "default is nlm_buffer.bin"                },
+            {"--test-control-interface",  "-tc",       "test control interface",              "default is test_buffer.bin"               }
 };
 
 cmd_t * commands;
@@ -115,7 +115,7 @@ control_ret_t print_command_list()
     size_t longest_command = 0;
     size_t longest_rw = 10; // READ/WRITE
     size_t longest_args = 2; // double digits
-    size_t longest_type = 5; // int32, uint8
+    size_t longest_type = 6; // uint32
     size_t longest_info = 0;
     for(size_t i = 0; i < num_commands; i ++)
     {
@@ -465,7 +465,7 @@ control_ret_t test_control_interface(Command * command, const char* filename)
     FILE * fp_in;
     if((fp_in = fopen("test_input_buf.bin\0", "rb")) == NULL)
     {
-        cout << "Failed to open " << filename << endl;
+        cout << "Failed to open test_input_buf.bin" << endl;
         exit(CONTROL_ERROR);
     }
     for(int i = 0; i < test_frames * test_cmd->num_values; i++)
