@@ -63,7 +63,7 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
 control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int num_values)
 {
     int write_attempts = 0;
-    size_t data_len = sizeof(cmd_param_t) * cmd->num_values;
+    size_t data_len = get_num_bytes_from_type(cmd->type) * cmd->num_values;
     uint8_t * data = new uint8_t[data_len];
 
     for (int i = 0; i < cmd->num_values; i++) {
@@ -111,7 +111,6 @@ control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left, int 
         cout << cmd->cmd_name;
         for(int i = 0; i < cmd->num_values; i++)
         {
-            cout << " ";
             print_arg(cmd, cmd_values[i]);
         }
         cout << endl;
