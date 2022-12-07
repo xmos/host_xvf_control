@@ -16,7 +16,7 @@ int main(int argc, char ** argv)
     }
 
     control_ret_t ret = CONTROL_ERROR;
-    load_command_map_dll();
+    void * cmd_map_handle = load_command_map_dll();
     opt_t * first_opt = option_lookup(argv[1]);
 
     if (first_opt == nullptr)
@@ -65,7 +65,7 @@ int main(int argc, char ** argv)
 
     string device_lib_path = get_dynamic_lib_path(lib_name);
     factory fact(device_lib_path.c_str());
-    auto device = fact.make_dev();
+    auto device = fact.make_dev(cmd_map_handle);
     Command command(device.get());
 
     if (cmd != nullptr)
