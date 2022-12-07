@@ -3,6 +3,7 @@
 
 #include "device.hpp"
 #include "device_control_host.h"
+#include "dlfcn.h"
 #include "bcm2835.h"
 
 using namespace std;
@@ -16,12 +17,18 @@ control_ret_t control_read_command(control_resid_t resid, control_cmd_t cmd,
 control_ret_t control_cleanup_spi();
 }
 
+Device::Device(void * handle)
+{
+    int * (*info)() = reinterpret_cast<int * (*)()>(dlsym(handle, "get_info_spi"));
+    device_info = (*info)();
+}
+
 control_ret_t Device::device_init()
 {
     control_ret_t ret = CONTROL_SUCCESS;
     if(!device_initialised)
     {
-        ret = control_init_spi_pi(SPI_MODE_0, BCM2835_SPI_CLOCK_DIVIDER_1024);
+        ret = control_init_spi_pi(static_cast<spi_mode_t>(device_info[0]), static_cast<bcm2835SPIClockDivider>(device_info[1]));
         device_initialised = true;
     }
     return ret;
@@ -48,8 +55,8 @@ Device::~Device()
 }
 
 extern "C"{
-unique_ptr<Device> make_Dev()
+unique_ptr<Device> make_Dev(void * handle)
 {
-    return make_unique<Device>();
+    return make_unique<Device>(handle);
 }
 }

@@ -6,7 +6,7 @@
 
 #include "command.hpp"
 
-void load_command_map_dll();
+void * load_command_map_dll();
 cmd_t * command_lookup(const std::string str);
 opt_t * option_lookup(const std::string str);
 control_ret_t print_help_menu();

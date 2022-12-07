@@ -27,7 +27,7 @@ opt_t options[] = {
 cmd_t * commands;
 size_t num_commands;
 
-void load_command_map_dll()
+void * load_command_map_dll()
 {
     string dyn_lib_path = get_dynamic_lib_path("/libcommand_map");
     void * sofile = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
@@ -44,6 +44,7 @@ void load_command_map_dll()
 
     commands = get_command_map();
     num_commands = get_num_commands();
+    return sofile;
 }
 
 opt_t * option_lookup(const string str)
