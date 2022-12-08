@@ -57,6 +57,10 @@ string command_param_type_name(cmd_param_type_t type)
         tstr = "int32";
         break;
 
+    case TYPE_UINT32:
+        tstr = "uint32";
+        break;
+
     case TYPE_FLOAT:
         tstr = "float";
         break;
@@ -129,7 +133,7 @@ cmd_param_t cmd_arg_str_to_val(cmd_t * cmd, const char * str)
             exit(CONTROL_BAD_COMMAND);
         case TYPE_UINT8:
         {
-            int32_t tmp = stoi(str);
+            int32_t tmp = stoi(str, nullptr, 0);
             if ((tmp >= UINT8_MAX) && (tmp < 0))
             {
                 throw out_of_range("");
@@ -137,8 +141,13 @@ cmd_param_t cmd_arg_str_to_val(cmd_t * cmd, const char * str)
             val.ui8 = (uint8_t)tmp;
         }
         case TYPE_INT32:
-            val.i32 = stoi(str);
+            val.i32 = stoi(str, nullptr, 0);
             break;
+
+        case TYPE_UINT32:
+            val.ui32 = stoul(str, nullptr, 0);
+            break;
+
         case TYPE_FLOAT:
             val.f = stof(str);
             break;
@@ -168,6 +177,9 @@ void print_arg(cmd_t * cmd, cmd_param_t val)
     case TYPE_INT32:
         cout << " " << val.i32;
         break;
+    case TYPE_UINT32:
+        cout << " " << val.ui32;
+        break;
     }
 }
 
@@ -181,6 +193,7 @@ unsigned get_num_bytes_from_type(cmd_param_type_t type)
         num_bytes = 1;
         break;
     case TYPE_INT32:
+    case TYPE_UINT32:
     case TYPE_FLOAT:
         num_bytes = 4;
         break;
