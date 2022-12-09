@@ -41,11 +41,11 @@ int main(int argc, char ** argv)
     string name = argv[2];
     string lib_name;
 
-    if ((name == "i2c") || (name == "I2C"))
+    if (to_upper(name) == "I2C")
     {
         lib_name = "/libdevice_i2c_rpi";
     }
-    if ((name == "spi") || (name == "SPI"))
+    if (to_upper(name) == "SPI")
     {
         lib_name = "/libdevice_spi_rpi";
     }

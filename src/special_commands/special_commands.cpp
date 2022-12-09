@@ -21,6 +21,7 @@ opt_t options[] = {
             {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file,",  "default is nlm_buffer.bin"                },
             {"--test-control-interface",  "-tc",       "test control interface",              "default is test_buffer.bin"               }
 };
+size_t num_options = end(options) - begin(options);
 
 cmd_t * commands;
 size_t num_commands;
@@ -48,8 +49,7 @@ void * load_command_map_dll()
 opt_t * option_lookup(const string str)
 {
     string low_str = to_lower(str);
-    size_t opt_size = end(options) - begin(options);
-    for(int i = 0; i < opt_size; i++)
+    for(int i = 0; i < num_options; i++)
     {
         opt_t * opt = &options[i];
         if ((low_str == opt->long_name) || (low_str == opt->short_name))
@@ -60,7 +60,7 @@ opt_t * option_lookup(const string str)
 
     int shortest_dist = 100;
     int indx  = 0;
-    for(int i = 0; i < opt_size; i++)
+    for(int i = 0; i < num_options; i++)
     {
         opt_t * opt = &options[i];
         int dist_long = levDistance(low_str, opt->long_name);
@@ -73,8 +73,8 @@ opt_t * option_lookup(const string str)
         }
     }
     cout << "Option " << str << " does not exit." << endl
-    << "Maybe you meant " << options[indx].short_name << " or " 
-    << endl << options[indx].long_name << endl;
+    << "Maybe you meant " << options[indx].short_name
+    << " or " << options[indx].long_name << endl;
     exit(CONTROL_BAD_COMMAND);
     return nullptr;
 }
