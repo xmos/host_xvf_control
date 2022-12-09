@@ -19,12 +19,7 @@ int main(int argc, char ** argv)
     void * cmd_map_handle = load_command_map_dll();
     opt_t * first_opt = option_lookup(argv[1]);
 
-    if (first_opt == nullptr)
-    {
-        cout << "First argument to this application should be -u or -h or -l" << endl;
-        return CONTROL_ERROR;
-    }
-    else if (first_opt->long_name == "--help")
+    if (first_opt->long_name == "--help")
     {
         return print_help_menu();
     }
