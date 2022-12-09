@@ -3,6 +3,8 @@
 
 #include "utils.hpp"
 #include <cstring>
+#include <cctype>
+#include <vector>
 #if defined(__unix__)
 #include <libgen.h>         // dirname
 #include <unistd.h>         // readlink
@@ -37,6 +39,24 @@ string get_dynamic_lib_path(string lib_name)
     lib_path_str = dir_path_str + lib_name;
 
     return lib_path_str;
+}
+
+string to_upper(string str)
+{
+    for(int i = 0; i < str.length(); i++)
+    {
+        str[i] = toupper(str[i]);
+    }
+    return str;
+}
+
+string to_lower(string str)
+{
+    for(int i = 0; i < str.length(); i++)
+    {
+        str[i] = tolower(str[i]);
+    }
+    return str;
 }
 
 string command_param_type_name(cmd_param_type_t type)
@@ -234,4 +254,80 @@ void command_bytes_from_value(cmd_t * cmd, void * data, int index, cmd_param_t v
         memcpy(static_cast<uint8_t*>(data) + index * num_bytes, &value.i32, num_bytes);
         break;
     }
+}
+
+
+// This function implements algorithm to find Levenshtein Distance
+// for approximate string matching. Taken from:
+// https://www.talkativeman.com/levenshtein-distance-algorithm-string-comparison/
+int levDistance(const string source, const string target)
+{
+
+  const int n = source.length();
+  const int m = target.length();
+  if (n == 0) {
+    return m;
+  }
+  if (m == 0) {
+    return n;
+  }
+
+  typedef vector<vector<int>> Tmatrix; 
+
+  Tmatrix matrix(n+1);
+
+  // Size the vectors in the 2.nd dimension. Unfortunately C++ doesn't
+  // allow for allocation on declaration of 2.nd dimension of vec of vec
+
+  for (int i = 0; i <= n; i++) {
+    matrix[i].resize(m+1);
+  }
+
+  for (int i = 0; i <= n; i++) {
+    matrix[i][0]=i;
+  }
+
+  for (int j = 0; j <= m; j++) {
+    matrix[0][j]=j;
+  }
+
+  for (int i = 1; i <= n; i++) {
+
+    const char s_i = source[i-1];
+
+    for (int j = 1; j <= m; j++) {
+
+      const char t_j = target[j-1];
+
+      int cost;
+      if (s_i == t_j) {
+        cost = 0;
+      }
+      else {
+        cost = 1;
+      }
+
+      const int above = matrix[i-1][j];
+      const int left = matrix[i][j-1];
+      const int diag = matrix[i-1][j-1];
+      int cell = min( above + 1, min(left + 1, diag + cost));
+
+      // Cover transposition, in addition to deletion,
+      // insertion and substitution. This step is taken from:
+      // Berghel, Hal ; Roach, David : "An Extension of Ukkonen's 
+      // Enhanced Dynamic Programming ASM Algorithm"
+      // (http://www.acm.org/~hlb/publications/asm/asm.html)
+
+      if (i>2 && j>2) {
+        int trans=matrix[i-2][j-2]+1;
+        if (source[i-2]!=t_j) trans++;
+        if (s_i!=target[j-2]) trans++;
+        if (cell>trans) cell=trans;
+      }
+
+      matrix[i][j]=cell;
+    }
+  }
+
+  return matrix[n][m];
 }

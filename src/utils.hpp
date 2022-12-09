@@ -43,6 +43,8 @@ struct opt_t {
     std::string more_info;
 };
 
+std::string to_upper(std::string str);
+std::string to_lower(std::string str);
 std::string get_dynamic_lib_path(std::string lib_name);
 std::string command_param_type_name(cmd_param_type_t type);
 std::string command_rw_type_name(cmd_rw_t rw);
@@ -52,5 +54,6 @@ void print_arg(cmd_t * cmd, cmd_param_t val);
 unsigned get_num_bytes_from_type(cmd_param_type_t type);
 cmd_param_t command_bytes_to_value(cmd_t * cmd, void * data, int index);
 void command_bytes_from_value(cmd_t * cmd, void * data, int index, cmd_param_t value);
+int levDistance(const std::string source, const std::string target);
 
 #endif

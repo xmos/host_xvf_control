@@ -53,14 +53,17 @@ int main(int argc, char ** argv)
     int cmd_indx = 3;
     int arg_indx = cmd_indx + 1;
     int args_left = argc - cmd_indx - 1;
+    string next_arg = argv[cmd_indx];
+    cmd_t * cmd = nullptr;
+    opt_t * opt = nullptr;
 
-    cmd_t * cmd = command_lookup(argv[cmd_indx]);
-    opt_t * opt = option_lookup(argv[cmd_indx]);
-
-    if ((cmd == nullptr) && (opt == nullptr))
+    if(next_arg[0] == '-')
     {
-        cout << "Command " << argv[cmd_indx] << " does not exit." << endl;
-        return CONTROL_BAD_COMMAND;
+        opt = option_lookup(next_arg);
+    }
+    else
+    {
+        cmd = command_lookup(next_arg);
     }
 
     string device_lib_path = get_dynamic_lib_path(lib_name);
