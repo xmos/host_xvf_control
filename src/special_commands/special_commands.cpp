@@ -7,8 +7,6 @@
 #include <fstream>
 #include <iomanip>
 
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-
 using namespace std;
 
 opt_t options[] = {
@@ -17,12 +15,13 @@ opt_t options[] = {
             {"--dump-params",             "-d",        "print all the parameters",            "0"                                        },
             {"--execute-command-list",    "-e",        "execute commands from .txt file,",    "one command per line, don't need -u *"    },
             {"--use",                     "-u",        "use specific harware protocol,",      "I2C and SPI are available to use"         },
-            {"--get-aec-filter",          "-gF",       "get AEC filter into .bin files,",     "default is aec_filter.bin.fx.mx"          },
-            {"--set-aec-filter",          "-sF",       "set AEC filter from .bin files,",     "default is aec_filter.bin.fx.mx"          },
-            {"--get-nlmodel-buffer",      "-gN",       "get NLModel filter into .bin file,",  "default is nlm_buffer.bin"                },
-            {"--set-nlmodel-buffer",      "-sN",       "set NLModel filter from .bin file,",  "default is nlm_buffer.bin"                },
+            {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files,",     "default is aec_filter.bin.fx.mx"          },
+            {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files,",     "default is aec_filter.bin.fx.mx"          },
+            {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file,",  "default is nlm_buffer.bin"                },
+            {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file,",  "default is nlm_buffer.bin"                },
             {"--test-control-interface",  "-tc",       "test control interface",              "default is test_buffer.bin"               }
 };
+size_t num_options = end(options) - begin(options);
 
 cmd_t * commands;
 size_t num_commands;
@@ -49,27 +48,64 @@ void * load_command_map_dll()
 
 opt_t * option_lookup(const string str)
 {
-    for(int i = 0; i < ARRAY_SIZE(options); i++)
+    string low_str = to_lower(str);
+    for(int i = 0; i < num_options; i++)
     {
         opt_t * opt = &options[i];
-        if ((str == opt->long_name) || (str == opt->short_name))
+        if ((low_str == opt->long_name) || (low_str == opt->short_name))
         {
             return opt;
         }
     }
+
+    int shortest_dist = 100;
+    int indx  = 0;
+    for(int i = 0; i < num_options; i++)
+    {
+        opt_t * opt = &options[i];
+        int dist_long = levDistance(low_str, opt->long_name);
+        int dist_short = levDistance(low_str, opt->short_name);
+        int dist = (dist_short < dist_long) ? dist_short : dist_long;
+        if(dist < shortest_dist)
+        {
+            shortest_dist = dist;
+            indx = i;
+        }
+    }
+    cout << "Option " << str << " does not exit." << endl
+    << "Maybe you meant " << options[indx].short_name
+    << " or " << options[indx].long_name << endl;
+    exit(CONTROL_BAD_COMMAND);
     return nullptr;
 }
 
 cmd_t * command_lookup(const string str)
 {
-    for (size_t i = 0; i < num_commands; i++)
+    string up_str = to_upper(str);
+    for(size_t i = 0; i < num_commands; i++)
     {
         cmd_t * cmd = &commands[i];
-        if (str == cmd->cmd_name)
+        if (up_str == cmd->cmd_name)
         {
             return cmd;
         }
     }
+
+    int shortest_dist = 100;
+    int indx  = 0;
+    for(int i = 0; i < num_commands; i++)
+    {
+        cmd_t * cmd = &commands[i];
+        int dist = levDistance(up_str, cmd->cmd_name);
+        if(dist < shortest_dist)
+        {
+            shortest_dist = dist;
+            indx = i;
+        }
+    }
+    cout << "Command " << str << " does not exit." << endl
+    << "Maybe you meant " << commands[indx].cmd_name << endl;
+    exit(CONTROL_BAD_COMMAND);
     return nullptr;
 }
 

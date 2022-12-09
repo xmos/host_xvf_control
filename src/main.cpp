@@ -19,12 +19,7 @@ int main(int argc, char ** argv)
     void * cmd_map_handle = load_command_map_dll();
     opt_t * first_opt = option_lookup(argv[1]);
 
-    if (first_opt == nullptr)
-    {
-        cout << "First argument to this application should be -u or -h or -l" << endl;
-        return CONTROL_ERROR;
-    }
-    else if (first_opt->long_name == "--help")
+    if (first_opt->long_name == "--help")
     {
         return print_help_menu();
     }
@@ -41,11 +36,11 @@ int main(int argc, char ** argv)
     string name = argv[2];
     string lib_name;
 
-    if ((name == "i2c") || (name == "I2C"))
+    if (to_upper(name) == "I2C")
     {
         lib_name = "/libdevice_i2c_rpi";
     }
-    if ((name == "spi") || (name == "SPI"))
+    if (to_upper(name) == "SPI")
     {
         lib_name = "/libdevice_spi_rpi";
     }
@@ -53,14 +48,17 @@ int main(int argc, char ** argv)
     int cmd_indx = 3;
     int arg_indx = cmd_indx + 1;
     int args_left = argc - cmd_indx - 1;
+    string next_arg = argv[cmd_indx];
+    cmd_t * cmd = nullptr;
+    opt_t * opt = nullptr;
 
-    cmd_t * cmd = command_lookup(argv[cmd_indx]);
-    opt_t * opt = option_lookup(argv[cmd_indx]);
-
-    if ((cmd == nullptr) && (opt == nullptr))
+    if(next_arg[0] == '-')
     {
-        cout << "Command " << argv[cmd_indx] << " does not exit." << endl;
-        return CONTROL_BAD_COMMAND;
+        opt = option_lookup(next_arg);
+    }
+    else
+    {
+        cmd = command_lookup(next_arg);
     }
 
     string device_lib_path = get_dynamic_lib_path(lib_name);
