@@ -20,10 +20,8 @@ pipeline {
                 // build
                 dir('build') {
                     sh 'cmake -S .. && make'
-                    dir('src') {
-                        // archive RPI binaries
-                        archiveArtifacts artifacts: 'xvf_hostapp_rpi, libdevice_*', fingerprint: true
-                    }
+                    // archive RPI binaries
+                    archiveArtifacts artifacts: 'xvf_hostapp_rpi, libdevice_*', fingerprint: true
                 }
             }
             post {

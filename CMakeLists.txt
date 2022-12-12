@@ -3,8 +3,8 @@
 cmake_minimum_required(VERSION 3.13)
 project(xvf3800_host_app)
 
-if(NOT CMAKE_SYSTEM_NAME STREQUAL XCORE_XS3A)
-    set(FWK_RTOS ${CMAKE_SOURCE_DIR}/fwk_rtos)
-    enable_language(CXX C)
-    add_subdirectory(src)
-endif()
+set(FWK_RTOS ${CMAKE_SOURCE_DIR}/fwk_rtos)
+set(DEVICE_CONTROL_PATH ${FWK_RTOS}/modules/sw_services/device_control)
+enable_language(CXX C)
+include(src/host_drivers.cmake)
+include(src/host_application.cmake)
