@@ -6,37 +6,57 @@
 #include <cctype>
 #include <vector>
 #if defined(__unix__)
-#include <libgen.h>         // dirname
 #include <unistd.h>         // readlink
+#if defined(__linux__)
 #include <linux/limits.h>   // PATH_MAX
 #elif defined(__APPLE__)
-#error "Unsupported Operating System"
+#include <mach-o/dyld.h>    // _NSGetExecutablePath
+#else
+#error "Unknown UNIX Operating System"
+#endif // linux  vs mac
 #elif defined(_WIN32)
-#error "Unsupported Operating System"
+#include <Windows.h>
 #else
 #error "Unknown Operating System"
-#endif
+#endif // unix vs windows
 
 using namespace std;
 
-
 string get_dynamic_lib_path(string lib_name)
 {
-    string lib_path_str;
-    string dir_path_str;
 #ifdef __unix__
     char* dir_path;
-    char result[PATH_MAX];
-    ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-    if (count != -1) {
-        dir_path = dirname(result);
+    char path[PATH_MAX];
+#if defined(__linux__)
+    ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
+    if (count == -1)
+    {
+        cout << "Could not read /proc/self/exe into " << PATH_MAX << " string." << endl;
+        exit(CONTROL_ERROR);
     }
-    dir_path_str = dir_path;
     lib_name += ".so";
 #elif defined(__APPLE__)
+    uint32_t size = PATH_MAX;
+    if (_NSGetExecutablePath(path, &size) != 0)
+    {
+        cout << "Could not get binary path into " << PATH_MAX << " string." << endl;
+        exit(CONTROL_ERROR);
+    }
+    lib_name += ".dylib"
+#endif  // linux vs mac
 #elif defined(_WIN32)
+char path[MAX_PATH];
+if(0 == GetModuleFileNameA(GetModuleHandle(NULL), path, MAX_PATH))
+{
+    cout << "Could not get binary path into " << MAX_PATH << " string." << endl;
+    exit(CONTROL_ERROR);
+}
+lib_name += .dll;
 #endif
-    lib_path_str = dir_path_str + lib_name;
+    string full_path = path;
+    size_t found = full_path.find_last_of("/\\"); // works for both unix and windows
+    string dir_path_str = full_path.substr(0, found);
+    string lib_path_str = dir_path_str + lib_name;
 
     return lib_path_str;
 }

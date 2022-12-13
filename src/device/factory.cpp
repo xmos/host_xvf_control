@@ -1,3 +1,6 @@
+// Copyright 2022 XMOS LIMITED.
+// This Software is subject to the terms of the XCORE VocalFusion Licence.
+
 #include "factory.hpp"
 
 factory::factory(const char * filename) : handle(dlopen(filename, RTLD_NOW | RTLD_LOCAL))

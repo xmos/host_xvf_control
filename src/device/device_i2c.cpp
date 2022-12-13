@@ -53,9 +53,8 @@ Device::~Device()
     }
 }
 
-extern "C"{
+extern "C"
 unique_ptr<Device> make_Dev(void * handle)
 {
     return make_unique<Device>(handle);
-}
 }

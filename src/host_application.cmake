@@ -1,3 +1,4 @@
+# Building main application here
 
 set(COMMON_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/main.cpp
@@ -6,7 +7,6 @@ set(COMMON_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/special_commands/special_commands.cpp
     ${CMAKE_CURRENT_LIST_DIR}/device/factory.cpp
 )
-
 set(COMMON_INCLUDES
     ${CMAKE_CURRENT_LIST_DIR}
     ${CMAKE_CURRENT_LIST_DIR}/device
@@ -14,7 +14,6 @@ set(COMMON_INCLUDES
     ${CMAKE_CURRENT_LIST_DIR}/special_commands
     ${DEVICE_CONTROL_PATH}/api
 )
-
 
 add_executable(xvf_hostapp_rpi)
 
