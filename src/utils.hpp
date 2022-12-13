@@ -12,7 +12,7 @@ extern "C"{
 }
 
 enum cmd_rw_t {CMD_RO, CMD_WO, CMD_RW};
-enum cmd_param_type_t {TYPE_CHAR, TYPE_UINT8, TYPE_INT32, TYPE_FLOAT, TYPE_UINT32}; // TYPE_CHAR can only be CMD_RO
+enum cmd_param_type_t {TYPE_CHAR, TYPE_UINT8, TYPE_INT32, TYPE_FLOAT, TYPE_RADIANS, TYPE_UINT32}; // TYPE_CHAR can only be CMD_RO
 union cmd_param_t {uint8_t ui8; int32_t i32; float f; uint32_t ui32;};
 
 struct cmd_t {

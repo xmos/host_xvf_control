@@ -85,6 +85,10 @@ string command_param_type_name(cmd_param_type_t type)
         tstr = "float";
         break;
 
+    case TYPE_RADIANS:
+        tstr = "radians";
+        break;
+
     default:
         cout << "Unsupported parameter type." << endl;
         exit(CONTROL_BAD_COMMAND);
@@ -169,6 +173,7 @@ cmd_param_t cmd_arg_str_to_val(cmd_t * cmd, const char * str)
             break;
 
         case TYPE_FLOAT:
+        case TYPE_RADIANS:
             val.f = stof(str);
             break;
         }
@@ -192,6 +197,7 @@ void print_arg(cmd_t * cmd, cmd_param_t val)
         cout << " " << static_cast<int>(val.ui8);
         break;
     case TYPE_FLOAT:
+    case TYPE_RADIANS:
         cout << " " << val.f;
         break;
     case TYPE_INT32:
@@ -215,6 +221,7 @@ unsigned get_num_bytes_from_type(cmd_param_type_t type)
     case TYPE_INT32:
     case TYPE_UINT32:
     case TYPE_FLOAT:
+    case TYPE_RADIANS:
         num_bytes = 4;
         break;
     default:
