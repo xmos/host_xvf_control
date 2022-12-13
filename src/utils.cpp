@@ -5,6 +5,8 @@
 #include <cstring>
 #include <cctype>
 #include <vector>
+#include <iomanip>
+
 #if defined(__unix__)
 #include <libgen.h>         // dirname
 #include <unistd.h>         // readlink
