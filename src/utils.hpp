@@ -12,7 +12,7 @@ extern "C"{
 }
 
 enum cmd_rw_t {CMD_RO, CMD_WO, CMD_RW};
-// Add new cmd_param_type to the end of the list
+// Add new cmd_param_type's to the end of the list
 enum cmd_param_type_t {TYPE_CHAR, TYPE_UINT8, TYPE_INT32, TYPE_FLOAT, TYPE_UINT32, TYPE_RADIANS, MAX_NUM_CMD_PARAM_TYPE}; // TYPE_CHAR can only be CMD_RO
 union cmd_param_t {uint8_t ui8; int32_t i32; float f; uint32_t ui32;};
 
