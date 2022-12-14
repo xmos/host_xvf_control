@@ -5,6 +5,8 @@
 #include <cstring>
 #include <cctype>
 #include <vector>
+#include <iomanip>
+
 #if defined(__unix__)
 #include <libgen.h>         // dirname
 #include <unistd.h>         // readlink
@@ -16,6 +18,8 @@
 #else
 #error "Unknown Operating System"
 #endif
+
+#define PI_VALUE  3.14159265358979323846f
 
 using namespace std;
 
@@ -83,6 +87,10 @@ string command_param_type_name(cmd_param_type_t type)
 
     case TYPE_FLOAT:
         tstr = "float";
+        break;
+
+    case TYPE_RADIANS:
+        tstr = "radians";
         break;
 
     default:
@@ -169,6 +177,7 @@ cmd_param_t cmd_arg_str_to_val(cmd_t * cmd, const char * str)
             break;
 
         case TYPE_FLOAT:
+        case TYPE_RADIANS:
             val.f = stof(str);
             break;
         }
@@ -194,6 +203,9 @@ void print_arg(cmd_t * cmd, cmd_param_t val)
     case TYPE_FLOAT:
         cout << " " << val.f;
         break;
+    case TYPE_RADIANS:
+        cout << " " << val.f << std::setprecision(2) << std::fixed << " (" << val.f  * 180.0f / PI_VALUE << " deg)" << std::setprecision(5);
+        break;
     case TYPE_INT32:
         cout << " " << val.i32;
         break;
@@ -215,6 +227,7 @@ unsigned get_num_bytes_from_type(cmd_param_type_t type)
     case TYPE_INT32:
     case TYPE_UINT32:
     case TYPE_FLOAT:
+    case TYPE_RADIANS:
         num_bytes = 4;
         break;
     default:
