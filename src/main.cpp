@@ -17,45 +17,62 @@ int main(int argc, char ** argv)
 
     int cmd_indx = 1;
     void * cmd_map_handle = load_command_map_dll();
-    opt_t * first_opt = option_lookup(argv[cmd_indx]);
+    cmd_t * cmd = nullptr;
+    opt_t * opt = nullptr;
+    string next_arg = argv[cmd_indx];
     // Using I2C by default for now as USB is not supported
     string lib_name = "/libdevice_i2c_rpi";
+    if(next_arg[0] != '-')
+    {
+        cmd = command_lookup(next_arg);
+    }
+    else
+    {
+        opt = option_lookup(next_arg);
+        if (opt->long_name == "--help")
+        {
+            return print_help_menu();
+        }
+        else if (opt->long_name == "--list-commands")
+        {
+            return print_command_list();
+        }
+        else if (opt->long_name == "--use")
+        {
+            string protocol_name = argv[cmd_indx];
+            if (to_upper(protocol_name) == "I2C")
+            {
+                lib_name = "/libdevice_i2c_rpi";
+            }
+            else if (to_upper(protocol_name) == "SPI")
+            {
+                lib_name = "/libdevice_spi_rpi";
+            }
+            else
+            {
+                // Using I2C by default for now as USB is not supported
+                cout << "Did not find " << to_upper(protocol_name) << "in supported protocols"
+                << endl << "Will use I2C by default" << endl;
+                lib_name = "/libdevice_i2c_rpi";
+            }
 
-    if (first_opt->long_name == "--help")
-    {
-        return print_help_menu();
+            cmd_indx += 2; // fetched --use something
+        }
     }
-    else if (first_opt->long_name == "--list-commands")
-    {
-        return print_command_list();
-    }
-    else if (first_opt->long_name == "--use")
-    {
-        string protocol_name = argv[cmd_indx];
-        if (to_upper(protocol_name) == "I2C")
-        {
-            lib_name = "/libdevice_i2c_rpi";
-        }
-        else if (to_upper(protocol_name) == "SPI")
-        {
-            lib_name = "/libdevice_spi_rpi";
-        }
-        else
-        {
-            // Using I2C by default for now as USB is not supported
-            cout << "Did not find " << to_upper(protocol_name) << "in supported protocols"
-            << endl << "Will use I2C by default" << endl;
-            lib_name = "/libdevice_i2c_rpi";
-        }
 
-        cmd_indx += 2; // fetched --use something
-    }
+    string device_lib_path = get_dynamic_lib_path(lib_name);
+    factory fact(device_lib_path.c_str());
+    auto device = fact.make_dev(cmd_map_handle);
+    Command command(device.get());
 
     int arg_indx = cmd_indx + 1;
     int args_left = argc - cmd_indx - 1;
-    string next_arg = argv[cmd_indx];
-    cmd_t * cmd = nullptr;
-    opt_t * opt = nullptr;
+    next_arg = argv[cmd_indx];
+
+    if (cmd != nullptr)
+    {
+        return command.do_command(cmd, argv, args_left, arg_indx);
+    }
 
     if(next_arg[0] == '-')
     {
@@ -65,11 +82,6 @@ int main(int argc, char ** argv)
     {
         cmd = command_lookup(next_arg);
     }
-
-    string device_lib_path = get_dynamic_lib_path(lib_name);
-    factory fact(device_lib_path.c_str());
-    auto device = fact.make_dev(cmd_map_handle);
-    Command command(device.get());
 
     if (cmd != nullptr)
     {
