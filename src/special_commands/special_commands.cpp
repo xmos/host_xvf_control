@@ -123,10 +123,11 @@ control_ret_t print_help_menu()
     size_t long_opt_offset = longest_short_opt + 5;
     size_t info_offset = long_opt_offset + longest_long_opt + 4;
 
-    cout << "usage: xvf_hostapp_rpi [ -h | --help ]" << endl
-    << setw(47) << "[ -l | --list-commands ]" << endl
+    cout << "usage: xvf_hostapp_rpi [ command | option ]" << endl
     << setw(68) << "[ -u | --use <protocol>] [ command | option ]" << endl
-    << "Options:" << endl; 
+    << "Options:" << endl << "You can use --use option to specify protocol you want to use"
+    << endl << "or just call the option/cmmand directly using default control protocol."
+    << endl << "Default control protocol is I2C." << endl;
     for(opt_t opt : options)
     {
         size_t short_len = opt.short_name.length();
@@ -381,8 +382,6 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
 
 control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, const char *filename)
 {
-    command->init_device(); // Initialise the device
-
     printf("In special_cmd_aec_filter()\n");
     control_ret_t ret;
     cmd_t *num_mics_cmd = command_lookup("AEC_NUM_MICS");
@@ -425,7 +424,6 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
 
 control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get, const char* filename)
 {
-    command->init_device(); // Initialise the device
     printf("In special_cmd_nlmodel_buffer()\n");
     control_ret_t ret;
     printf("filename = %s, flag_buffer_get = %d\n", filename, flag_buffer_get);
@@ -512,7 +510,6 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
 
 control_ret_t test_control_interface(Command * command, const char* filename)
 {
-    command->init_device(); // Initialise the device
     control_ret_t ret;
     cmd_t * test_cmd = command_lookup("TEST_CONTROL");
     int test_frames = 50;

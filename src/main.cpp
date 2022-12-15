@@ -39,7 +39,7 @@ int main(int argc, char ** argv)
         }
         else if (opt->long_name == "--use")
         {
-            string protocol_name = argv[cmd_indx];
+            string protocol_name = argv[cmd_indx + 1];
             if (to_upper(protocol_name) == "I2C")
             {
                 lib_name = "/libdevice_i2c_rpi";

@@ -5,9 +5,7 @@
 
 using namespace std;
 
-Command::Command(Device * _dev) : device(_dev) {}
-
-void Command::init_device()
+Command::Command(Device * _dev) : device(_dev)
 {
     control_ret_t ret = device->device_init();
     if (ret != CONTROL_SUCCESS)
@@ -94,9 +92,7 @@ control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int 
 }
 
 control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left, int arg_indx)
-{
-    init_device();
-    
+{    
     control_ret_t ret = check_num_args(cmd, args_left);
     if (ret != CONTROL_SUCCESS)
     {
