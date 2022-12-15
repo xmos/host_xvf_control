@@ -18,7 +18,6 @@ int main(int argc, char ** argv)
     int cmd_indx = 1;
     void * cmd_map_handle = load_command_map_dll();
     opt_t * first_opt = option_lookup(argv[cmd_indx]);
-    cmd_indx++; // first word has been fetched
     // Using I2C by default for now as USB is not supported
     string lib_name = "/libdevice_i2c_rpi";
 
@@ -49,7 +48,7 @@ int main(int argc, char ** argv)
             lib_name = "/libdevice_i2c_rpi";
         }
 
-        cmd_indx++;
+        cmd_indx += 2; // fetched --use something
     }
 
     int arg_indx = cmd_indx + 1;
