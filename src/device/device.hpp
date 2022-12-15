@@ -6,7 +6,6 @@
 
 extern "C"
 #include "device_control_shared.h"
-
 #include <memory>
 
 class Device

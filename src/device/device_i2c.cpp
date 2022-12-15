@@ -18,8 +18,10 @@ control_ret_t control_cleanup_i2c();
 
 Device::Device(void * handle)
 {
-    int * (*info)() = reinterpret_cast<int * (*)()>(dlsym(handle, "get_info_i2c"));
-    device_info = (*info)();
+    // declaring int * function pointer type
+    using info_t = int * (*)();
+    info_t info = reinterpret_cast<info_t>(dlsym(handle, "get_info_i2c"));
+    device_info = info();
 }
 
 control_ret_t Device::device_init()
