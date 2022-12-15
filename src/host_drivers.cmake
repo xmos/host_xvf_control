@@ -1,4 +1,6 @@
-set(DEVICE_CONTROL_PATH ${FWK_RTOS}/modules/sw_services/device_control)
+# Building host device_control drivers here
+# I2C and SPI drivers are only built for PI
+if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL armv7l)
 
 # Build device_control_host for I2C
 add_library(framework_rtos_sw_services_device_control_host_i2c INTERFACE)
@@ -42,11 +44,11 @@ add_library(rtos::sw_services::device_control_host_spi ALIAS framework_rtos_sw_s
 add_library(device_i2c_rpi SHARED)
 target_sources(device_i2c_rpi
     PRIVATE
-        device/device_i2c.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/device/device_i2c.cpp
 )
 target_include_directories(device_i2c_rpi
     PUBLIC
-        device
+        ${CMAKE_CURRENT_LIST_DIR}/device
         ${DEVICE_CONTROL_PATH}/host
 )
 target_link_libraries(device_i2c_rpi
@@ -58,11 +60,11 @@ target_link_options(device_i2c_rpi PRIVATE -fPIC)
 add_library(device_spi_rpi SHARED)
 target_sources(device_spi_rpi
     PRIVATE
-        device/device_spi.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/device/device_spi.cpp
 )
 target_include_directories(device_spi_rpi
     PUBLIC
-        device
+        ${CMAKE_CURRENT_LIST_DIR}/device
         ${DEVICE_CONTROL_PATH}/host
 )
 target_link_libraries(device_spi_rpi
@@ -71,47 +73,5 @@ target_link_libraries(device_spi_rpi
 )
 target_link_libraries(device_spi_rpi PRIVATE -fPIC)
 
-if(TEST_BUILD)
-    add_library(command_map SHARED command_map_dummy.cpp)
-    target_include_directories(command_map PUBLIC ${DEVICE_CONTROL_PATH}/api)
-    target_link_options(command_map PRIVATE -fPIC)
 endif()
 
-set(COMMON_SOURCES
-    ${CMAKE_CURRENT_LIST_DIR}/main.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/utils.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/command/command.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/special_commands/special_commands.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/device/factory.cpp
-)
-
-set(COMMON_INCLUDES
-    ${CMAKE_CURRENT_LIST_DIR}
-    ${CMAKE_CURRENT_LIST_DIR}/device
-    ${CMAKE_CURRENT_LIST_DIR}/command
-    ${CMAKE_CURRENT_LIST_DIR}/special_commands
-    ${DEVICE_CONTROL_PATH}/api
-)
-
-
-# SPI slave hostapp
-add_executable(xvf_hostapp_rpi)
-
-target_sources(xvf_hostapp_rpi
-    PRIVATE
-        ${COMMON_SOURCES}
-)
-target_include_directories(xvf_hostapp_rpi
-    PUBLIC
-        ${COMMON_INCLUDES}
-)
-target_link_libraries(xvf_hostapp_rpi
-    PUBLIC 
-        dl
-)
-target_link_options(xvf_hostapp_rpi
-    PRIVATE
-        -rdynamic
-)
-
-message(STATUS "Building with ${CMAKE_C_COMPILER_ID}")

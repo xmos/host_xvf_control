@@ -4,9 +4,9 @@
 #ifndef DEVICE_CLASS_H_
 #define DEVICE_CLASS_H_
 
-extern "C"{
+extern "C"
 #include "device_control_shared.h"
-}
+
 #include <memory>
 
 class Device
@@ -23,8 +23,8 @@ class Device
     virtual ~Device();
 };
 
-extern "C" {
+extern "C"
 std::unique_ptr<Device> make_Dev(void * handle);
-}
+
 
 #endif

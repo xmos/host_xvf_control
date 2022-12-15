@@ -1,4 +1,8 @@
-#pragma once 
+// Copyright 2022 XMOS LIMITED.
+// This Software is subject to the terms of the XCORE VocalFusion Licence.
+
+#ifndef FACTORY_CLASS_H_
+#define FACTORY_CLASS_H_
 
 #include <dlfcn.h>
 #include <stdexcept>
@@ -19,3 +23,5 @@ class factory {
             return reinterpret_cast<T>(dlsym(handle, symbol));
         }
 };
+
+#endif
