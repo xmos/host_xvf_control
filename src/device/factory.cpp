@@ -10,13 +10,13 @@ factory::factory(const char * filename) : handle(dlopen(filename, RTLD_NOW | RTL
 {
     if(handle == NULL)
     {
-        cout << "Error while opening " << filename << endl;
+        cerr << "Error while opening " << filename << endl;
         exit(CONTROL_ERROR);
     }
     make_dev = load<device_t>("make_Dev");
     if(make_dev == NULL)
     {
-        cout << "Error while loading make_Dev() from the device driver" << endl;
+        cerr << "Error while loading make_Dev() from the device driver" << endl;
         exit(CONTROL_ERROR);
     }
 }

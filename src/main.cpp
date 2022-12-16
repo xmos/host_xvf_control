@@ -12,7 +12,7 @@ int main(int argc, char ** argv)
     {
         cout << "Use --help to get the list of options for this application." << endl
         << "Or use --list-commands to print the list of commands and their info." << endl;
-        return 0;
+        return CONTROL_SUCCESS;
     }
 
     int cmd_indx = 1;
@@ -51,7 +51,7 @@ int main(int argc, char ** argv)
             else
             {
                 // Using I2C by default for now as USB is not supported
-                cout << "Did not find " << to_upper(protocol_name) << "in supported protocols"
+                clog << "Did not find " << to_upper(protocol_name) << "in supported protocols"
                 << endl << "Will use I2C by default" << endl;
             }
 
@@ -88,6 +88,19 @@ int main(int argc, char ** argv)
     }
     else
     {
+        if(opt->long_name == "--help")
+        {
+            return print_help_menu();
+        }
+        if(opt->long_name == "--list-commands")
+        {
+            return print_command_list();
+        }
+        if(opt->long_name == "--use")
+        {
+            cerr << "Incorrect use of the host application. Use --help to see the usage.";
+            return CONTROL_ERROR;
+        }
         if(opt->long_name == "--dump-params")
         {
             return dump_params(&command);

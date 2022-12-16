@@ -10,7 +10,7 @@ Command::Command(Device * _dev) : device(_dev)
     control_ret_t ret = device->device_init();
     if (ret != CONTROL_SUCCESS)
     {
-        cout << "Could not connect to the device" << endl;
+        cerr << "Could not connect to the device" << endl;
         exit(ret);
     }
 }
@@ -27,12 +27,12 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
     read_attempts++;
 
     while(1){
-        if (ret != CONTROL_SUCCESS) {
-            //printf("ERROR: control_read_command() returned error status %d\n", ret);
+        if (ret != CONTROL_SUCCESS)
+        {
             break;
         }
         else{
-            if(read_attempts == 1000){cout << "ERROR: Read is taking a while.." << endl;}
+            if(read_attempts == 1000){clog << "Read is taking a while.." << endl;}
             if(data[0] == CONTROL_SUCCESS)
             {
                 for (int i = 0; i < cmd->num_values; i++)
@@ -47,9 +47,8 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
                 read_attempts++;
             }
             else{
-                printf("ERROR: read command returned control_ret_t error %d\n", data[0]);
-                ret = (control_ret_t)data[0];
-                break;
+                cerr << "Read command " << cmd->cmd_name << " returned control_ret_t error " << data[0] << endl;
+                exit(data[0]);
             }
         }
     }
@@ -70,7 +69,7 @@ control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int 
     control_ret_t ret = device->device_set(cmd->res_id, cmd->cmd_id, data, data_len);
     write_attempts++;
     while(1){
-        if(write_attempts == 1000){cout << "ERROR: Write is taking a while.." << endl;}
+        if(write_attempts == 1000){clog << "Write is taking a while.." << endl;}
         if(ret == CONTROL_SUCCESS)
         {
             break;
@@ -81,8 +80,8 @@ control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int 
             write_attempts++;
         }
         else{
-            printf("ERROR: write command returned control_ret_t error %d\n", ret);
-            break;
+            cerr << "Write command " << cmd->cmd_name << " returned control_ret_t error " << ret << endl;
+            exit(ret);
         }
     }
 
@@ -110,6 +109,7 @@ control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left, int 
             print_arg(cmd, cmd_values[i]);
         }
         cout << endl;
+        check_cmd_error(cmd->cmd_name, "read", ret);
     }
     else // WRITE
     {
@@ -118,6 +118,7 @@ control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left, int 
             cmd_values[i - arg_indx] = cmd_arg_str_to_val(cmd, argv[i]);
         }
         ret = command_set(cmd, cmd_values, cmd->num_values);
+        check_cmd_error(cmd->cmd_name, "write", ret);
     }
 
     delete []cmd_values;

@@ -36,7 +36,7 @@ string get_dynamic_lib_path(string lib_name)
     ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
     if (count == -1)
     {
-        cout << "Could not read /proc/self/exe into " << PATH_MAX << " string." << endl;
+        cerr << "Could not read /proc/self/exe into " << PATH_MAX << " string." << endl;
         exit(CONTROL_ERROR);
     }
     lib_name += ".so";
@@ -44,7 +44,7 @@ string get_dynamic_lib_path(string lib_name)
     uint32_t size = PATH_MAX;
     if (_NSGetExecutablePath(path, &size) != 0)
     {
-        cout << "Could not get binary path into " << PATH_MAX << " string." << endl;
+        cerr << "Could not get binary path into " << PATH_MAX << " string." << endl;
         exit(CONTROL_ERROR);
     }
     lib_name += ".dylib"
@@ -54,7 +54,7 @@ string get_dynamic_lib_path(string lib_name)
     char path[MAX_PATH];
     if(0 == GetModuleFileNameA(GetModuleHandle(NULL), path, MAX_PATH))
     {
-        cout << "Could not get binary path into " << MAX_PATH << " string." << endl;
+        cerr << "Could not get binary path into " << MAX_PATH << " string." << endl;
         exit(CONTROL_ERROR);
     }
     lib_name += ".dll";
@@ -83,6 +83,25 @@ string to_lower(string str)
         str[i] = tolower(str[i]);
     }
     return str;
+}
+
+void open_file(FILE * fp, string filename, string mode)
+{
+    if((fp = fopen(filename.c_str(), mode.c_str())) == NULL)
+    {
+        cerr << "Failed to open " << filename << endl;
+        exit(CONTROL_ERROR);
+    }
+}
+
+void check_cmd_error(string cmd_name, string rw, control_ret_t ret)
+{
+    rw[0] = toupper(rw[0]);
+    if(ret != CONTROL_SUCCESS)
+    {
+        cerr << rw << " command " << cmd_name << "returned control_ret_t error " << ret << endl;
+        exit(ret);
+    }
 }
 
 string command_param_type_name(cmd_param_type_t type)
@@ -116,7 +135,7 @@ string command_param_type_name(cmd_param_type_t type)
         break;
 
     default:
-        cout << "Unsupported parameter type." << endl;
+        cerr << "Unsupported parameter type" << endl;
         exit(CONTROL_BAD_COMMAND);
     }
 
@@ -141,8 +160,8 @@ string command_rw_type_name(cmd_rw_t rw)
         break;
 
     default:
-        tstr = "unknown";
-        break;
+        cerr << "Unsupported read/write type" << endl;
+        exit(CONTROL_BAD_COMMAND);
     }
 
     return tstr;
@@ -152,19 +171,19 @@ control_ret_t check_num_args(cmd_t * cmd, int args_left)
 {
     if((cmd->rw == CMD_RO) && (args_left != 0))
     {
-        cout << "Error: Command: " << cmd->cmd_name << " is read-only, so it does not require any arguments." << endl;
+        cerr << "Command: " << cmd->cmd_name << " is read-only, so it does not require any arguments." << endl;
         exit(CONTROL_DATA_LENGTH_ERROR);
     }
     else if ((cmd->rw == CMD_WO) && (args_left != cmd->num_values))
     {
-        cout << "Error: Command: " << cmd->cmd_name << " is write-only and"
+        cerr << "Command: " << cmd->cmd_name << " is write-only and"
         << " expects " << cmd->num_values << " argument(s), " << endl
         << args_left << " are given." << endl;
         exit(CONTROL_DATA_LENGTH_ERROR);
     }
     else if ((cmd->rw == CMD_RW) && (args_left != 0) && (args_left != cmd->num_values))
     {
-        cout << "Error: Command: " << cmd->cmd_name << " is a read/write command." << endl
+        cerr << "Command: " << cmd->cmd_name << " is a read/write command." << endl
         << "If you want to read do not give any arguments to this command." << endl
         << "If you want to write give " << cmd->num_values << " argument(s) to this command." << endl;
         exit(CONTROL_DATA_LENGTH_ERROR);
@@ -179,7 +198,7 @@ cmd_param_t cmd_arg_str_to_val(cmd_t * cmd, const char * str)
         switch(cmd->type)
         {
         case TYPE_CHAR:
-            cout << "TYPE_CHAR commands can only be READ_ONLY" << endl;
+            cerr << "TYPE_CHAR commands can only be READ_ONLY" << endl;
             exit(CONTROL_BAD_COMMAND);
         case TYPE_UINT8:
         {
@@ -202,11 +221,14 @@ cmd_param_t cmd_arg_str_to_val(cmd_t * cmd, const char * str)
         case TYPE_RADIANS:
             val.f = stof(str);
             break;
+        default:
+            cerr << "Unsupported parameter type" << endl;
+            exit(CONTROL_BAD_COMMAND);
         }
     }
     catch(const out_of_range & ex)
     {
-        cout << "Value given is out of range of " << command_param_type_name(cmd->type) << " type."<< endl;
+        cerr << "Value given is out of range of " << command_param_type_name(cmd->type) << " type"<< endl;
         exit(CONTROL_BAD_COMMAND);
     }
     return val;
@@ -234,6 +256,9 @@ void print_arg(cmd_t * cmd, cmd_param_t val)
     case TYPE_UINT32:
         cout << val.ui32 << " ";
         break;
+    default:
+        cerr << "Unsupported parameter type" << endl;
+        exit(CONTROL_BAD_COMMAND);
     }
 }
 
@@ -253,7 +278,7 @@ unsigned get_num_bytes_from_type(cmd_param_type_t type)
         num_bytes = 4;
         break;
     default:
-        std::cout << "Unsupported parameter type." << std::endl;
+        cerr << "Unsupported parameter type" << endl;
         exit(CONTROL_BAD_COMMAND);
     }
     return num_bytes;
@@ -272,6 +297,9 @@ cmd_param_t command_bytes_to_value(cmd_t * cmd, void * data, int index)
     case 4:
         memcpy(&value.i32, static_cast<uint8_t*>(data) + index * size_bytes, size_bytes);
         break;
+    default:
+        cerr << "Unsupported parameter type" << endl;
+        exit(CONTROL_BAD_COMMAND);
     }
 
     return value;
@@ -288,6 +316,9 @@ void command_bytes_from_value(cmd_t * cmd, void * data, int index, cmd_param_t v
     case 4:
         memcpy(static_cast<uint8_t*>(data) + index * num_bytes, &value.i32, num_bytes);
         break;
+    default:
+        cerr << "Unsupported parameter type" << endl;
+        exit(CONTROL_BAD_COMMAND);
     }
 }
 
