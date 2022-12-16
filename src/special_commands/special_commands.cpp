@@ -285,7 +285,7 @@ void get_or_set_full_buffer(Command * command, cmd_param_t *buffer, int32_t buff
     int32_t num_filter_read_commands = (buffer_length + filter_cmd->num_values - 1) / filter_cmd->num_values;
 
     int32_t start_coeff = 0;
-    for(int i=0; i<num_filter_read_commands; i++)
+    for(int i = 0; i < num_filter_read_commands; i++)
     {
         cmd_param_t coeff;
         coeff.i32 = start_coeff;
@@ -307,7 +307,7 @@ void get_or_set_full_buffer(Command * command, cmd_param_t *buffer, int32_t buff
 void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, string filename, uint32_t buffer_length, bool flag_buffer_get)
 {
     control_ret_t ret;
-    printf("filename = %s\n", filename.c_str());
+    clog << "Filename = " << filename << endl;
 
     cmd_t *far_mic_index_cmd = command_lookup("SPECIAL_CMD_AEC_FAR_MIC_INDEX"); // Start cmd
     
@@ -321,58 +321,70 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
     far_mic_index[1].i32 = mic_index;
     ret = command->command_set(far_mic_index_cmd, far_mic_index, far_mic_index_cmd->num_values);
     
-    int32_t len = ((buffer_length + (filter_cmd->num_values - 1))/filter_cmd->num_values) * filter_cmd->num_values;
+    int32_t len = ((buffer_length + (filter_cmd->num_values - 1)) / filter_cmd->num_values) * filter_cmd->num_values;
     cmd_param_t *aec_filter = new cmd_param_t[len];
-    FILE * fp; 
+
     if(flag_buffer_get == true)
     {
         // Read the full buffer from the device
         get_or_set_full_buffer(command, aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
 
         // Write filter to file
-        //open_file(fp, filename, "wb");
         ofstream wf(filename, ios::out | ios::binary);
         if(!wf)
         {
-            cout << "Coul not open a file " << filename << endl;
+            cerr << "Coul not open a file " << filename << endl;
             exit(CONTROL_ERROR);
         }
 
-        for(int i=0; i<buffer_length; i++)
+        for(int i = 0; i < buffer_length; i++)
         {
             wf.write(reinterpret_cast<char *>(&aec_filter[i].f), sizeof(float));
-            //fwrite(&aec_filter[i].f, sizeof(float), 1, fp); // It's annoying having to write byte by byte
         }
+
         wf.close();
         if(!wf.good())
         {
-            cout << "Error occured when writting to " << filename << endl;
+            cerr << "Error occured when writting to " << filename << endl;
             exit(CONTROL_ERROR);
         }
     }
     else
     {
-        open_file(fp, filename, "rb");
+        ifstream rf(filename, ios::out | ios::binary);
+        if(!rf)
+        {
+            cerr << "Coul not open a file " << filename << endl;
+            exit(CONTROL_ERROR);
+        }
 
-        fseek(fp, 0, SEEK_END);
-        int32_t size = ftell(fp);
-        fseek(fp, 0, SEEK_SET);
-        printf("Writing filter of size %d\n",size);
+        rf.seekg (0, rf.end);
+        int32_t size = rf.tellg();
+        rf.seekg (0, rf.beg);
+
+        clog << "Writing filter of size " << size << endl;
 
         // Read from file intp the nlm_buffer buffer. Will need to be done byte by byte since nlm_buffer is of type cmd_param_t
-        for(int i=0; i<size; i++)
+        for(int i = 0; i < size; i++)
         {
-            fread(&aec_filter[i].f, sizeof(float), 1, fp);
+            rf.read(reinterpret_cast<char *>(&aec_filter[i].f), sizeof(float));
         }
+
+        rf.close();
+        if(!rf.good())
+        {
+            cerr << "Error occured while reading " << filename << endl;
+            exit(CONTROL_ERROR);
+        }
+
         get_or_set_full_buffer(command, aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
     }
-    fclose(fp);
     delete []aec_filter;
 }
 
 control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, const char *filename)
 {
-    printf("In special_cmd_aec_filter()\n");
+    clog << "In special_cmd_aec_filter()" << endl;
     control_ret_t ret;
     cmd_t *num_mics_cmd = command_lookup("AEC_NUM_MICS");
 
@@ -391,13 +403,13 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
     ret = command->command_get(aec_filter_length_cmd, &filt, aec_filter_length_cmd->num_values);
 
     uint32_t filter_length = filt.i32;
-    printf("AEC filter length = %d\n", filter_length);
+    clog << "AEC filter length = " << filter_length << endl;
 
     // TODO attempt to run for only one (mic, farend) pair due to timing violation this
     // command is causing in AEC. Will re-enable getting all filters once we have the chunkwise API.
-    for(int far_index=0; far_index<num_farends.i32; far_index++)
+    for(int far_index = 0; far_index < num_farends.i32; far_index++)
     {
-        for(int mic_index=0; mic_index<num_mics.i32; mic_index++)
+        for(int mic_index = 0; mic_index < num_mics.i32; mic_index++)
         {
             // Get AEC filter for the (far_index, mic_index) pair
             string filter_name = filename;
@@ -410,9 +422,9 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
 
 control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get, const char* filename)
 {
-    printf("In special_cmd_nlmodel_buffer()\n");
+    clog << "In special_cmd_nlmodel_buffer()" << endl;
     control_ret_t ret;
-    printf("filename = %s, flag_buffer_get = %d\n", filename, flag_buffer_get);
+    clog << "filename = " << filename << " , flag_buffer_get = " << flag_buffer_get << endl;
 
     cmd_t *nlm_buffer_start_cmd = command_lookup("SPECIAL_CMD_NLMODEL_START"); // Start cmd
     
@@ -428,26 +440,31 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
     ret = command->command_get(nlm_buffer_length_cmd, nRowCol, nlm_buffer_length_cmd->num_values);
 
     NLM_buffer_length = nRowCol[0].i32 * nRowCol[1].i32;
-    printf("NLM_buffer_length = %d\n", NLM_buffer_length);
+    clog << "NLM_buffer_length = " << NLM_buffer_length << endl;
 
     // Set start of special command sequence
     cmd_param_t start_buffer_read;
     start_buffer_read.i32 = 1;
     ret = command->command_set(nlm_buffer_start_cmd, &start_buffer_read, nlm_buffer_start_cmd->num_values);
 
-    int32_t len = ((NLM_buffer_length + (filter_cmd->num_values - 1))/filter_cmd->num_values) * filter_cmd->num_values;
-    printf("len = %d\n",len);
+    int32_t len = ((NLM_buffer_length + (filter_cmd->num_values - 1)) / filter_cmd->num_values) * filter_cmd->num_values;
+    clog << "len = " << len << endl;
     cmd_param_t *nlm_buffer = new cmd_param_t[len];
 
-    string fname = filename;
-    FILE *fp;
     if(flag_buffer_get == false) // read NLModel buffer from file and write to the device
     {
-        open_file(fp, filename, "rb");
+        //open_file(fp, filename, "rb");
+        ifstream rf(filename, ios::out | ios::binary);
+        if(!rf)
+        {
+            cerr << "Coul not open a file " << filename << endl;
+            exit(CONTROL_ERROR);
+        }
 
-        fseek(fp, 0, SEEK_END);
-        int32_t size = ftell(fp);
-        fseek(fp, 0, SEEK_SET);
+        rf.seekg (0, rf.end);
+        int32_t size = rf.tellg();
+        rf.seekg (0, rf.beg);
+
         if(size != (NLM_buffer_length * sizeof(float)))
         {
             cerr << "NLM buffer lengths don't match" << endl;
@@ -455,10 +472,18 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
         }
 
         // Read from file intp the nlm_buffer buffer. Will need to be done byte by byte since nlm_buffer is of type cmd_param_t
-        for(int i=0; i<NLM_buffer_length; i++)
+        for(int i = 0; i < NLM_buffer_length; i++)
         {
-            fread(&nlm_buffer[i].f, sizeof(float), 1, fp);
+            rf.read(reinterpret_cast<char *>(&nlm_buffer[i].f), sizeof(float));
         }
+
+        rf.close();
+        if(!rf.good())
+        {
+            cerr << "Error occured while reading " << filename << endl;
+            exit(CONTROL_ERROR);
+        }
+
         // Write the full buffer to the device
         get_or_set_full_buffer(command, nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
     }
@@ -468,20 +493,31 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
         get_or_set_full_buffer(command, nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
     
         // Write filter to file
-        open_file(fp, filename, "wb");
+        ofstream wf(filename, ios::out | ios::binary);
+        if(!wf)
+        {
+            cerr << "Coul not open a file " << filename << endl;
+            exit(CONTROL_ERROR);
+        }
 
         float rows = (float)nRowCol[0].i32;
         float cols = (float)nRowCol[1].i32;
         // Write the number of rows and number of columns as the first 2*sizeof(int32_t) bytes in the file
-        fwrite(&rows, sizeof(float), 1, fp); // Write as float since rest of the data is also in float.
-        fwrite(&cols, sizeof(float), 1, fp); // Write as float since rest of the data is also in float.
+        wf.write(reinterpret_cast<char *>(&rows), sizeof(float)); // Write as float since rest of the data is also in float.
+        wf.write(reinterpret_cast<char *>(&cols), sizeof(float)); // Write as float since rest of the data is also in float.
 
-        for(int i=0; i<NLM_buffer_length; i++)
+        for(int i = 0; i < NLM_buffer_length; i++)
         {
-            fwrite(&nlm_buffer[i].f, sizeof(float), 1, fp); // It's annoying having to write byte by byte
-        }   
+            wf.write(reinterpret_cast<char *>(&nlm_buffer[i].f), sizeof(float));
+        }
+
+        wf.close();
+        if(!wf.good())
+        {
+            cerr << "Error occured when writting to " << filename << endl;
+            exit(CONTROL_ERROR);
+        }  
     }
-    fclose(fp);
     delete []nlm_buffer;
     return CONTROL_SUCCESS;
 }
@@ -493,14 +529,27 @@ control_ret_t test_control_interface(Command * command, const char* out_filename
     int test_frames = 50;
     cmd_param_t * test_in_buffer = new cmd_param_t[test_cmd->num_values * test_frames];
     cmd_param_t * test_out_buffer = new cmd_param_t[test_cmd->num_values * test_frames];
-    FILE * fp_in;
+
     string in_filename = "test_input_buf.bin";
-    open_file(fp_in, in_filename, "rb");
+    ifstream rf(in_filename, ios::out | ios::binary);
+    if(!rf)
+    {
+        cerr << "Coul not open a file " << in_filename << endl;
+        exit(CONTROL_ERROR);
+    }
+
     for(int i = 0; i < test_frames * test_cmd->num_values; i++)
     {
-        fread(&test_in_buffer[i].ui8, sizeof(uint8_t), 1, fp_in);
+        rf.read(reinterpret_cast<char *>(&test_in_buffer[i].ui8), sizeof(uint8_t));
     }
-    fclose(fp_in);
+
+    rf.close();
+    if(!rf.good())
+    {
+        cerr << "Error occured while reading " << in_filename << endl;
+        exit(CONTROL_ERROR);
+    }
+
     for(int n = 0; n < test_frames; n++)
     {
         ret = command->command_set(test_cmd, &test_in_buffer[n * test_cmd->num_values], test_cmd->num_values);
@@ -508,14 +557,26 @@ control_ret_t test_control_interface(Command * command, const char* out_filename
         ret = command->command_get(test_cmd, &test_out_buffer[n * test_cmd->num_values], test_cmd->num_values);
     }
     delete []test_in_buffer;
-    FILE * fp_out;
-    printf("filename is %s\n", out_filename);
-    open_file(fp_out, out_filename, "wb");
+
+    clog << "filename is " << out_filename << endl;
+    ofstream wf(out_filename, ios::out | ios::binary);
+    if(!wf)
+    {
+        cerr << "Could not open a file " << out_filename << endl;
+        exit(CONTROL_ERROR);
+    }
+
     for(int i = 0; i < test_frames * test_cmd->num_values; i++)
     {
-        fwrite(&test_out_buffer[i].ui8, sizeof(uint8_t), 1, fp_out);
+        wf.write(reinterpret_cast<char *>(&test_out_buffer[i].ui8), sizeof(uint8_t));
     }
-    fclose(fp_out);
     delete []test_out_buffer;
+
+    wf.close();
+    if(!wf.good())
+    {
+        cerr << "Error occured when writing to " << out_filename << endl;
+        exit(CONTROL_ERROR);
+    }
     return ret;
 }
