@@ -28,22 +28,32 @@ size_t num_commands;
 
 void * load_command_map_dll()
 {
-    string dyn_lib_path = get_dynamic_lib_path("/libcommand_map");
-    void * sofile = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
-    if(!sofile)
+    string dyn_lib_path = get_dynamic_lib_path("libcommand_map");
+    void * handle = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
+    if(handle == NULL)
     {
-        printf("%s\n", dlerror());
-        exit(EXIT_FAILURE);
+        cout << "Error while opening " << dyn_lib_path << endl;
+        exit(CONTROL_ERROR);
     }
     cmd_t* (*get_command_map)();
-    get_command_map = (cmd_t* (*)())dlsym(sofile, "get_command_map");
+    get_command_map = (cmd_t* (*)())dlsym(handle, "get_command_map");
+    if(get_command_map == NULL)
+    {
+        cout << "Error while loading get_command_map() from libcommand_map" << endl;
+        exit(CONTROL_ERROR);
+    }
 
     uint32_t (*get_num_commands)();
-    get_num_commands = (uint32_t (*)())dlsym(sofile, "get_num_commands");
+    get_num_commands = (uint32_t (*)())dlsym(handle, "get_num_commands");
+    if(get_num_commands == NULL)
+    {
+        cout << "Error while loading get_num_commands() from libcommand_map" << endl;
+        exit(CONTROL_ERROR);
+    }
 
     commands = get_command_map();
     num_commands = get_num_commands();
-    return sofile;
+    return handle;
 }
 
 opt_t * option_lookup(const string str)
@@ -126,7 +136,7 @@ control_ret_t print_help_menu()
     cout << "usage: xvf_hostapp_rpi [ command | option ]" << endl
     << setw(68) << "[ -u | --use <protocol>] [ command | option ]" << endl
     << endl << "You can use --use option to specify protocol you want to use"
-    << endl << "or just call the option/cmmand directly using default control protocol."
+    << endl << "or call the option/command directly using default control protocol."
     << endl << "Default control protocol is I2C." << endl << endl << "Options:" << endl;
     for(opt_t opt : options)
     {

@@ -31,6 +31,7 @@ string get_dynamic_lib_path(string lib_name)
 #ifdef __unix__
     char* dir_path;
     char path[PATH_MAX];
+    lib_name = '/' + lib_name;
 #if defined(__linux__)
     ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
     if (count == -1)
@@ -49,13 +50,14 @@ string get_dynamic_lib_path(string lib_name)
     lib_name += ".dylib"
 #endif  // linux vs mac
 #elif defined(_WIN32)
-char path[MAX_PATH];
-if(0 == GetModuleFileNameA(GetModuleHandle(NULL), path, MAX_PATH))
-{
-    cout << "Could not get binary path into " << MAX_PATH << " string." << endl;
-    exit(CONTROL_ERROR);
-}
-lib_name += .dll;
+    lib_name = '\\' + lib_name;
+    char path[MAX_PATH];
+    if(0 == GetModuleFileNameA(GetModuleHandle(NULL), path, MAX_PATH))
+    {
+        cout << "Could not get binary path into " << MAX_PATH << " string." << endl;
+        exit(CONTROL_ERROR);
+    }
+    lib_name += ".dll";
 #endif
     string full_path = path;
     size_t found = full_path.find_last_of("/\\"); // works for both unix and windows

@@ -21,6 +21,11 @@ Device::Device(void * handle)
     // declaring int * function pointer type
     using info_t = int * (*)();
     info_t info = reinterpret_cast<info_t>(dlsym(handle, "get_info_i2c"));
+    if(info == NULL)
+    {
+        cout << "Error while loading get_info_i2c() from libcommand_map" << endl;
+        exit(CONTROL_ERROR);
+    }
     device_info = info();
 }
 

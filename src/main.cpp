@@ -21,7 +21,7 @@ int main(int argc, char ** argv)
     opt_t * opt = nullptr;
     string next_arg = argv[cmd_indx];
     // Using I2C by default for now as USB is not supported
-    string lib_name = "/libdevice_rpi_i2c";
+    string lib_name = "libdevice_rpi_i2c";
     if(next_arg[0] != '-')
     {
         cmd = command_lookup(next_arg);
@@ -42,11 +42,11 @@ int main(int argc, char ** argv)
             string protocol_name = argv[cmd_indx + 1];
             if (to_upper(protocol_name) == "I2C")
             {
-                lib_name = "/libdevice_rpi_i2c";
+                lib_name = "libdevice_rpi_i2c";
             }
             else if (to_upper(protocol_name) == "SPI")
             {
-                lib_name = "/libdevice_rpi_spi";
+                lib_name = "libdevice_rpi_spi";
             }
             else
             {
