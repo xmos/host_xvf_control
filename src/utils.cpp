@@ -215,22 +215,22 @@ void print_arg(cmd_t * cmd, cmd_param_t val)
     switch(cmd->type)
     {
     case TYPE_CHAR:
-        cout << to_string(val.ui8);
+        cout << static_cast<char>(val.ui8);
         break;
     case TYPE_UINT8:
-        cout << " " << static_cast<int>(val.ui8);
+        cout << static_cast<int>(val.ui8) << " ";
         break;
     case TYPE_FLOAT:
-        cout << " " << val.f;
+        cout << val.f << " ";
         break;
     case TYPE_RADIANS:
-        cout << " " << val.f << std::setprecision(2) << std::fixed << " (" << val.f  * 180.0f / PI_VALUE << " deg)" << std::setprecision(5);
+        cout << val.f << setprecision(2) << fixed << " (" << val.f  * 180.0f / PI_VALUE << " deg)" << setprecision(5) << " ";
         break;
     case TYPE_INT32:
-        cout << " " << val.i32;
+        cout << val.i32 << " ";
         break;
     case TYPE_UINT32:
-        cout << " " << val.ui32;
+        cout << val.ui32 << " ";
         break;
     }
 }

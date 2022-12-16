@@ -104,7 +104,7 @@ control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left, int 
     if(args_left == 0) // READ
     {
         ret = command_get(cmd, cmd_values, cmd->num_values);
-        cout << cmd->cmd_name;
+        cout << cmd->cmd_name << " ";
         for(int i = 0; i < cmd->num_values; i++)
         {
             print_arg(cmd, cmd_values[i]);
