@@ -53,7 +53,7 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
         }
     }
     delete []data;
-
+    check_cmd_error(cmd->cmd_name, "read", ret);
     return ret;
 }
 
@@ -86,7 +86,7 @@ control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int 
     }
 
     delete []data;
-
+    check_cmd_error(cmd->cmd_name, "write", ret);
     return ret;
 }
 
@@ -109,7 +109,6 @@ control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left, int 
             print_arg(cmd, cmd_values[i]);
         }
         cout << endl;
-        check_cmd_error(cmd->cmd_name, "read", ret);
     }
     else // WRITE
     {
@@ -118,7 +117,6 @@ control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left, int 
             cmd_values[i - arg_indx] = cmd_arg_str_to_val(cmd, argv[i]);
         }
         ret = command_set(cmd, cmd_values, cmd->num_values);
-        check_cmd_error(cmd->cmd_name, "write", ret);
     }
 
     delete []cmd_values;
