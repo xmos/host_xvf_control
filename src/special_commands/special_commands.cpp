@@ -125,9 +125,9 @@ control_ret_t print_help_menu()
 
     cout << "usage: xvf_hostapp_rpi [ command | option ]" << endl
     << setw(68) << "[ -u | --use <protocol>] [ command | option ]" << endl
-    << endl << endl << "You can use --use option to specify protocol you want to use"
+    << endl << "You can use --use option to specify protocol you want to use"
     << endl << "or just call the option/cmmand directly using default control protocol."
-    << endl << "Default control protocol is I2C." << endl << "Options:" << endl;
+    << endl << "Default control protocol is I2C." << endl << endl << "Options:" << endl;
     for(opt_t opt : options)
     {
         size_t short_len = opt.short_name.length();
