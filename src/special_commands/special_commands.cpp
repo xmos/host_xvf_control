@@ -34,16 +34,17 @@ void * load_command_map_dll()
         cerr << "Error while opening " << dyn_lib_path << endl;
         exit(CONTROL_ERROR);
     }
-    cmd_t* (*get_command_map)();
-    get_command_map = (cmd_t* (*)())dlsym(handle, "get_command_map");
+    // declaring cmd_t * function pointer type
+    using cmd_map_t = cmd_t * (*)();
+    cmd_map_t get_command_map = reinterpret_cast<cmd_map_t>(dlsym(handle, "get_command_map"));
     if(get_command_map == NULL)
     {
         cerr << "Error while loading get_command_map() from libcommand_map" << endl;
         exit(CONTROL_ERROR);
     }
-
-    uint32_t (*get_num_commands)();
-    get_num_commands = (uint32_t (*)())dlsym(handle, "get_num_commands");
+    // declaring uint32_t function pointer type
+    using num_cmd_t = uint32_t (*)();
+    num_cmd_t get_num_commands = reinterpret_cast<num_cmd_t>(dlsym(handle, "get_num_commands"));
     if(get_num_commands == NULL)
     {
         cerr << "Error while loading get_num_commands() from libcommand_map" << endl;
@@ -309,11 +310,11 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
     control_ret_t ret;
     clog << "Filename = " << filename << endl;
 
-    cmd_t *far_mic_index_cmd = command_lookup("SPECIAL_CMD_AEC_FAR_MIC_INDEX"); // Start cmd
+    cmd_t * far_mic_index_cmd = command_lookup("SPECIAL_CMD_AEC_FAR_MIC_INDEX"); // Start cmd
     
-    cmd_t *start_coeff_index_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_COEFF_START_OFFSET"); // Set start offset
+    cmd_t * start_coeff_index_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_COEFF_START_OFFSET"); // Set start offset
 
-    cmd_t *filter_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_COEFFS"); // Get buffer cmd
+    cmd_t * filter_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_COEFFS"); // Get buffer cmd
 
     // Set start of special command sequence
     cmd_param_t far_mic_index[2];
@@ -322,7 +323,7 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
     ret = command->command_set(far_mic_index_cmd, far_mic_index, far_mic_index_cmd->num_values);
     
     int32_t len = ((buffer_length + (filter_cmd->num_values - 1)) / filter_cmd->num_values) * filter_cmd->num_values;
-    cmd_param_t *aec_filter = new cmd_param_t[len];
+    cmd_param_t * aec_filter = new cmd_param_t[len];
 
     if(flag_buffer_get == true)
     {
@@ -343,7 +344,7 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
         }
 
         wf.close();
-        if(!wf.good())
+        if(!wf.eof() || wf.bad())
         {
             cerr << "Error occured when writting to " << filename << endl;
             exit(CONTROL_ERROR);
@@ -371,7 +372,7 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
         }
 
         rf.close();
-        if(!rf.good())
+        if(!rf.eof() || rf.bad())
         {
             cerr << "Error occured while reading " << filename << endl;
             exit(CONTROL_ERROR);
@@ -426,13 +427,13 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
     control_ret_t ret;
     clog << "filename = " << filename << " , flag_buffer_get = " << flag_buffer_get << endl;
 
-    cmd_t *nlm_buffer_start_cmd = command_lookup("SPECIAL_CMD_NLMODEL_START"); // Start cmd
+    cmd_t * nlm_buffer_start_cmd = command_lookup("SPECIAL_CMD_NLMODEL_START"); // Start cmd
     
-    cmd_t *nlm_buffer_length_cmd = command_lookup("SPECIAL_CMD_PP_NLMODEL_NROW_NCOL"); // Get buffer length
+    cmd_t * nlm_buffer_length_cmd = command_lookup("SPECIAL_CMD_PP_NLMODEL_NROW_NCOL"); // Get buffer length
 
-    cmd_t *start_coeff_index_cmd = command_lookup("SPECIAL_CMD_NLMODEL_COEFF_START_OFFSET"); // Set start offset
+    cmd_t * start_coeff_index_cmd = command_lookup("SPECIAL_CMD_NLMODEL_COEFF_START_OFFSET"); // Set start offset
 
-    cmd_t *filter_cmd = command_lookup("SPECIAL_CMD_PP_NLMODEL"); // buffer cmd
+    cmd_t * filter_cmd = command_lookup("SPECIAL_CMD_PP_NLMODEL"); // buffer cmd
 
     // Get buffer length
     int32_t NLM_buffer_length;
@@ -449,7 +450,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
 
     int32_t len = ((NLM_buffer_length + (filter_cmd->num_values - 1)) / filter_cmd->num_values) * filter_cmd->num_values;
     clog << "len = " << len << endl;
-    cmd_param_t *nlm_buffer = new cmd_param_t[len];
+    cmd_param_t * nlm_buffer = new cmd_param_t[len];
 
     if(flag_buffer_get == false) // read NLModel buffer from file and write to the device
     {
@@ -478,7 +479,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
         }
 
         rf.close();
-        if(!rf.good())
+        if(!rf.eof() || rf.bad())
         {
             cerr << "Error occured while reading " << filename << endl;
             exit(CONTROL_ERROR);
@@ -500,8 +501,8 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
             exit(CONTROL_ERROR);
         }
 
-        float rows = (float)nRowCol[0].i32;
-        float cols = (float)nRowCol[1].i32;
+        float rows = static_cast<float>(nRowCol[0].i32);
+        float cols = static_cast<float>(nRowCol[1].i32);
         // Write the number of rows and number of columns as the first 2*sizeof(int32_t) bytes in the file
         wf.write(reinterpret_cast<char *>(&rows), sizeof(float)); // Write as float since rest of the data is also in float.
         wf.write(reinterpret_cast<char *>(&cols), sizeof(float)); // Write as float since rest of the data is also in float.
@@ -512,7 +513,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
         }
 
         wf.close();
-        if(!wf.good())
+        if(!wf.eof() || wf.bad())
         {
             cerr << "Error occured when writting to " << filename << endl;
             exit(CONTROL_ERROR);
@@ -544,7 +545,7 @@ control_ret_t test_control_interface(Command * command, const char* out_filename
     }
 
     rf.close();
-    if(!rf.good())
+    if(!rf.eof() || rf.bad())
     {
         cerr << "Error occured while reading " << in_filename << endl;
         exit(CONTROL_ERROR);
@@ -573,7 +574,7 @@ control_ret_t test_control_interface(Command * command, const char* out_filename
     delete []test_out_buffer;
 
     wf.close();
-    if(!wf.good())
+    if(!wf.eof() || wf.bad())
     {
         cerr << "Error occured when writing to " << out_filename << endl;
         exit(CONTROL_ERROR);
