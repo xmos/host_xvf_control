@@ -17,41 +17,37 @@ Command::Command(Device * _dev) : device(_dev)
 
 control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_values)
 {
-    int read_attempts = 0;
     control_cmd_t cmd_id = cmd->cmd_id | 0x80; // setting 8th bit for read commands
 
     size_t data_len = get_num_bytes_from_type(cmd->type) * cmd->num_values + 1; // one extra for the status
     uint8_t * data = new uint8_t[data_len];
 
     control_ret_t ret = device->device_get(cmd->res_id, cmd_id, data, data_len);
-    read_attempts++;
+    int read_attempts = 1;
 
-    while(1){
-        if (ret != CONTROL_SUCCESS)
+    while(1)
+    {
+        if(read_attempts == 1000){clog << "Read is taking a while.." << endl;}
+        if(data[0] == CONTROL_SUCCESS)
         {
+            for (int i = 0; i < cmd->num_values; i++)
+            {
+                values[i] = command_bytes_to_value(cmd, &data[1], i);
+            }
             break;
         }
-        else{
-            if(read_attempts == 1000){clog << "Read is taking a while.." << endl;}
-            if(data[0] == CONTROL_SUCCESS)
-            {
-                for (int i = 0; i < cmd->num_values; i++)
-                {
-                    values[i] = command_bytes_to_value(cmd, &data[1], i);
-                }
-                break;
-            }
-            else if(data[0] == SERVICER_COMMAND_RETRY)
-            {
-                ret = device->device_get(cmd->res_id, cmd_id, data, data_len);
-                read_attempts++;
-            }
-            else{
-                cerr << "Read command " << cmd->cmd_name << " returned control_ret_t error " << data[0] << endl;
-                exit(data[0]);
-            }
+        else if(data[0] == SERVICER_COMMAND_RETRY)
+        {
+            ret = device->device_get(cmd->res_id, cmd_id, data, data_len);
+            read_attempts++;
+        }
+        else
+        {
+            cerr << "Read command " << cmd->cmd_name << " returned control_ret_t error " << data[0] << endl;
+            exit(data[0]);
         }
     }
+
     delete []data;
     check_cmd_error(cmd->cmd_name, "read", ret);
     return ret;
@@ -59,16 +55,19 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
 
 control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int num_values)
 {
-    int write_attempts = 0;
     size_t data_len = get_num_bytes_from_type(cmd->type) * cmd->num_values;
     uint8_t * data = new uint8_t[data_len];
 
-    for (int i = 0; i < cmd->num_values; i++) {
+    for (int i = 0; i < cmd->num_values; i++)
+    {
         command_bytes_from_value(cmd, data, i, values[i]);
     }
+
     control_ret_t ret = device->device_set(cmd->res_id, cmd->cmd_id, data, data_len);
-    write_attempts++;
-    while(1){
+    int write_attempts = 1;
+
+    while(1)
+    {
         if(write_attempts == 1000){clog << "Write is taking a while.." << endl;}
         if(ret == CONTROL_SUCCESS)
         {
@@ -79,7 +78,8 @@ control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int 
             ret = device->device_set(cmd->res_id, cmd->cmd_id, data, data_len);
             write_attempts++;
         }
-        else{
+        else
+        {
             cerr << "Write command " << cmd->cmd_name << " returned control_ret_t error " << ret << endl;
             exit(ret);
         }
