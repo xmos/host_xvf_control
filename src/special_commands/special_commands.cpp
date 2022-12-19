@@ -406,6 +406,14 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
     uint32_t filter_length = filt.i32;
     clog << "AEC filter length = " << filter_length << endl;
 
+    // Set AEC to bypass to stop filter from adapting
+    cmd_t *aec_bypass_cmd = command_lookup("AEC_BYPASS");
+    assert(aec_bypass_cmd != nullptr);
+    cmd_param_t bypass;
+    bypass.ui8 = 1;
+    command->command_set(aec_bypass_cmd, &bypass, 1);
+
+
     // TODO attempt to run for only one (mic, farend) pair due to timing violation this
     // command is causing in AEC. Will re-enable getting all filters once we have the chunkwise API.
     for(int far_index = 0; far_index < num_farends.i32; far_index++)
@@ -418,6 +426,11 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
             get_one_filter(command, mic_index, far_index, filter_name, filter_length, flag_buffer_get);
         }
     }
+
+    // Set AEC bypass to 0 to allow filter to adapt again
+    bypass.ui8 = 0;
+    command->command_set(aec_bypass_cmd, &bypass, 1);
+
     return CONTROL_SUCCESS;
 }
 
