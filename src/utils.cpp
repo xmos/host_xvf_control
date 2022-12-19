@@ -36,7 +36,7 @@ string get_dynamic_lib_path(string lib_name)
     ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
     if (count == -1)
     {
-        cerr << "Could not read /proc/self/exe into " << PATH_MAX << " string." << endl;
+        cerr << "Could not read /proc/self/exe into " << PATH_MAX << " string" << endl;
         exit(CONTROL_ERROR);
     }
     lib_name += ".so";
@@ -44,7 +44,7 @@ string get_dynamic_lib_path(string lib_name)
     uint32_t size = PATH_MAX;
     if (_NSGetExecutablePath(path, &size) != 0)
     {
-        cerr << "Could not get binary path into " << PATH_MAX << " string." << endl;
+        cerr << "Could not get binary path into " << PATH_MAX << " string" << endl;
         exit(CONTROL_ERROR);
     }
     lib_name += ".dylib"
@@ -54,7 +54,7 @@ string get_dynamic_lib_path(string lib_name)
     char path[MAX_PATH];
     if(0 == GetModuleFileNameA(GetModuleHandle(NULL), path, MAX_PATH))
     {
-        cerr << "Could not get binary path into " << MAX_PATH << " string." << endl;
+        cerr << "Could not get binary path into " << MAX_PATH << " string" << endl;
         exit(CONTROL_ERROR);
     }
     lib_name += ".dll";
@@ -83,15 +83,6 @@ string to_lower(string str)
         str[i] = tolower(str[i]);
     }
     return str;
-}
-
-void open_file(FILE * fp, string filename, string mode)
-{
-    if((fp = fopen(filename.c_str(), mode.c_str())) == NULL)
-    {
-        cerr << "Failed to open " << filename << endl;
-        exit(CONTROL_ERROR);
-    }
 }
 
 void check_cmd_error(string cmd_name, string rw, control_ret_t ret)

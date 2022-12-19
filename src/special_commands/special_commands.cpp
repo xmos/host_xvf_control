@@ -334,7 +334,7 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
         ofstream wf(filename, ios::out | ios::binary);
         if(!wf)
         {
-            cerr << "Coul not open a file " << filename << endl;
+            cerr << "Could not open a file " << filename << endl;
             exit(CONTROL_ERROR);
         }
 
@@ -355,7 +355,7 @@ void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, str
         ifstream rf(filename, ios::out | ios::binary);
         if(!rf)
         {
-            cerr << "Coul not open a file " << filename << endl;
+            cerr << "Could not open a file " << filename << endl;
             exit(CONTROL_ERROR);
         }
 
@@ -387,9 +387,9 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
 {
     clog << "In special_cmd_aec_filter()" << endl;
     control_ret_t ret;
-    cmd_t *num_mics_cmd = command_lookup("AEC_NUM_MICS");
+    cmd_t * num_mics_cmd = command_lookup("AEC_NUM_MICS");
 
-    cmd_t *num_farends_cmd = command_lookup("AEC_NUM_FARENDS");
+    cmd_t * num_farends_cmd = command_lookup("AEC_NUM_FARENDS");
 
     cmd_param_t num_mics, num_farends;
 
@@ -398,7 +398,7 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
     ret = command->command_get(num_farends_cmd, &num_farends, num_farends_cmd->num_values);
 
      // Get AEC filter length
-    cmd_t *aec_filter_length_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_LENGTH");
+    cmd_t * aec_filter_length_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_LENGTH");
 
     cmd_param_t filt;
     ret = command->command_get(aec_filter_length_cmd, &filt, aec_filter_length_cmd->num_values);
@@ -407,8 +407,8 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
     clog << "AEC filter length = " << filter_length << endl;
 
     // Set AEC to bypass to stop filter from adapting
-    cmd_t *aec_bypass_cmd = command_lookup("AEC_BYPASS");
-    assert(aec_bypass_cmd != nullptr);
+    cmd_t * aec_bypass_cmd = command_lookup("AEC_BYPASS");
+
     cmd_param_t bypass;
     bypass.ui8 = 1;
     command->command_set(aec_bypass_cmd, &bypass, 1);
@@ -471,7 +471,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
         ifstream rf(filename, ios::out | ios::binary);
         if(!rf)
         {
-            cerr << "Coul not open a file " << filename << endl;
+            cerr << "Could not open a file " << filename << endl;
             exit(CONTROL_ERROR);
         }
 
@@ -510,7 +510,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
         ofstream wf(filename, ios::out | ios::binary);
         if(!wf)
         {
-            cerr << "Coul not open a file " << filename << endl;
+            cerr << "Could not open a file " << filename << endl;
             exit(CONTROL_ERROR);
         }
 
@@ -548,7 +548,7 @@ control_ret_t test_control_interface(Command * command, const char* out_filename
     ifstream rf(in_filename, ios::out | ios::binary);
     if(!rf)
     {
-        cerr << "Coul not open a file " << in_filename << endl;
+        cerr << "Could not open a file " << in_filename << endl;
         exit(CONTROL_ERROR);
     }
 
