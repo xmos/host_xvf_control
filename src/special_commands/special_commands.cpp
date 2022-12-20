@@ -363,15 +363,21 @@ control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_i
         int32_t size = rf.tellg();
         rf.seekg (0, rf.beg);
 
-        clog << "Writing filter of size " << size << endl;
+        if(size != (buffer_length * sizeof(float)))
+        {
+            cerr << "AEC buffer lengths don't match" << endl;
+            exit(CONTROL_DATA_LENGTH_ERROR);
+        }
 
-        // Read from file intp the nlm_buffer buffer. Will need to be done byte by byte since nlm_buffer is of type cmd_param_t
-        for(int i = 0; i < size; i++)
+        // Read from file into aec buffer. Will need to be done byte by byte since aec_filter is of type cmd_param_t
+        for(int i = 0; i < buffer_length; i++)
         {
             rf.read(reinterpret_cast<char *>(&aec_filter[i].f), sizeof(float));
         }
 
+        rf.peek(); // doing peek here to look for a character beyond file size so it will set eof
         rf.close();
+
         if(!rf.eof() || rf.bad())
         {
             cerr << "Error occured while reading " << filename << endl;
@@ -386,15 +392,13 @@ control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_i
 
 control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, const char *filename)
 {
-    clog << "In special_cmd_aec_filter()" << endl;
-    control_ret_t ret;
     cmd_t * num_mics_cmd = command_lookup("AEC_NUM_MICS");
 
     cmd_t * num_farends_cmd = command_lookup("AEC_NUM_FARENDS");
 
     cmd_param_t num_mics, num_farends;
 
-    ret = command->command_get(num_mics_cmd, &num_mics, num_mics_cmd->num_values);
+    control_ret_t ret = command->command_get(num_mics_cmd, &num_mics, num_mics_cmd->num_values);
 
     ret = command->command_get(num_farends_cmd, &num_farends, num_farends_cmd->num_values);
 
@@ -437,8 +441,6 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
 
 control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get, const char* filename)
 {
-    clog << "In special_cmd_nlmodel_buffer()" << endl;
-
     cmd_t * nlm_buffer_start_cmd = command_lookup("SPECIAL_CMD_NLMODEL_START"); // Start cmd
     
     cmd_t * nlm_buffer_length_cmd = command_lookup("SPECIAL_CMD_PP_NLMODEL_NROW_NCOL"); // Get buffer length
@@ -454,7 +456,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
 
     string filter_name = filename;
     filter_name += ".r" + to_string(nRowCol[0].i32) + ".c" + to_string(nRowCol[1].i32);
-    clog << "filename = " << filter_name << " , flag_buffer_get = " << flag_buffer_get << endl;
+    clog << "Filename = " << filter_name << endl;
 
     NLM_buffer_length = nRowCol[0].i32 * nRowCol[1].i32;
     clog << "NLM_buffer_length = " << NLM_buffer_length << endl;
@@ -493,7 +495,9 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
             rf.read(reinterpret_cast<char *>(&nlm_buffer[i].f), sizeof(float));
         }
 
+        rf.peek(); // doing peek here to look for a character beyond file size so it will set eof
         rf.close();
+        
         if(!rf.eof() || rf.bad())
         {
             cerr << "Error occured while reading " << filter_name << endl;
@@ -539,6 +543,7 @@ control_ret_t test_control_interface(Command * command, const char* out_filename
     int test_frames = 50;
     cmd_param_t * test_in_buffer = new cmd_param_t[test_cmd->num_values * test_frames];
     cmd_param_t * test_out_buffer = new cmd_param_t[test_cmd->num_values * test_frames];
+    size_t num_all_vals = test_frames * test_cmd->num_values;
 
     string in_filename = "test_input_buf.bin";
     ifstream rf(in_filename, ios::out | ios::binary);
@@ -548,12 +553,24 @@ control_ret_t test_control_interface(Command * command, const char* out_filename
         exit(CONTROL_ERROR);
     }
 
-    for(int i = 0; i < test_frames * test_cmd->num_values; i++)
+    rf.seekg (0, rf.end);
+    int32_t size = rf.tellg();
+    rf.seekg (0, rf.beg);
+
+    if(size != (num_all_vals * sizeof(float)))
+    {
+        cerr << "Test buffer lengths don't match" << endl;
+        exit(CONTROL_DATA_LENGTH_ERROR);
+    }
+
+    for(int i = 0; i < num_all_vals; i++)
     {
         rf.read(reinterpret_cast<char *>(&test_in_buffer[i].ui8), sizeof(uint8_t));
     }
 
+    rf.peek(); // doing peek here to look for a character beyond file size so it will set eof
     rf.close();
+
     if(!rf.eof() || rf.bad())
     {
         cerr << "Error occured while reading " << in_filename << endl;
@@ -576,7 +593,7 @@ control_ret_t test_control_interface(Command * command, const char* out_filename
         exit(CONTROL_ERROR);
     }
 
-    for(int i = 0; i < test_frames * test_cmd->num_values; i++)
+    for(int i = 0; i < num_all_vals; i++)
     {
         wf.write(reinterpret_cast<char *>(&test_out_buffer[i].ui8), sizeof(uint8_t));
     }
