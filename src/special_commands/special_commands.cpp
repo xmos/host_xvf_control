@@ -557,7 +557,7 @@ control_ret_t test_control_interface(Command * command, const char* out_filename
     int32_t size = rf.tellg();
     rf.seekg (0, rf.beg);
 
-    if(size != (num_all_vals * sizeof(float)))
+    if(size != (num_all_vals * sizeof(uint8_t))
     {
         cerr << "Test buffer lengths don't match" << endl;
         exit(CONTROL_DATA_LENGTH_ERROR);
