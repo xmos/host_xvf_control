@@ -308,7 +308,7 @@ control_ret_t get_or_set_full_buffer(Command * command, cmd_param_t *buffer, int
 
 control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_index, string filename, uint32_t buffer_length, bool flag_buffer_get)
 {
-    clog << "Filename = " << filename << endl;
+    cout << "Filename = " << filename << endl;
 
     cmd_t * far_mic_index_cmd = command_lookup("SPECIAL_CMD_AEC_FAR_MIC_INDEX"); // Start cmd
     
@@ -409,7 +409,7 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
     ret = command->command_get(aec_filter_length_cmd, &filt, aec_filter_length_cmd->num_values);
 
     uint32_t filter_length = filt.i32;
-    clog << "AEC filter length = " << filter_length << endl;
+    cout << "AEC filter length = " << filter_length << endl;
 
     // Set AEC to bypass to stop filter from adapting
     cmd_t * aec_bypass_cmd = command_lookup("AEC_BYPASS");
@@ -456,10 +456,10 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
 
     string filter_name = filename;
     filter_name += ".r" + to_string(nRowCol[0].i32) + ".c" + to_string(nRowCol[1].i32);
-    clog << "Filename = " << filter_name << endl;
+    cout << "Filename = " << filter_name << endl;
 
     NLM_buffer_length = nRowCol[0].i32 * nRowCol[1].i32;
-    clog << "NLM_buffer_length = " << NLM_buffer_length << endl;
+    cout << "NLM_buffer_length = " << NLM_buffer_length << endl;
 
     // Set start of special command sequence
     cmd_param_t start_buffer_read;
@@ -467,7 +467,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
     ret = command->command_set(nlm_buffer_start_cmd, &start_buffer_read, nlm_buffer_start_cmd->num_values);
 
     int32_t len = ((NLM_buffer_length + (filter_cmd->num_values - 1)) / filter_cmd->num_values) * filter_cmd->num_values;
-    clog << "len = " << len << endl;
+    cout << "len = " << len << endl;
     cmd_param_t * nlm_buffer = new cmd_param_t[len];
 
     if(flag_buffer_get == false) // read NLModel buffer from file and write to the device
@@ -585,7 +585,7 @@ control_ret_t test_control_interface(Command * command, const char* out_filename
     }
     delete []test_in_buffer;
 
-    clog << "filename is " << out_filename << endl;
+    cout << "filename is " << out_filename << endl;
     ofstream wf(out_filename, ios::out | ios::binary);
     if(!wf)
     {

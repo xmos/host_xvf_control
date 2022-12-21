@@ -51,7 +51,7 @@ int main(int argc, char ** argv)
             else
             {
                 // Using I2C by default for now as USB is not supported
-                clog << "Did not find " << to_upper(protocol_name) << "in supported protocols"
+                cout << "Did not find " << to_upper(protocol_name) << "in supported protocols"
                 << endl << "Will use I2C by default" << endl;
             }
 

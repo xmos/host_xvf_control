@@ -25,7 +25,7 @@ Device::Device(void * handle)
     info_t info = reinterpret_cast<info_t>(dlsym(handle, "get_info_spi"));
     if(info == NULL)
     {
-        cout << "Error while loading get_info_spi() from libcommand_map" << endl;
+        cerr << "Error while loading get_info_spi() from libcommand_map" << endl;
         exit(CONTROL_ERROR);
     }
     device_info = info();

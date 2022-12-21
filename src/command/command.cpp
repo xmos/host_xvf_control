@@ -27,7 +27,7 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
 
     while(1)
     {
-        if(read_attempts == 1000){clog << "Read is taking a while.." << endl;}
+        if(read_attempts == 1000){cout << "Read is taking a while.." << endl;}
         if(data[0] == CONTROL_SUCCESS)
         {
             for (int i = 0; i < cmd->num_values; i++)
@@ -68,7 +68,7 @@ control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int 
 
     while(1)
     {
-        if(write_attempts == 1000){clog << "Write is taking a while.." << endl;}
+        if(write_attempts == 1000){cout << "Write is taking a while.." << endl;}
         if(ret == CONTROL_SUCCESS)
         {
             break;
