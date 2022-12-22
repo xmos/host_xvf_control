@@ -6,7 +6,6 @@
 
 extern "C"
 #include "device_control_shared.h"
-
 #include <memory>
 
 class Device
@@ -25,6 +24,5 @@ class Device
 
 extern "C"
 std::unique_ptr<Device> make_Dev(void * handle);
-
 
 #endif

@@ -41,37 +41,37 @@ target_link_libraries(framework_rtos_sw_services_device_control_host_spi INTERFA
 target_compile_definitions(framework_rtos_sw_services_device_control_host_spi INTERFACE USE_SPI=1 RPI=1)
 add_library(rtos::sw_services::device_control_host_spi ALIAS framework_rtos_sw_services_device_control_host_spi)
 
-add_library(device_i2c_rpi SHARED)
-target_sources(device_i2c_rpi
+add_library(device_rpi_i2c SHARED)
+target_sources(device_rpi_i2c
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/device/device_i2c.cpp
 )
-target_include_directories(device_i2c_rpi
+target_include_directories(device_rpi_i2c
     PUBLIC
         ${CMAKE_CURRENT_LIST_DIR}/device
         ${DEVICE_CONTROL_PATH}/host
 )
-target_link_libraries(device_i2c_rpi
+target_link_libraries(device_rpi_i2c
     PUBLIC  
         rtos::sw_services::device_control_host_i2c
 )
-target_link_options(device_i2c_rpi PRIVATE -fPIC)
+target_link_options(device_rpi_i2c PRIVATE -fPIC)
 
-add_library(device_spi_rpi SHARED)
-target_sources(device_spi_rpi
+add_library(device_rpi_spi SHARED)
+target_sources(device_rpi_spi
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/device/device_spi.cpp
 )
-target_include_directories(device_spi_rpi
+target_include_directories(device_rpi_spi
     PUBLIC
         ${CMAKE_CURRENT_LIST_DIR}/device
         ${DEVICE_CONTROL_PATH}/host
 )
-target_link_libraries(device_spi_rpi
+target_link_libraries(device_rpi_spi
     PUBLIC  
         rtos::sw_services::device_control_host_spi
 )
-target_link_libraries(device_spi_rpi PRIVATE -fPIC)
+target_link_libraries(device_rpi_spi PRIVATE -fPIC)
 
 endif()
 

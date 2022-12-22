@@ -8,12 +8,11 @@
 #include <stdexcept>
 #include "device.hpp"
 
-using factory_error = std::runtime_error;
+using device_t = std::unique_ptr<Device> (*)(void *);
 
 class factory {
     public:
         factory(const char * filename);
-        using device_t = std::unique_ptr<Device> (*)(void *);
         device_t make_dev;
     private:
         void * handle;

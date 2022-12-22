@@ -3,7 +3,6 @@
 
 #include "special_commands.hpp"
 #include "dlfcn.h"
-#include <cassert>
 #include <fstream>
 #include <iomanip>
 
@@ -28,22 +27,33 @@ size_t num_commands;
 
 void * load_command_map_dll()
 {
-    string dyn_lib_path = get_dynamic_lib_path("/libcommand_map");
-    void * sofile = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
-    if(!sofile)
+    string dyn_lib_path = get_dynamic_lib_path("libcommand_map");
+    void * handle = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
+    if(handle == NULL)
     {
-        printf("%s\n", dlerror());
-        exit(EXIT_FAILURE);
+        cerr << "Error while opening " << dyn_lib_path << endl;
+        exit(CONTROL_ERROR);
     }
-    cmd_t* (*get_command_map)();
-    get_command_map = (cmd_t* (*)())dlsym(sofile, "get_command_map");
-
-    uint32_t (*get_num_commands)();
-    get_num_commands = (uint32_t (*)())dlsym(sofile, "get_num_commands");
+    // declaring cmd_t * function pointer type
+    using cmd_map_t = cmd_t * (*)();
+    cmd_map_t get_command_map = reinterpret_cast<cmd_map_t>(dlsym(handle, "get_command_map"));
+    if(get_command_map == NULL)
+    {
+        cerr << "Error while loading get_command_map() from libcommand_map" << endl;
+        exit(CONTROL_ERROR);
+    }
+    // declaring uint32_t function pointer type
+    using num_cmd_t = uint32_t (*)();
+    num_cmd_t get_num_commands = reinterpret_cast<num_cmd_t>(dlsym(handle, "get_num_commands"));
+    if(get_num_commands == NULL)
+    {
+        cerr << "Error while loading get_num_commands() from libcommand_map" << endl;
+        exit(CONTROL_ERROR);
+    }
 
     commands = get_command_map();
     num_commands = get_num_commands();
-    return sofile;
+    return handle;
 }
 
 opt_t * option_lookup(const string str)
@@ -72,9 +82,9 @@ opt_t * option_lookup(const string str)
             indx = i;
         }
     }
-    cout << "Option " << str << " does not exit." << endl
+    cerr << "Option " << str << " does not exist." << endl
     << "Maybe you meant " << options[indx].short_name
-    << " or " << options[indx].long_name << endl;
+    << " or " << options[indx].long_name << "." << endl;
     exit(CONTROL_BAD_COMMAND);
     return nullptr;
 }
@@ -103,8 +113,8 @@ cmd_t * command_lookup(const string str)
             indx = i;
         }
     }
-    cout << "Command " << str << " does not exit." << endl
-    << "Maybe you meant " << commands[indx].cmd_name << endl;
+    cerr << "Command " << str << " does not exist." << endl
+    << "Maybe you meant " << commands[indx].cmd_name <<  "." << endl;
     exit(CONTROL_BAD_COMMAND);
     return nullptr;
 }
@@ -123,10 +133,11 @@ control_ret_t print_help_menu()
     size_t long_opt_offset = longest_short_opt + 5;
     size_t info_offset = long_opt_offset + longest_long_opt + 4;
 
-    cout << "usage: xvf_hostapp_rpi [ -h | --help ]" << endl
-    << setw(47) << "[ -l | --list-commands ]" << endl
+    cout << "usage: xvf_hostapp_rpi [ command | option ]" << endl
     << setw(68) << "[ -u | --use <protocol>] [ command | option ]" << endl
-    << "Options:" << endl; 
+    << endl << "You can use --use option to specify protocol you want to use"
+    << endl << "or call the option/command directly using default control protocol."
+    << endl << "Default control protocol is I2C." << endl << endl << "Options:" << endl;
     for(opt_t opt : options)
     {
         size_t short_len = opt.short_name.length();
@@ -252,7 +263,7 @@ control_ret_t execute_cmd_list(Command * command, const char * filename)
             i += word.length() + 1;
             if(i > max_line_len)
             {
-                cout << "Line:" << endl << line
+                cerr << "Line:" << endl << line
                 << endl << "Exceeded " << max_line_len
                 << " characters limit" << endl;
                 return CONTROL_BAD_COMMAND;
@@ -263,154 +274,146 @@ control_ret_t execute_cmd_list(Command * command, const char * filename)
         int arg_indx = cmd_indx + 1;
         int args_left = num - 1;
         cmd_t * cmd = command_lookup(line_ch[cmd_indx]);
-        if(cmd == nullptr)
-        {
-            cout << "Command " << line_ch[cmd_indx] << " does not exit." << endl;
-            return CONTROL_BAD_COMMAND;
-        }
         ret = command->do_command(cmd, line_ch, args_left, arg_indx);
-        if(ret != CONTROL_SUCCESS)
-        {
-            cout << "Command " << cmd->cmd_name << " returns error " << ret << endl;
-        }
     }
     file.close();
     return ret;
 }
 
-void assert_on_cmd_error(cmd_t *cmd, control_ret_t ret)
-{
-    if(ret != CONTROL_SUCCESS)
-    {
-        printf("%s command returns error %d\n", cmd->cmd_name.c_str(), ret);
-        assert(0);
-    }
-}
-
-void get_or_set_full_buffer(Command * command, cmd_param_t *buffer, int32_t buffer_length, cmd_t *start_coeff_index_cmd, cmd_t *filter_cmd, bool flag_buffer_get)
+control_ret_t get_or_set_full_buffer(Command * command, cmd_param_t *buffer, int32_t buffer_length, cmd_t *start_coeff_index_cmd, cmd_t *filter_cmd, bool flag_buffer_get)
 {
     control_ret_t ret;
     int32_t num_filter_read_commands = (buffer_length + filter_cmd->num_values - 1) / filter_cmd->num_values;
 
     int32_t start_coeff = 0;
-    for(int i=0; i<num_filter_read_commands; i++)
+    for(int i = 0; i < num_filter_read_commands; i++)
     {
         cmd_param_t coeff;
         coeff.i32 = start_coeff;
         ret = command->command_set(start_coeff_index_cmd, &coeff, 1);
-        assert_on_cmd_error(start_coeff_index_cmd, ret);
 
-        //printf("start coeff = %d, num_values = %d\n", start_coeff, filter_cmd->num_values);
         if(flag_buffer_get == true) // Read from the device into the buffer
         {
             ret = command->command_get(filter_cmd, &buffer[start_coeff], filter_cmd->num_values);
-            assert_on_cmd_error(filter_cmd, ret);
         }
         else // Write buffer to the device
         {
             ret = command->command_set(filter_cmd, &buffer[start_coeff], filter_cmd->num_values);
-            assert_on_cmd_error(filter_cmd, ret);
         }
 
         start_coeff += filter_cmd->num_values;
     }
+    return ret;
 }
 
-void get_one_filter(Command * command, int32_t mic_index, int32_t far_index, string filename, uint32_t buffer_length, bool flag_buffer_get)
+control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_index, string filename, uint32_t buffer_length, bool flag_buffer_get)
 {
-    control_ret_t ret;
-    printf("filename = %s\n", filename.c_str());
+    cout << "Filename = " << filename << endl;
 
-    cmd_t *far_mic_index_cmd = command_lookup("SPECIAL_CMD_AEC_FAR_MIC_INDEX"); // Start cmd
-    assert(far_mic_index_cmd != nullptr);
+    cmd_t * far_mic_index_cmd = command_lookup("SPECIAL_CMD_AEC_FAR_MIC_INDEX"); // Start cmd
     
-    cmd_t *start_coeff_index_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_COEFF_START_OFFSET"); // Set start offset
-    assert(start_coeff_index_cmd != nullptr);
+    cmd_t * start_coeff_index_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_COEFF_START_OFFSET"); // Set start offset
 
-    cmd_t *filter_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_COEFFS"); // Get buffer cmd
-    assert(filter_cmd != nullptr);
+    cmd_t * filter_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_COEFFS"); // Get buffer cmd
 
     // Set start of special command sequence
     cmd_param_t far_mic_index[2];
     far_mic_index[0].i32 = far_index;
     far_mic_index[1].i32 = mic_index;
-    ret = command->command_set(far_mic_index_cmd, far_mic_index, far_mic_index_cmd->num_values);
-    assert_on_cmd_error(far_mic_index_cmd, ret);
+    control_ret_t ret = command->command_set(far_mic_index_cmd, far_mic_index, far_mic_index_cmd->num_values);
     
-    int32_t len = ((buffer_length + (filter_cmd->num_values - 1))/filter_cmd->num_values) * filter_cmd->num_values;
-    cmd_param_t *aec_filter = new cmd_param_t[len];
-    FILE * fp; 
+    int32_t len = ((buffer_length + (filter_cmd->num_values - 1)) / filter_cmd->num_values) * filter_cmd->num_values;
+    cmd_param_t * aec_filter = new cmd_param_t[len];
+
     if(flag_buffer_get == true)
     {
         // Read the full buffer from the device
-        get_or_set_full_buffer(command, aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
+        ret = get_or_set_full_buffer(command, aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
 
         // Write filter to file
-        if((fp = fopen(filename.c_str(), "wb")) == NULL)
+        ofstream wf(filename, ios::out | ios::binary);
+        if(!wf)
         {
-            cout << "Failed to open " << filename << endl;
+            cerr << "Could not open a file " << filename << endl;
             exit(CONTROL_ERROR);
         }
-        for(int i=0; i<buffer_length; i++)
+
+        for(int i = 0; i < buffer_length; i++)
         {
-            fwrite(&aec_filter[i].f, sizeof(float), 1, fp); // It's annoying having to write byte by byte
+            wf.write(reinterpret_cast<char *>(&aec_filter[i].f), sizeof(float));
+        }
+
+        wf.close();
+        if(wf.bad())
+        {
+            cerr << "Error occured when writting to " << filename << endl;
+            exit(CONTROL_ERROR);
         }
     }
     else
     {
-        if((fp = fopen(filename.c_str(), "rb")) == NULL)
+        ifstream rf(filename, ios::out | ios::binary);
+        if(!rf)
         {
-            cout << "Failed to open " << filename << endl;
+            cerr << "Could not open a file " << filename << endl;
             exit(CONTROL_ERROR);
         }
-        fseek(fp, 0, SEEK_END);
-        int32_t size = ftell(fp);
-        fseek(fp, 0, SEEK_SET);
-        printf("Writing filter of size %d\n",size);
 
-        // Read from file intp the nlm_buffer buffer. Will need to be done byte by byte since nlm_buffer is of type cmd_param_t
-        for(int i=0; i<size; i++)
+        rf.seekg (0, rf.end);
+        int32_t size = rf.tellg();
+        rf.seekg (0, rf.beg);
+
+        if(size != (buffer_length * sizeof(float)))
         {
-            fread(&aec_filter[i].f, sizeof(float), 1, fp);
+            cerr << "AEC buffer lengths don't match" << endl;
+            exit(CONTROL_DATA_LENGTH_ERROR);
         }
-        get_or_set_full_buffer(command, aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
+
+        // Read from file into aec buffer. Will need to be done byte by byte since aec_filter is of type cmd_param_t
+        for(int i = 0; i < buffer_length; i++)
+        {
+            rf.read(reinterpret_cast<char *>(&aec_filter[i].f), sizeof(float));
+        }
+
+        rf.peek(); // doing peek here to look for a character beyond file size so it will set eof
+        rf.close();
+
+        if(!rf.eof() || rf.bad())
+        {
+            cerr << "Error occured while reading " << filename << endl;
+            exit(CONTROL_ERROR);
+        }
+
+        ret = get_or_set_full_buffer(command, aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
     }
-    fclose(fp);
     delete []aec_filter;
+    return ret;
 }
 
 control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, const char *filename)
 {
-    command->init_device(); // Initialise the device
+    cmd_t * num_mics_cmd = command_lookup("AEC_NUM_MICS");
 
-    printf("In special_cmd_aec_filter()\n");
-    control_ret_t ret;
-    cmd_t *num_mics_cmd = command_lookup("AEC_NUM_MICS");
-    assert(num_mics_cmd != nullptr);
+    cmd_t * num_farends_cmd = command_lookup("AEC_NUM_FARENDS");
 
-    cmd_t *num_farends_cmd = command_lookup("AEC_NUM_FARENDS");
-    assert(num_farends_cmd != nullptr);
     cmd_param_t num_mics, num_farends;
 
-    ret = command->command_get(num_mics_cmd, &num_mics, num_mics_cmd->num_values);
-    assert_on_cmd_error(num_mics_cmd, ret);
+    control_ret_t ret = command->command_get(num_mics_cmd, &num_mics, num_mics_cmd->num_values);
 
     ret = command->command_get(num_farends_cmd, &num_farends, num_farends_cmd->num_values);
-    assert_on_cmd_error(num_farends_cmd, ret);
 
      // Get AEC filter length
-    cmd_t *aec_filter_length_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_LENGTH");
-    assert(aec_filter_length_cmd != nullptr);
+    cmd_t * aec_filter_length_cmd = command_lookup("SPECIAL_CMD_AEC_FILTER_LENGTH");
+
     cmd_param_t filt;
     ret = command->command_get(aec_filter_length_cmd, &filt, aec_filter_length_cmd->num_values);
-    assert_on_cmd_error(aec_filter_length_cmd, ret);
 
     uint32_t filter_length = filt.i32;
-    printf("AEC filter length = %d\n", filter_length);
+    cout << "AEC filter length = " << filter_length << endl;
 
     // Set AEC to bypass to stop filter from adapting
-    cmd_t *aec_bypass_cmd = command_lookup("AEC_BYPASS");
-    assert(aec_bypass_cmd != nullptr);
+    cmd_t * aec_bypass_cmd = command_lookup("AEC_BYPASS");
+
     cmd_param_t bypass;
     bypass.ui8 = 1;
     command->command_set(aec_bypass_cmd, &bypass, 1);
@@ -418,14 +421,14 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
 
     // TODO attempt to run for only one (mic, farend) pair due to timing violation this
     // command is causing in AEC. Will re-enable getting all filters once we have the chunkwise API.
-    for(int far_index=0; far_index<num_farends.i32; far_index++)
+    for(int far_index = 0; far_index < num_farends.i32; far_index++)
     {
-        for(int mic_index=0; mic_index<num_mics.i32; mic_index++)
+        for(int mic_index = 0; mic_index < num_mics.i32; mic_index++)
         {
             // Get AEC filter for the (far_index, mic_index) pair
             string filter_name = filename;
-            filter_name = filter_name + ".f" + to_string(far_index) + ".m" + to_string(mic_index) ;
-            get_one_filter(command, mic_index, far_index, filter_name, filter_length, flag_buffer_get);
+            filter_name += ".f" + to_string(far_index) + ".m" + to_string(mic_index) ;
+            ret = get_one_filter(command, mic_index, far_index, filter_name, filter_length, flag_buffer_get);
         }
     }
 
@@ -433,143 +436,174 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
     bypass.ui8 = 0;
     command->command_set(aec_bypass_cmd, &bypass, 1);
 
-    return CONTROL_SUCCESS;
+    return ret;
 }
 
 control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get, const char* filename)
 {
-    command->init_device(); // Initialise the device
-    printf("In special_cmd_nlmodel_buffer()\n");
-    control_ret_t ret;
-    printf("filename = %s, flag_buffer_get = %d\n", filename, flag_buffer_get);
-
-    cmd_t *nlm_buffer_start_command = command_lookup("SPECIAL_CMD_NLMODEL_START"); // Start cmd
-    assert(nlm_buffer_start_command != nullptr);
+    cmd_t * nlm_buffer_start_cmd = command_lookup("SPECIAL_CMD_NLMODEL_START"); // Start cmd
     
-    cmd_t *nlm_buffer_length_cmd = command_lookup("SPECIAL_CMD_PP_NLMODEL_NROW_NCOL"); // Get buffer length
-    assert(nlm_buffer_length_cmd != nullptr);
+    cmd_t * nlm_buffer_length_cmd = command_lookup("SPECIAL_CMD_PP_NLMODEL_NROW_NCOL"); // Get buffer length
 
-    cmd_t *start_coeff_index_cmd = command_lookup("SPECIAL_CMD_NLMODEL_COEFF_START_OFFSET"); // Set start offset
-    assert(start_coeff_index_cmd != nullptr);
+    cmd_t * start_coeff_index_cmd = command_lookup("SPECIAL_CMD_NLMODEL_COEFF_START_OFFSET"); // Set start offset
 
-    cmd_t *filter_cmd = command_lookup("SPECIAL_CMD_PP_NLMODEL"); // buffer cmd
-    assert(filter_cmd != nullptr);
+    cmd_t * filter_cmd = command_lookup("SPECIAL_CMD_PP_NLMODEL"); // buffer cmd
 
     // Get buffer length
     int32_t NLM_buffer_length;
     cmd_param_t nRowCol[2];
-    ret = command->command_get(nlm_buffer_length_cmd, nRowCol, nlm_buffer_length_cmd->num_values);
-    assert_on_cmd_error(nlm_buffer_length_cmd, ret);
+    control_ret_t ret = command->command_get(nlm_buffer_length_cmd, nRowCol, nlm_buffer_length_cmd->num_values);
+
+    string filter_name = filename;
+    filter_name += ".r" + to_string(nRowCol[0].i32) + ".c" + to_string(nRowCol[1].i32);
+    cout << "Filename = " << filter_name << endl;
 
     NLM_buffer_length = nRowCol[0].i32 * nRowCol[1].i32;
-    printf("NLM_buffer_length = %d\n", NLM_buffer_length);
+    cout << "NLM_buffer_length = " << NLM_buffer_length << endl;
 
     // Set start of special command sequence
     cmd_param_t start_buffer_read;
     start_buffer_read.i32 = 1;
-    ret = command->command_set(nlm_buffer_start_command, &start_buffer_read, nlm_buffer_start_command->num_values);
-    assert_on_cmd_error(nlm_buffer_start_command, ret);
+    ret = command->command_set(nlm_buffer_start_cmd, &start_buffer_read, nlm_buffer_start_cmd->num_values);
 
-    int32_t len = ((NLM_buffer_length + (filter_cmd->num_values - 1))/filter_cmd->num_values) * filter_cmd->num_values;
-    printf("len = %d\n",len);
-    cmd_param_t *nlm_buffer = new cmd_param_t[len];
+    int32_t len = ((NLM_buffer_length + (filter_cmd->num_values - 1)) / filter_cmd->num_values) * filter_cmd->num_values;
+    cout << "len = " << len << endl;
+    cmd_param_t * nlm_buffer = new cmd_param_t[len];
 
-    string fname = filename;
-    FILE *fp;
     if(flag_buffer_get == false) // read NLModel buffer from file and write to the device
     {
-        if((fp = fopen(filename, "rb")) == NULL)
+        ifstream rf(filter_name, ios::out | ios::binary);
+        if(!rf)
         {
-            cout << "Failed to open " << filename << endl;
+            cerr << "Could not open a file " << filter_name << endl;
             exit(CONTROL_ERROR);
         }
-        fseek(fp, 0, SEEK_END);
-        int32_t size = ftell(fp);
-        fseek(fp, 0, SEEK_SET);
-        assert(size == (NLM_buffer_length*sizeof(float)));
+
+        rf.seekg (0, rf.end);
+        int32_t size = rf.tellg();
+        rf.seekg (0, rf.beg);
+
+        if(size != (NLM_buffer_length * sizeof(float)))
+        {
+            cerr << "NLM buffer lengths don't match" << endl;
+            exit(CONTROL_DATA_LENGTH_ERROR);
+        }
 
         // Read from file intp the nlm_buffer buffer. Will need to be done byte by byte since nlm_buffer is of type cmd_param_t
-        for(int i=0; i<NLM_buffer_length; i++)
+        for(int i = 0; i < NLM_buffer_length; i++)
         {
-            fread(&nlm_buffer[i].f, sizeof(float), 1, fp);
+            rf.read(reinterpret_cast<char *>(&nlm_buffer[i].f), sizeof(float));
         }
+
+        rf.peek(); // doing peek here to look for a character beyond file size so it will set eof
+        rf.close();
+        
+        if(!rf.eof() || rf.bad())
+        {
+            cerr << "Error occured while reading " << filter_name << endl;
+            exit(CONTROL_ERROR);
+        }
+
         // Write the full buffer to the device
-        get_or_set_full_buffer(command, nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
+        ret = get_or_set_full_buffer(command, nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
     }
     else // Read NLModel buffer from device and write to the file
     {
         // Read the full buffer from the device
-        get_or_set_full_buffer(command, nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
+        ret = get_or_set_full_buffer(command, nlm_buffer, NLM_buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
     
         // Write filter to file
-        if((fp = fopen(filename, "wb")) == NULL)
+        ofstream wf(filter_name, ios::out | ios::binary);
+        if(!wf)
         {
-            cout << "Failed to open " << filename << endl;
+            cerr << "Could not open a file " << filter_name << endl;
             exit(CONTROL_ERROR);
         }
-        float rows = (float)nRowCol[0].i32;
-        float cols = (float)nRowCol[1].i32;
-        // Write the number of rows and number of columns as the first 2*sizeof(int32_t) bytes in the file
-        fwrite(&rows, sizeof(float), 1, fp); // Write as float since rest of the data is also in float.
-        fwrite(&cols, sizeof(float), 1, fp); // Write as float since rest of the data is also in float.
 
-        for(int i=0; i<NLM_buffer_length; i++)
+        for(int i = 0; i < NLM_buffer_length; i++)
         {
-            fwrite(&nlm_buffer[i].f, sizeof(float), 1, fp); // It's annoying having to write byte by byte
-        }   
+            wf.write(reinterpret_cast<char *>(&nlm_buffer[i].f), sizeof(float));
+        }
+
+        wf.close();
+        if(wf.bad())
+        {
+            cerr << "Error occured when writting to " << filter_name << endl;
+            exit(CONTROL_ERROR);
+        }  
     }
-    fclose(fp);
     delete []nlm_buffer;
-    return CONTROL_SUCCESS;
+    return ret;
 }
 
-control_ret_t test_control_interface(Command * command, const char* filename)
+control_ret_t test_control_interface(Command * command, const char* out_filename)
 {
-    command->init_device(); // Initialise the device
     control_ret_t ret;
     cmd_t * test_cmd = command_lookup("TEST_CONTROL");
     int test_frames = 50;
     cmd_param_t * test_in_buffer = new cmd_param_t[test_cmd->num_values * test_frames];
     cmd_param_t * test_out_buffer = new cmd_param_t[test_cmd->num_values * test_frames];
-    FILE * fp_in;
-    if((fp_in = fopen("test_input_buf.bin\0", "rb")) == NULL)
+    size_t num_all_vals = test_frames * test_cmd->num_values;
+
+    string in_filename = "test_input_buf.bin";
+    ifstream rf(in_filename, ios::out | ios::binary);
+    if(!rf)
     {
-        cout << "Failed to open test_input_buf.bin" << endl;
+        cerr << "Could not open a file " << in_filename << endl;
         exit(CONTROL_ERROR);
     }
-    for(int i = 0; i < test_frames * test_cmd->num_values; i++)
+
+    rf.seekg (0, rf.end);
+    int32_t size = rf.tellg();
+    rf.seekg (0, rf.beg);
+
+    if(size != (num_all_vals * sizeof(uint8_t)))
     {
-        fread(&test_in_buffer[i].ui8, sizeof(uint8_t), 1, fp_in);
+        cerr << "Test buffer lengths don't match" << endl;
+        exit(CONTROL_DATA_LENGTH_ERROR);
     }
-    fclose(fp_in);
+
+    for(int i = 0; i < num_all_vals; i++)
+    {
+        rf.read(reinterpret_cast<char *>(&test_in_buffer[i].ui8), sizeof(uint8_t));
+    }
+
+    rf.peek(); // doing peek here to look for a character beyond file size so it will set eof
+    rf.close();
+
+    if(!rf.eof() || rf.bad())
+    {
+        cerr << "Error occured while reading " << in_filename << endl;
+        exit(CONTROL_ERROR);
+    }
+
     for(int n = 0; n < test_frames; n++)
     {
         ret = command->command_set(test_cmd, &test_in_buffer[n * test_cmd->num_values], test_cmd->num_values);
-        if(ret != CONTROL_SUCCESS)
-        {
-            printf("ERROR: TEST_CONTROL cmd. %d error returned\n", ret);
-            assert(0);
-        }
+
         ret = command->command_get(test_cmd, &test_out_buffer[n * test_cmd->num_values], test_cmd->num_values);
-        if(ret != CONTROL_SUCCESS)
-        {
-            printf("ERROR: TEST_CONTROL cmd. %d error returned\n", ret);
-            assert(0);
-        }
     }
     delete []test_in_buffer;
-    FILE * fp_out;
-    printf("filename is %s\n",filename);
-    if((fp_out = fopen(filename, "wb")) == NULL)
+
+    cout << "filename is " << out_filename << endl;
+    ofstream wf(out_filename, ios::out | ios::binary);
+    if(!wf)
     {
-        cout << "Failed to open " << filename << endl;
+        cerr << "Could not open a file " << out_filename << endl;
         exit(CONTROL_ERROR);
     }
-    for(int i = 0; i < test_frames * test_cmd->num_values; i++)
+
+    for(int i = 0; i < num_all_vals; i++)
     {
-        fwrite(&test_out_buffer[i].ui8, sizeof(uint8_t), 1, fp_out);
+        wf.write(reinterpret_cast<char *>(&test_out_buffer[i].ui8), sizeof(uint8_t));
     }
-    fclose(fp_out);
     delete []test_out_buffer;
+
+    wf.close();
+    if(wf.bad())
+    {
+        cerr << "Error occured when writing to " << out_filename << endl;
+        exit(CONTROL_ERROR);
+    }
     return ret;
 }

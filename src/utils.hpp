@@ -52,6 +52,7 @@ std::string command_rw_type_name(cmd_rw_t rw);
 control_ret_t check_num_args(cmd_t * cmd, int args_left);
 cmd_param_t cmd_arg_str_to_val(cmd_t * cmd, const char * str);
 void print_arg(cmd_t * cmd, cmd_param_t val);
+void check_cmd_error(std::string cmd_name, std::string rw, control_ret_t ret);
 unsigned get_num_bytes_from_type(cmd_param_type_t type);
 cmd_param_t command_bytes_to_value(cmd_t * cmd, void * data, int index);
 void command_bytes_from_value(cmd_t * cmd, void * data, int index, cmd_param_t value);

@@ -1,6 +1,7 @@
 // Copyright 2022 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
+#include <iostream>
 #include "device.hpp"
 #include "device_control_host.h"
 #include "dlfcn.h"
@@ -18,8 +19,15 @@ control_ret_t control_cleanup_i2c();
 
 Device::Device(void * handle)
 {
-    int * (*info)() = reinterpret_cast<int * (*)()>(dlsym(handle, "get_info_i2c"));
-    device_info = (*info)();
+    // declaring int * function pointer type
+    using info_t = int * (*)();
+    info_t info = reinterpret_cast<info_t>(dlsym(handle, "get_info_i2c"));
+    if(info == NULL)
+    {
+        cerr << "Error while loading get_info_i2c() from libcommand_map" << endl;
+        exit(CONTROL_ERROR);
+    }
+    device_info = info();
 }
 
 control_ret_t Device::device_init()
