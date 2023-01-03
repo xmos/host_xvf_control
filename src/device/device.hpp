@@ -8,21 +8,69 @@ extern "C"
 #include "device_control_shared.h"
 #include <memory>
 
+/**
+ * @brief Class for interfacing device_contol 
+ */
 class Device
 {
     private:
-    int * device_info;
-    bool device_initialised = false;
+
+        /** @brief Information to intialise the deivice */
+        int * device_info;
+
+        /**
+         * @brief State of the device.
+         * 
+         * Used to prevent multiple initialisations / cleanups.
+         */
+        bool device_initialised = false;
 
     public:
-    Device(void * handle);
-    virtual control_ret_t device_init();
-    virtual control_ret_t device_get(control_resid_t res_id, control_cmd_t cmd_id, uint8_t payload[], size_t payload_len);
-    virtual control_ret_t device_set(control_resid_t res_id, control_cmd_t cmd_id, const uint8_t payload[], size_t payload_len);
-    virtual ~Device();
+
+        /**
+         * @brief Construct a new Device object
+         * 
+         * @param handle    Pointer to libcommand_map shared object
+         */
+        Device(void * handle);
+
+        /** @brief Initialise a host (master) interface */
+        virtual control_ret_t device_init();
+
+        /**
+         * @brief Request to read from controllable resource inside the device
+         * 
+         * @param res_id        Resource ID. Indicates which resource the command is intended for
+         * @param cmd_id        Command ID
+         * @param payload       Array of bytes which constitutes the data payload
+         * @param payload_len   Size of the payload in bytes
+         */
+        virtual control_ret_t device_get(control_resid_t res_id, control_cmd_t cmd_id, uint8_t payload[], size_t payload_len);
+
+        /**
+         * @brief Request to write to controllable resource inside the device
+         * 
+         * @param res_id        Resource ID. Indicates which resource the command is intended for
+         * @param cmd_id        Command ID
+         * @param payload       Array of bytes which constitutes the data payload
+         * @param payload_len   Size of the payload in bytes
+         */
+        virtual control_ret_t device_set(control_resid_t res_id, control_cmd_t cmd_id, const uint8_t payload[], size_t payload_len);
+
+        /**
+         * @brief Destroy the Device object.
+         * 
+         * This will shut down the host interface connection.
+         */
+        virtual ~Device();
 };
 
 extern "C"
+/**
+ * @brief Return unique pointer to the Device class object
+ * 
+ * @param handle    Pointer to libcommand_map shared object
+ */
 std::unique_ptr<Device> make_Dev(void * handle);
 
 #endif

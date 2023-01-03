@@ -8,14 +8,38 @@
 #include <stdexcept>
 #include "device.hpp"
 
+/** Function pointer that takes void * and returns unique_ptr<Device> */
 using device_t = std::unique_ptr<Device> (*)(void *);
 
-class factory {
+/**
+ * @brief Class for dynamically opening libdevice_* shared object 
+ * and storing function pointer that returns unique_ptr<Device>
+ */
+class factory
+{
     public:
+
+        /**
+         * @brief Construct a new factory object
+         * 
+         * @param filename  Name of the shared obejct to get the Device from
+         */
         factory(const char * filename);
+
+        /** @brief Function pointer that returns unque_ptr<Device> */
         device_t make_dev;
+
     private:
+
+        /** @brief Pointer to lib_device_* shared object */
         void * handle;
+
+        /**
+         * @brief Loads function pointer from a handle
+         * 
+         * @tparam T        Function pointer type
+         * @param symbol    Name of the function to look for
+         */
         template<typename T>
         T load(const char * symbol) const {
             static_cast<void>(dlerror()); // clear errors
