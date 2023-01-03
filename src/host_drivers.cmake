@@ -41,6 +41,8 @@ target_link_libraries(framework_rtos_sw_services_device_control_host_spi INTERFA
 target_compile_definitions(framework_rtos_sw_services_device_control_host_spi INTERFACE USE_SPI=1 RPI=1)
 add_library(rtos::sw_services::device_control_host_spi ALIAS framework_rtos_sw_services_device_control_host_spi)
 
+# Build a wrapper driver for i2c
+
 add_library(device_rpi_i2c SHARED)
 target_sources(device_rpi_i2c
     PRIVATE
@@ -57,6 +59,13 @@ target_link_libraries(device_rpi_i2c
 )
 target_link_options(device_rpi_i2c PRIVATE -fPIC)
 
+# If using clang disable c-linkage warning
+if(HAVE_C_LINKAGE_WARNING)
+    target_compile_options(device_rpi_i2c PRIVATE -Wno-return-type-c-linkage)
+endif(HAVE_C_LINKAGE_WARNING)
+
+# Build a wrapper driver for spi
+
 add_library(device_rpi_spi SHARED)
 target_sources(device_rpi_spi
     PRIVATE
@@ -72,6 +81,11 @@ target_link_libraries(device_rpi_spi
         rtos::sw_services::device_control_host_spi
 )
 target_link_libraries(device_rpi_spi PRIVATE -fPIC)
+
+# If using clang disable c-linkage warning
+if(HAVE_C_LINKAGE_WARNING)
+    target_compile_options(device_rpi_spi PRIVATE -Wno-return-type-c-linkage)
+endif(HAVE_C_LINKAGE_WARNING)
 
 endif()
 

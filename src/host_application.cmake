@@ -33,3 +33,8 @@ target_link_options(xvf_hostapp_rpi
     PRIVATE
         -rdynamic
 )
+
+# If using clang disable c-linkage warning
+if(HAVE_C_LINKAGE_WARNING)
+    target_compile_options(xvf_hostapp_rpi PRIVATE -Wno-return-type-c-linkage)
+endif()
