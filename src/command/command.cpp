@@ -15,7 +15,7 @@ Command::Command(Device * _dev) : device(_dev)
     }
 }
 
-control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_values)
+control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values)
 {
     control_cmd_t cmd_id = cmd->cmd_id | 0x80; // setting 8th bit for read commands
 
@@ -29,7 +29,7 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
     {
         if(read_attempts == 1000)
         {
-            cout << "Could not read from the device" << endl;
+            cerr << "Could not read from the device" << endl;
             exit(CONTROL_ERROR);
         }
         if(data[0] == CONTROL_SUCCESS)
@@ -57,7 +57,7 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values, int num_va
     return ret;
 }
 
-control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int num_values)
+control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values)
 {
     size_t data_len = get_num_bytes_from_type(cmd->type) * cmd->num_values;
     uint8_t * data = new uint8_t[data_len];
@@ -74,7 +74,7 @@ control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values, int 
     {
         if(write_attempts == 1000)
         {
-            cout << "Could not write to the device" << endl;
+            cerr << "Could not write to the device" << endl;
             exit(CONTROL_ERROR);
         }
         if(ret == CONTROL_SUCCESS)
@@ -110,7 +110,7 @@ control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left, int 
 
     if(args_left == 0) // READ
     {
-        ret = command_get(cmd, cmd_values, cmd->num_values);
+        ret = command_get(cmd, cmd_values);
         cout << cmd->cmd_name << " ";
         for(int i = 0; i < cmd->num_values; i++)
         {
@@ -124,7 +124,7 @@ control_ret_t Command::do_command(cmd_t * cmd, char ** argv, int args_left, int 
         {
             cmd_values[i - arg_indx] = cmd_arg_str_to_val(cmd, argv[i]);
         }
-        ret = command_set(cmd, cmd_values, cmd->num_values);
+        ret = command_set(cmd, cmd_values);
     }
 
     delete []cmd_values;

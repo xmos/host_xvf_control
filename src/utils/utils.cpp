@@ -28,8 +28,9 @@ using namespace std;
 
 string get_dynamic_lib_path(string lib_name)
 {
+    lib_name = "lib" + lib_name;
 #ifdef __unix__
-    char* dir_path;
+    char * dir_path;
     char path[PATH_MAX];
     lib_name = '/' + lib_name;
 #if defined(__linux__)
@@ -144,7 +145,7 @@ control_ret_t check_num_args(cmd_t * cmd, int args_left)
     return CONTROL_SUCCESS;
 }
 
-cmd_param_t command_bytes_to_value(cmd_t * cmd, void * data, int index)
+cmd_param_t command_bytes_to_value(cmd_t * cmd, uint8_t * data, int index)
 {
     cmd_param_t value;
     size_t size_bytes = get_num_bytes_from_type(cmd->type);
@@ -152,10 +153,10 @@ cmd_param_t command_bytes_to_value(cmd_t * cmd, void * data, int index)
     switch(size_bytes)
     {
     case 1:
-        memcpy(&value.ui8, static_cast<uint8_t*>(data) + index * size_bytes, size_bytes);
+        memcpy(&value.ui8, data + index * size_bytes, size_bytes);
         break;
     case 4:
-        memcpy(&value.i32, static_cast<uint8_t*>(data) + index * size_bytes, size_bytes);
+        memcpy(&value.i32, data + index * size_bytes, size_bytes);
         break;
     default:
         cerr << "Unsupported parameter type" << endl;
@@ -165,16 +166,16 @@ cmd_param_t command_bytes_to_value(cmd_t * cmd, void * data, int index)
     return value;
 }
 
-void command_bytes_from_value(cmd_t * cmd, void * data, int index, cmd_param_t value)
+void command_bytes_from_value(cmd_t * cmd, uint8_t * data, int index, cmd_param_t value)
 {
     size_t num_bytes = get_num_bytes_from_type(cmd->type);
     switch(num_bytes)
     {
     case 1:
-        memcpy(static_cast<uint8_t*>(data) + index * num_bytes, &value.ui8, num_bytes);
+        memcpy(data + index * num_bytes, &value.ui8, num_bytes);
         break;
     case 4:
-        memcpy(static_cast<uint8_t*>(data) + index * num_bytes, &value.i32, num_bytes);
+        memcpy(data + index * num_bytes, &value.i32, num_bytes);
         break;
     default:
         cerr << "Unsupported parameter type" << endl;
@@ -183,8 +184,7 @@ void command_bytes_from_value(cmd_t * cmd, void * data, int index, cmd_param_t v
 }
 
 
-// This function implements algorithm to find Levenshtein Distance
-// for approximate string matching. Taken from:
+// Taken from:
 // https://www.talkativeman.com/levenshtein-distance-algorithm-string-comparison/
 int levDistance(const string source, const string target)
 {
