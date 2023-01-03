@@ -3,14 +3,14 @@
 cmake_minimum_required(VERSION 3.13)
 
 # Uncomment the line below if you want to compile with clang
-set(CMAKE_CXX_COMPILER "/usr/bin/clang++" CACHE STRING "C++ compiler" FORCE)
+#set(CMAKE_CXX_COMPILER "/usr/bin/clang++" CACHE STRING "C++ compiler" FORCE)
 
 enable_language(CXX C)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_EXTENSIONS Off)
 
-# clang has a warning that can't be addressed, so it will need to be turned off if using clang
+# clang has a warning that can't be addressed, so it needs to be turned off if using clang
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-Wreturn-type-c-linkage HAVE_C_LINKAGE_WARNING)
 
