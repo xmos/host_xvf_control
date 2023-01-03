@@ -38,7 +38,7 @@ class Device
         virtual control_ret_t device_init();
 
         /**
-         * @brief Request to read from controllable resource inside the device
+         * @brief Request to read from a controllable resource inside the device
          * 
          * @param res_id        Resource ID
          * @param cmd_id        Command ID
@@ -48,7 +48,7 @@ class Device
         virtual control_ret_t device_get(control_resid_t res_id, control_cmd_t cmd_id, uint8_t payload[], size_t payload_len);
 
         /**
-         * @brief Request to write to controllable resource inside the device
+         * @brief Request to write to a controllable resource inside the device
          * 
          * @param res_id        Resource ID
          * @param cmd_id        Command ID

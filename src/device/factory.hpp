@@ -22,11 +22,11 @@ class factory
         /**
          * @brief Construct a new factory object
          * 
-         * @param filename  Name of the shared obejct to get the Device from
+         * @param filename  Name of the shared object to get the Device from
          */
         factory(const char * filename);
 
-        /** @brief Function pointer that returns unque_ptr<Device> */
+        /** @brief Function pointer that returns unique_ptr<Device> */
         device_t make_dev;
 
     private:

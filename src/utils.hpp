@@ -40,7 +40,7 @@ struct cmd_t
     control_cmd_t cmd_id;
     /** Command read/write type */
     cmd_rw_t rw;
-    /** Number of values command reads/writes */
+    /** Number of values the command reads/writes */
     unsigned num_values;
     /** Command info */
     std::string info;
@@ -99,7 +99,7 @@ void check_cmd_error(std::string cmd_name, std::string rw, control_ret_t ret);
 /** @brief Get number of bytes for the particular param type */
 unsigned get_num_bytes_from_type(cmd_param_type_t type);
 
-/** @brief Convert single value from from bytes to cmd_param_t */
+/** @brief Convert single value from bytes to cmd_param_t */
 cmd_param_t command_bytes_to_value(cmd_t * cmd, uint8_t * data, int index);
 
 /** @brief Convert single value from cmd_param_t to bytes */

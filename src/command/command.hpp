@@ -39,18 +39,18 @@ class Command
         control_ret_t do_command(cmd_t * cmd, char ** argv, int args_left, int arg_indx);
 
         /**
-         * @brief Executes single get comamnd
+         * @brief Executes a single get comamnd
          * 
          * @param cmd           Pointer to the command instance to be executed
-         * @param values        Pointer to the array of union values to get from the device
+         * @param values        Pointer to store values read from the device
          */
         control_ret_t command_get(cmd_t * cmd, cmd_param_t * values);
 
         /**
-         * @brief Executes single set command
+         * @brief Executes a single set command
          * 
          * @param cmd           Pointer to the command instance to be executed
-         * @param values        Pointer to the array of union values to give to the device
+         * @param values        Pointer to store values to write to the device
          */
         control_ret_t command_set(cmd_t * cmd, const cmd_param_t * values);
 };

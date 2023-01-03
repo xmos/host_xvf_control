@@ -26,3 +26,9 @@ The application and the device drivers can be obtained by following the build in
 To find out use cases and more information about the application use:
 
     ./xvf_hostapp_{platform} --help
+
+## Supported platforms and control protocols
+
+- Raspberry Pi - 'rpi'
+    - I2C - 'i2c'
+    - SPI - 'spi'

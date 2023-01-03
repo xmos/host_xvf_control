@@ -10,21 +10,21 @@
 void * load_command_map_dll();
 
 /**
- * @brief Lookup the string in the command list.
+ * @brief Look up the string in the command list.
  * 
  * If the string is not found, will suggest a possible match and exit.
  * 
- * @param str   String sequence to lookup
+ * @param str   String sequence to look up
  * @note Function is case insensitive
  */
 cmd_t * command_lookup(const std::string str);
 
 /**
- * @brief Lookup the string in the option list.
+ * @brief Look up the string in the option list.
  * 
  * If the string is not found, will suggest a possible match and exit.
  * 
- * @param str   String sequence to lookup
+ * @param str   String sequence to look up
  * @note Function is case insensitive
  */
 opt_t * option_lookup(const std::string str);
@@ -54,7 +54,7 @@ control_ret_t dump_params(Command * command);
  * 
  * @param command   Pointer to the Command class object
  * @param filename  File name to read from
- * @note If flename is not specified will look for 'commands.txt'
+ * @note If filename is not specified will look for 'commands.txt'
  * @note Don't use --use inside text file
  */
 control_ret_t execute_cmd_list(Command * command, const char * filename = "commands.txt");
@@ -66,7 +66,7 @@ control_ret_t execute_cmd_list(Command * command, const char * filename = "comma
  * @param flag_buffer_get   Boolean to specify read/write operation
  * @param filename          File name to read from/write to
  * @note Default filename is 'aec_filter.bin'
- * @note This function will use separate files for each mic and farend channels
+ * @note This function will use separate files for each (mic, far-end) channel pair
  * @note So each filename will be 'aec_filter.bin.fx.mx'
  */
 control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, const char * filename = "aec_filter.bin\0");
@@ -79,15 +79,14 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
  * @param filename          File name to read from/write to
  * @note Default filename is 'nlm_buffer.bin'
  * @note This function will get number of rows and columns from the device
- * @note and expect filename to be 'nml_buffer.bin.rx.cx'
+ * @note and expect filename to be 'nlm_buffer.bin.rx.cx'
  */
 control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get, const char * filename = "nlm_buffer.bin\0");
 
 /**
  * @brief Function to test control interface.
  * 
- * Will send and get 50 frames of 60 bytes. The input buffer has to be named 'test_input_buf.bin'
- * If 'test_input_buf.bin' and output binary are bitexact, control interface is fine.
+ * Used for stress testing the control interface during internal device testing.
  * 
  * @param command       Pointer to the Command class object
  * @param filename      File name to use for an output buffer
