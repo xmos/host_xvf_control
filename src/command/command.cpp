@@ -27,7 +27,11 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values)
 
     while(1)
     {
-        if(read_attempts == 1000){cout << "Read is taking a while.." << endl;}
+        if(read_attempts == 1000)
+        {
+            cout << "Could not read from the device" << endl;
+            exit(CONTROL_ERROR);
+        }
         if(data[0] == CONTROL_SUCCESS)
         {
             for (int i = 0; i < cmd->num_values; i++)
@@ -68,7 +72,11 @@ control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values)
 
     while(1)
     {
-        if(write_attempts == 1000){cout << "Write is taking a while.." << endl;}
+        if(write_attempts == 1000)
+        {
+            cout << "Could not write to the device" << endl;
+            exit(CONTROL_ERROR);
+        }
         if(ret == CONTROL_SUCCESS)
         {
             break;
