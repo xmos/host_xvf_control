@@ -29,7 +29,7 @@ control_ret_t Command::command_get(cmd_t * cmd, cmd_param_t * values)
     {
         if(read_attempts == 1000)
         {
-            cout << "Could not read from the device" << endl;
+            cerr << "Could not read from the device" << endl;
             exit(CONTROL_ERROR);
         }
         if(data[0] == CONTROL_SUCCESS)
@@ -74,7 +74,7 @@ control_ret_t Command::command_set(cmd_t * cmd, const cmd_param_t * values)
     {
         if(write_attempts == 1000)
         {
-            cout << "Could not write to the device" << endl;
+            cerr << "Could not write to the device" << endl;
             exit(CONTROL_ERROR);
         }
         if(ret == CONTROL_SUCCESS)

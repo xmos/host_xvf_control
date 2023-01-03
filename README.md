@@ -13,3 +13,16 @@ Some dependent components are included as git sub modules. These can be obtained
 Build with cmake:
 
     mkdir build && cd build && cmake -S.. && make
+
+## Using
+
+In order to use the application you should have the following files in the same location
+
+    xvf_hostapp_{platform}
+    libcommand_map.(so/dll/dylib)
+    libdevice_{platform}_{protocol}.(so/dll/dylib)
+
+The application and the device drivers can be obtained by following the build instructions of this repo. Command map is a part of the firmware code and built separately.
+To find out use cases and more information about the application use:
+
+    ./xvf_hostapp_{platform} --help

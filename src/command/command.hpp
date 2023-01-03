@@ -8,7 +8,7 @@
 #include "utils.hpp"
 
 /**
- * @brief Class for sending single commands to the device
+ * @brief Class for executing a single command
  */
 class Command
 {
@@ -42,7 +42,7 @@ class Command
          * @brief Executes single get comamnd
          * 
          * @param cmd           Pointer to the command instance to be executed
-         * @param values        Pointer to the array of union values to fill from the device
+         * @param values        Pointer to the array of union values to get from the device
          */
         control_ret_t command_get(cmd_t * cmd, cmd_param_t * values);
 
@@ -50,7 +50,7 @@ class Command
          * @brief Executes single set command
          * 
          * @param cmd           Pointer to the command instance to be executed
-         * @param values        Pointer to the array of union values to write to the device
+         * @param values        Pointer to the array of union values to give to the device
          */
         control_ret_t command_set(cmd_t * cmd, const cmd_param_t * values);
 };

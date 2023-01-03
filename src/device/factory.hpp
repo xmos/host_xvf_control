@@ -12,7 +12,7 @@
 using device_t = std::unique_ptr<Device> (*)(void *);
 
 /**
- * @brief Class for dynamically opening libdevice_* shared object 
+ * @brief Class for dynamically opening device_* shared object 
  * and storing function pointer that returns unique_ptr<Device>
  */
 class factory
@@ -31,7 +31,7 @@ class factory
 
     private:
 
-        /** @brief Pointer to lib_device_* shared object */
+        /** @brief Pointer to the device_* shared object */
         void * handle;
 
         /**

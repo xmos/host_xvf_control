@@ -9,13 +9,13 @@ extern "C"
 #include <memory>
 
 /**
- * @brief Class for interfacing device_contol 
+ * @brief Class for interfacing device_contol
  */
 class Device
 {
     private:
 
-        /** @brief Information to intialise the deivice */
+        /** @brief Information to intialise the device */
         int * device_info;
 
         /**
@@ -30,7 +30,7 @@ class Device
         /**
          * @brief Construct a new Device object
          * 
-         * @param handle    Pointer to libcommand_map shared object
+         * @param handle    Pointer to the command_map shared object
          */
         Device(void * handle);
 
@@ -40,7 +40,7 @@ class Device
         /**
          * @brief Request to read from controllable resource inside the device
          * 
-         * @param res_id        Resource ID. Indicates which resource the command is intended for
+         * @param res_id        Resource ID
          * @param cmd_id        Command ID
          * @param payload       Array of bytes which constitutes the data payload
          * @param payload_len   Size of the payload in bytes
@@ -50,7 +50,7 @@ class Device
         /**
          * @brief Request to write to controllable resource inside the device
          * 
-         * @param res_id        Resource ID. Indicates which resource the command is intended for
+         * @param res_id        Resource ID
          * @param cmd_id        Command ID
          * @param payload       Array of bytes which constitutes the data payload
          * @param payload_len   Size of the payload in bytes
@@ -69,7 +69,7 @@ extern "C"
 /**
  * @brief Return unique pointer to the Device class object
  * 
- * @param handle    Pointer to libcommand_map shared object
+ * @param handle    Pointer to the command_map shared object
  */
 std::unique_ptr<Device> make_Dev(void * handle);
 
