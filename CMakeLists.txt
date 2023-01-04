@@ -2,8 +2,12 @@
 ## This cmake file will not be integrated with the top-level cmake structure till this is resolved
 cmake_minimum_required(VERSION 3.13)
 
-# Uncomment the line below if you want to compile with clang
-#set(CMAKE_CXX_COMPILER "/usr/bin/clang++" CACHE STRING "C++ compiler" FORCE)
+# Turn the option ON to use clang, you may need to change the path to your clang compiler
+option(USE_CLANG "If set, cmake will use clang insted of gcc" OFF)
+if(USE_CLANG)
+    set(CMAKE_CXX_COMPILER "/usr/bin/clang++" CACHE STRING "C++ compiler" FORCE)
+    set(CMAKE_C_COMPILER "/usr/bin/clang" CACHE STRING "C compiler" FORCE)
+endif()
 
 enable_language(CXX C)
 set(CMAKE_CXX_STANDARD 14)
