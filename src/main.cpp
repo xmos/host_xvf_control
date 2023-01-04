@@ -2,7 +2,6 @@
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #include "special_commands.hpp"
-#include "factory.hpp"
 
 using namespace std;
 

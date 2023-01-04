@@ -65,8 +65,9 @@ string get_dynamic_lib_path(string lib_name)
 
 void * get_dynamic_lib(string lib_name)
 {
-    string dyn_lib_path = get_dynamic_lib_path("command_map");
+    string dyn_lib_path = get_dynamic_lib_path(lib_name);
 #ifdef __unix__
+    static_cast<void>(dlerror()); // clear errors
     void * handle = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
 #elif defined(_WIN32)
 #error "Windows is currently not supported"
@@ -75,7 +76,13 @@ void * get_dynamic_lib(string lib_name)
 #endif
     if(handle == NULL)
     {
-        cerr << "Error while opening " << dyn_lib_path << endl;
+#ifdef __unix__
+        cerr << dlerror() << endl;
+#elif defined(_WIN32)
+#error "Windows is currently not supported"
+#else
+#error "Unknown Operating System"
+#endif
         exit(CONTROL_ERROR);
     }
     return handle;
@@ -84,17 +91,23 @@ void * get_dynamic_lib(string lib_name)
 template<typename T>
 T get_function(void * handle, string symbol)
 {
-    static_cast<void>(dlerror()); // clear errors
 #ifdef __unix__
+    static_cast<void>(dlerror()); // clear errors
     T func = reinterpret_cast<T>(dlsym(handle, symbol.c_str()));
 #elif defined(_WIN32)
 #error "Windows is currently not supported"
 #else
-#error "Unknown Operating System"
+#error "Unsupported operating system"
 #endif
     if(func == NULL)
     {
-        cerr << "Error while loading " <<  symbol << endl;
+#ifdef __unix__
+    cerr << dlerror() << endl;
+#elif defined(_WIN32)
+#error "Windows is currently not supported"
+#else
+#error "Unsupported operating system"
+#endif
         exit(CONTROL_ERROR);
     }
     return func;
