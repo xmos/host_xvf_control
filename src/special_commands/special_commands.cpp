@@ -411,12 +411,12 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
     uint32_t filter_length = filt.i32;
     cout << "AEC filter length = " << filter_length << endl;
 
-    // Set AEC to bypass to stop filter from adapting
-    cmd_t * aec_bypass_cmd = command_lookup("AEC_BYPASS");
+    // Set SHF to bypass to stop AEC filter from adapting
+    cmd_t * shf_bypass_cmd = command_lookup("SHF_BYPASS");
 
     cmd_param_t bypass;
     bypass.ui8 = 1;
-    command->command_set(aec_bypass_cmd, &bypass);
+    command->command_set(shf_bypass_cmd, &bypass);
 
 
     // TODO attempt to run for only one (mic, farend) pair due to timing violation this
@@ -434,7 +434,7 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
 
     // Set AEC bypass to 0 to allow filter to adapt again
     bypass.ui8 = 0;
-    command->command_set(aec_bypass_cmd, &bypass);
+    command->command_set(shf_bypass_cmd, &bypass);
 
     return ret;
 }
