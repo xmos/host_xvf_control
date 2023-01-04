@@ -7,6 +7,7 @@
 extern "C"
 #include "device_control_shared.h"
 #include <memory>
+#include <iostream>
 
 /**
  * @brief Class for interfacing device_contol

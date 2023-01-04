@@ -4,7 +4,6 @@
 #ifndef COMMAND_CLASS_H_
 #define COMMAND_CLASS_H_
 
-//#include "device.hpp"
 #include "utils.hpp"
 
 /**

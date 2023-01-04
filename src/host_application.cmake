@@ -7,6 +7,7 @@ set(COMMON_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/utils/platform_support.cpp
     ${CMAKE_CURRENT_LIST_DIR}/command/command.cpp
     ${CMAKE_CURRENT_LIST_DIR}/special_commands/special_commands.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/special_commands/filters.cpp
 )
 set(COMMON_INCLUDES
     ${CMAKE_CURRENT_LIST_DIR}/utils

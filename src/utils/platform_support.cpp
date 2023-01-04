@@ -4,7 +4,7 @@
 #include "utils.hpp"
 
 #if defined(__unix__)
-#include <dlfcn.h>
+#include <dlfcn.h>          // dlopen/dlsym/dlerror/dlclose
 #include <unistd.h>         // readlink
 #if defined(__linux__)
 #include <linux/limits.h>   // PATH_MAX
@@ -14,7 +14,7 @@
 #error "Unknown UNIX Operating System"
 #endif // linux  vs mac
 #elif defined(_WIN32)
-#include <Windows.h>
+#include <Windows.h>        // GetModuleFileNameA
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows
@@ -54,7 +54,7 @@ string get_dynamic_lib_path(string lib_name)
         exit(CONTROL_ERROR);
     }
     lib_name += ".dll";
-#endif
+#endif // unix vs windows
     string full_path = path;
     size_t found = full_path.find_last_of("/\\"); // works for both unix and windows
     string dir_path_str = full_path.substr(0, found);
@@ -73,7 +73,7 @@ void * get_dynamic_lib(string lib_name)
 #error "Windows is currently not supported"
 #else
 #error "Unknown Operating System"
-#endif
+#endif // unix vs windows
     if(handle == NULL)
     {
 #ifdef __unix__
@@ -82,7 +82,7 @@ void * get_dynamic_lib(string lib_name)
 #error "Windows is currently not supported"
 #else
 #error "Unknown Operating System"
-#endif
+#endif // unix vs windows
         exit(CONTROL_ERROR);
     }
     return handle;
@@ -98,7 +98,7 @@ T get_function(void * handle, string symbol)
 #error "Windows is currently not supported"
 #else
 #error "Unsupported operating system"
-#endif
+#endif // unix vs windows
     if(func == NULL)
     {
 #ifdef __unix__
@@ -107,7 +107,7 @@ T get_function(void * handle, string symbol)
 #error "Windows is currently not supported"
 #else
 #error "Unsupported operating system"
-#endif
+#endif // unix vs windows
         exit(CONTROL_ERROR);
     }
     return func;

@@ -2,8 +2,6 @@
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #include "utils.hpp"
-#include <cstring>
-#include <cctype>
 #include <vector>
 
 using namespace std;

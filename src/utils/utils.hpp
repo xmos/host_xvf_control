@@ -4,9 +4,8 @@
 #ifndef COMMAND_UTILS_H_
 #define COMMAND_UTILS_H_
 
-#include <iostream>
 #include <cstring>
-#include <stdint.h>
+#include <cstdint>
 #include "device.hpp"
 
 /** @brief Enum for read/write command types */
