@@ -5,68 +5,8 @@
 #include <cstring>
 #include <cctype>
 #include <vector>
-#include <iomanip>
-
-#if defined(__unix__)
-#include <unistd.h>         // readlink
-#if defined(__linux__)
-#include <linux/limits.h>   // PATH_MAX
-#elif defined(__APPLE__)
-#include <mach-o/dyld.h>    // _NSGetExecutablePath
-#else
-#error "Unknown UNIX Operating System"
-#endif // linux  vs mac
-#elif defined(_WIN32)
-#include <Windows.h>
-#else
-#error "Unknown Operating System"
-#endif // unix vs windows
-
-#define PI_VALUE  3.14159265358979323846f
 
 using namespace std;
-
-string get_dynamic_lib_path(string lib_name)
-{
-    lib_name = "lib" + lib_name;
-#ifdef __unix__
-    char * dir_path;
-    char path[PATH_MAX];
-    lib_name = '/' + lib_name;
-#if defined(__linux__)
-    ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
-    if (count == -1)
-    {
-        cerr << "Could not read /proc/self/exe into " << PATH_MAX << " string" << endl;
-        exit(CONTROL_ERROR);
-    }
-    lib_name += ".so";
-#elif defined(__APPLE__)
-    uint32_t size = PATH_MAX;
-    if (_NSGetExecutablePath(path, &size) != 0)
-    {
-        cerr << "Could not get binary path into " << PATH_MAX << " string" << endl;
-        exit(CONTROL_ERROR);
-    }
-    lib_name += ".dylib"
-#endif  // linux vs mac
-#elif defined(_WIN32)
-    lib_name = '\\' + lib_name;
-    char path[MAX_PATH];
-    if(0 == GetModuleFileNameA(GetModuleHandle(NULL), path, MAX_PATH))
-    {
-        cerr << "Could not get binary path into " << MAX_PATH << " string" << endl;
-        exit(CONTROL_ERROR);
-    }
-    lib_name += ".dll";
-#endif
-    string full_path = path;
-    size_t found = full_path.find_last_of("/\\"); // works for both unix and windows
-    string dir_path_str = full_path.substr(0, found);
-    string lib_path_str = dir_path_str + lib_name;
-
-    return lib_path_str;
-}
 
 string to_upper(string str)
 {
@@ -186,74 +126,84 @@ void command_bytes_from_value(cmd_t * cmd, uint8_t * data, int index, cmd_param_
 
 // Taken from:
 // https://www.talkativeman.com/levenshtein-distance-algorithm-string-comparison/
-int levDistance(const string source, const string target)
+int Levenshtein_distance(const string source, const string target)
 {
 
-  const int n = source.length();
-  const int m = target.length();
-  if (n == 0) {
-    return m;
-  }
-  if (m == 0) {
-    return n;
-  }
-
-  typedef vector<vector<int>> Tmatrix; 
-
-  Tmatrix matrix(n+1);
-
-  // Size the vectors in the 2.nd dimension. Unfortunately C++ doesn't
-  // allow for allocation on declaration of 2.nd dimension of vec of vec
-
-  for (int i = 0; i <= n; i++) {
-    matrix[i].resize(m+1);
-  }
-
-  for (int i = 0; i <= n; i++) {
-    matrix[i][0]=i;
-  }
-
-  for (int j = 0; j <= m; j++) {
-    matrix[0][j]=j;
-  }
-
-  for (int i = 1; i <= n; i++) {
-
-    const char s_i = source[i-1];
-
-    for (int j = 1; j <= m; j++) {
-
-      const char t_j = target[j-1];
-
-      int cost;
-      if (s_i == t_j) {
-        cost = 0;
-      }
-      else {
-        cost = 1;
-      }
-
-      const int above = matrix[i-1][j];
-      const int left = matrix[i][j-1];
-      const int diag = matrix[i-1][j-1];
-      int cell = min( above + 1, min(left + 1, diag + cost));
-
-      // Cover transposition, in addition to deletion,
-      // insertion and substitution. This step is taken from:
-      // Berghel, Hal ; Roach, David : "An Extension of Ukkonen's 
-      // Enhanced Dynamic Programming ASM Algorithm"
-      // (http://www.acm.org/~hlb/publications/asm/asm.html)
-
-      if (i>2 && j>2) {
-        int trans=matrix[i-2][j-2]+1;
-        if (source[i-2]!=t_j) trans++;
-        if (s_i!=target[j-2]) trans++;
-        if (cell>trans) cell=trans;
-      }
-
-      matrix[i][j]=cell;
+    const int n = source.length();
+    const int m = target.length();
+    if (n == 0)
+    {
+        return m;
     }
-  }
+    if (m == 0)
+    {
+        return n;
+    }
 
-  return matrix[n][m];
+    typedef vector<vector<int>> Tmatrix; 
+
+    Tmatrix matrix(n + 1);
+
+    // Size the vectors in the 2.nd dimension. Unfortunately C++ doesn't
+    // allow for allocation on declaration of 2.nd dimension of vec of vec
+
+    for (int i = 0; i <= n; i++)
+    {
+        matrix[i].resize(m + 1);
+    }
+
+    for (int i = 0; i <= n; i++)
+    {
+        matrix[i][0] = i;
+    }
+
+    for (int j = 0; j <= m; j++)
+    {
+        matrix[0][j] = j;
+    }
+
+    for (int i = 1; i <= n; i++)
+    {
+
+        const char s_i = source[i - 1];
+
+        for (int j = 1; j <= m; j++)
+        {
+
+            const char t_j = target[j - 1];
+
+            int cost;
+            if (s_i == t_j)
+            {
+                cost = 0;
+            }
+            else
+            {
+                cost = 1;
+            }
+
+            const int above = matrix[i - 1][j];
+            const int left = matrix[i][j - 1];
+            const int diag = matrix[i - 1][j - 1];
+            int cell = min( above + 1, min(left + 1, diag + cost));
+
+            // Cover transposition, in addition to deletion,
+            // insertion and substitution. This step is taken from:
+            // Berghel, Hal ; Roach, David : "An Extension of Ukkonen's 
+            // Enhanced Dynamic Programming ASM Algorithm"
+            // (http://www.acm.org/~hlb/publications/asm/asm.html)
+
+            if (i > 2 && j > 2)
+            {
+                int trans = matrix[i - 2][j - 2] + 1;
+                if (source[i - 2] != t_j) {trans++;}
+                if (s_i != target[j - 2]) {trans++;}
+                if (cell > trans) {cell = trans;}
+            }
+
+            matrix[i][j] = cell;
+        }
+    }
+
+    return matrix[n][m];
 }

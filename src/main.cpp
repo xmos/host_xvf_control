@@ -59,9 +59,9 @@ int main(int argc, char ** argv)
         }
     }
 
-    string device_lib_path = get_dynamic_lib_path(lib_name);
-    factory fact(device_lib_path.c_str());
-    auto device = fact.make_dev(cmd_map_handle);
+    void * device_handle = get_dynamic_lib(lib_name);
+    device_fp make_dev = get_device_fp(device_handle);
+    auto device = make_dev(cmd_map_handle);
     Command command(device.get());
 
     int arg_indx = cmd_indx + 1;

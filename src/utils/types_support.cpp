@@ -2,8 +2,11 @@
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #include "utils.hpp"
+#include <iomanip>
 
 using namespace std;
+
+#define PI_VALUE  3.14159265358979323846f
 
 string command_param_type_name(cmd_param_type_t type)
 {

@@ -27,29 +27,10 @@ size_t num_commands;
 
 void * load_command_map_dll()
 {
-    string dyn_lib_path = get_dynamic_lib_path("command_map");
-    void * handle = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
-    if(handle == NULL)
-    {
-        cerr << "Error while opening " << dyn_lib_path << endl;
-        exit(CONTROL_ERROR);
-    }
-    // declaring cmd_t * function pointer type
-    using cmd_map_t = cmd_t * (*)();
-    cmd_map_t get_command_map = reinterpret_cast<cmd_map_t>(dlsym(handle, "get_command_map"));
-    if(get_command_map == NULL)
-    {
-        cerr << "Error while loading get_command_map() from libcommand_map" << endl;
-        exit(CONTROL_ERROR);
-    }
-    // declaring uint32_t function pointer type
-    using num_cmd_t = uint32_t (*)();
-    num_cmd_t get_num_commands = reinterpret_cast<num_cmd_t>(dlsym(handle, "get_num_commands"));
-    if(get_num_commands == NULL)
-    {
-        cerr << "Error while loading get_num_commands() from libcommand_map" << endl;
-        exit(CONTROL_ERROR);
-    }
+    void * handle = get_dynamic_lib("command_map");
+
+    cmd_map_fp get_command_map = get_cmd_map_fp(handle);
+    num_cmd_fp get_num_commands = get_num_cmd_fp(handle);
 
     commands = get_command_map();
     num_commands = get_num_commands();
@@ -73,8 +54,8 @@ opt_t * option_lookup(const string str)
     for(int i = 0; i < num_options; i++)
     {
         opt_t * opt = &options[i];
-        int dist_long = levDistance(low_str, opt->long_name);
-        int dist_short = levDistance(low_str, opt->short_name);
+        int dist_long = Levenshtein_distance(low_str, opt->long_name);
+        int dist_short = Levenshtein_distance(low_str, opt->short_name);
         int dist = (dist_short < dist_long) ? dist_short : dist_long;
         if(dist < shortest_dist)
         {
@@ -106,7 +87,7 @@ cmd_t * command_lookup(const string str)
     for(int i = 0; i < num_commands; i++)
     {
         cmd_t * cmd = &commands[i];
-        int dist = levDistance(up_str, cmd->cmd_name);
+        int dist = Levenshtein_distance(up_str, cmd->cmd_name);
         if(dist < shortest_dist)
         {
             shortest_dist = dist;
