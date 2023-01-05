@@ -34,7 +34,7 @@ void check_cmd_error(string cmd_name, string rw, control_ret_t ret)
     }
 }
 
-string command_rw_type_name(cmd_rw_t rw)
+string command_rw_type_name(const cmd_rw_t rw)
 {
     string tstr;
 
@@ -59,7 +59,7 @@ string command_rw_type_name(cmd_rw_t rw)
     return tstr;
 }
 
-control_ret_t check_num_args(cmd_t * cmd, int args_left)
+control_ret_t check_num_args(const cmd_t * cmd, const size_t args_left)
 {
     if((cmd->rw == CMD_RO) && (args_left != 0))
     {
@@ -83,10 +83,10 @@ control_ret_t check_num_args(cmd_t * cmd, int args_left)
     return CONTROL_SUCCESS;
 }
 
-cmd_param_t command_bytes_to_value(cmd_t * cmd, uint8_t * data, int index)
+cmd_param_t command_bytes_to_value(const cmd_param_type_t type, const uint8_t * data, unsigned index)
 {
     cmd_param_t value;
-    size_t size_bytes = get_num_bytes_from_type(cmd->type);
+    size_t size_bytes = get_num_bytes_from_type(type);
 
     switch(size_bytes)
     {
@@ -104,9 +104,9 @@ cmd_param_t command_bytes_to_value(cmd_t * cmd, uint8_t * data, int index)
     return value;
 }
 
-void command_bytes_from_value(cmd_t * cmd, uint8_t * data, int index, cmd_param_t value)
+void command_bytes_from_value(const cmd_param_type_t type, uint8_t * data, unsigned index, const cmd_param_t value)
 {
-    size_t num_bytes = get_num_bytes_from_type(cmd->type);
+    size_t num_bytes = get_num_bytes_from_type(type);
     switch(num_bytes)
     {
     case 1:

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-control_ret_t get_or_set_full_buffer(Command * command, cmd_param_t * buffer, int32_t buffer_length, cmd_t * start_coeff_index_cmd, cmd_t *filter_cmd, bool flag_buffer_get)
+control_ret_t get_or_set_full_buffer(Command * command, cmd_param_t * buffer, int32_t buffer_length, cmd_t * start_coeff_index_cmd, cmd_t * filter_cmd, bool flag_buffer_get)
 {
     control_ret_t ret;
     int32_t num_filter_read_commands = (buffer_length + filter_cmd->num_values - 1) / filter_cmd->num_values;
@@ -116,7 +116,7 @@ control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_i
     return ret;
 }
 
-control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, const char * filename)
+control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, const string filename)
 {
     cmd_t * num_mics_cmd = command_lookup("AEC_NUM_MICS");
 
@@ -152,8 +152,7 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
         for(int mic_index = 0; mic_index < num_mics.i32; mic_index++)
         {
             // Get AEC filter for the (far_index, mic_index) pair
-            string filter_name = filename;
-            filter_name += ".f" + to_string(far_index) + ".m" + to_string(mic_index) ;
+            string filter_name = filename + ".f" + to_string(far_index) + ".m" + to_string(mic_index) ;
             ret = get_one_filter(command, mic_index, far_index, filter_name, filter_length, flag_buffer_get);
         }
     }
@@ -165,7 +164,7 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
     return ret;
 }
 
-control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get, const char * filename)
+control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get, const string filename)
 {
     cmd_t * nlm_buffer_start_cmd = command_lookup("SPECIAL_CMD_NLMODEL_START"); // Start cmd
     
@@ -180,8 +179,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
     cmd_param_t nRowCol[2];
     control_ret_t ret = command->command_get(nlm_buffer_length_cmd, nRowCol);
 
-    string filter_name = filename;
-    filter_name += ".r" + to_string(nRowCol[0].i32) + ".c" + to_string(nRowCol[1].i32);
+    string filter_name = filename + ".r" + to_string(nRowCol[0].i32) + ".c" + to_string(nRowCol[1].i32);
     cout << "Filename = " << filter_name << endl;
 
     NLM_buffer_length = nRowCol[0].i32 * nRowCol[1].i32;

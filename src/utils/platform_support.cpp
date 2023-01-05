@@ -21,13 +21,13 @@
 
 using namespace std;
 
-string get_dynamic_lib_path(string lib_name)
+string get_dynamic_lib_path(const string lib_name)
 {
-    lib_name = "lib" + lib_name;
+    string full_lib_name = "lib" + lib_name;
 #ifdef __unix__
     char * dir_path;
     char path[PATH_MAX];
-    lib_name = '/' + lib_name;
+    full_lib_name = '/' + full_lib_name;
 #if defined(__linux__)
     ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
     if (count == -1)
@@ -35,7 +35,7 @@ string get_dynamic_lib_path(string lib_name)
         cerr << "Could not read /proc/self/exe into " << PATH_MAX << " string" << endl;
         exit(CONTROL_ERROR);
     }
-    lib_name += ".so";
+    full_lib_name += ".so";
 #elif defined(__APPLE__)
     uint32_t size = PATH_MAX;
     if (_NSGetExecutablePath(path, &size) != 0)
@@ -43,27 +43,27 @@ string get_dynamic_lib_path(string lib_name)
         cerr << "Could not get binary path into " << PATH_MAX << " string" << endl;
         exit(CONTROL_ERROR);
     }
-    lib_name += ".dylib"
+    full_lib_name += ".dylib"
 #endif  // linux vs mac
 #elif defined(_WIN32)
-    lib_name = '\\' + lib_name;
+    full_lib_name = '\\' + full_lib_name;
     char path[MAX_PATH];
     if(0 == GetModuleFileNameA(GetModuleHandle(NULL), path, MAX_PATH))
     {
         cerr << "Could not get binary path into " << MAX_PATH << " string" << endl;
         exit(CONTROL_ERROR);
     }
-    lib_name += ".dll";
+    full_lib_name += ".dll";
 #endif // unix vs windows
     string full_path = path;
     size_t found = full_path.find_last_of("/\\"); // works for both unix and windows
     string dir_path_str = full_path.substr(0, found);
-    string lib_path_str = dir_path_str + lib_name;
+    string lib_path_str = dir_path_str + full_lib_name;
 
     return lib_path_str;
 }
 
-void * get_dynamic_lib(string lib_name)
+void * get_dynamic_lib(const string lib_name)
 {
     string dyn_lib_path = get_dynamic_lib_path(lib_name);
 #ifdef __unix__
@@ -89,7 +89,7 @@ void * get_dynamic_lib(string lib_name)
 }
 
 template<typename T>
-T get_function(void * handle, string symbol)
+T get_function(void * handle, const string symbol)
 {
 #ifdef __unix__
     static_cast<void>(dlerror()); // clear errors

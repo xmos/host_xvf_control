@@ -71,7 +71,7 @@ std::string to_lower(std::string str);
  * 
  * @param lib_name Name of the library to load (without lib prefix)
  */
-void * get_dynamic_lib(std::string lib_name);
+void * get_dynamic_lib(const std::string lib_name);
 
 /** cmd_t * function pointer type */
 using cmd_map_fp = cmd_t * (*)();
@@ -104,31 +104,31 @@ num_cmd_fp get_num_cmd_fp(void * handle);
 device_fp get_device_fp(void * handle);
 
 /** @brief Get param type name string */
-std::string command_param_type_name(cmd_param_type_t type);
+std::string command_param_type_name(const cmd_param_type_t type);
 
 /** @brief Get read/write type string */
-std::string command_rw_type_name(cmd_rw_t rw);
+std::string command_rw_type_name(const cmd_rw_t rw);
 
 /** @brief Check if the right number of arguments has been given for the command */
-control_ret_t check_num_args(cmd_t * cmd, int args_left);
+control_ret_t check_num_args(const cmd_t * cmd, const size_t args_left);
 
 /** @brief Convert command line argument from string to cmd_param_t */
-cmd_param_t cmd_arg_str_to_val(cmd_t * cmd, const char * str);
+cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str);
 
 /** @brief Print cmd_param_t value */
-void print_arg(cmd_t * cmd, cmd_param_t val);
+void print_arg(const cmd_param_type_t type, const cmd_param_t val);
 
 /** @brief Exit on control_ret_t error */
 void check_cmd_error(std::string cmd_name, std::string rw, control_ret_t ret);
 
 /** @brief Get number of bytes for the particular param type */
-size_t get_num_bytes_from_type(cmd_param_type_t type);
+size_t get_num_bytes_from_type(const cmd_param_type_t type);
 
 /** @brief Convert single value from bytes to cmd_param_t */
-cmd_param_t command_bytes_to_value(cmd_t * cmd, uint8_t * data, int index);
+cmd_param_t command_bytes_to_value(const cmd_param_type_t type, const uint8_t * data, unsigned index);
 
 /** @brief Convert single value from cmd_param_t to bytes */
-void command_bytes_from_value(cmd_t * cmd, uint8_t * data, int index, cmd_param_t value);
+void command_bytes_from_value(const cmd_param_type_t type, uint8_t * data, unsigned index, const cmd_param_t value);
 
 /** @brief Find Levenshtein distance for approximate string matching */
 int Levenshtein_distance(const std::string source, const std::string target);

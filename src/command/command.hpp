@@ -32,10 +32,10 @@ class Command
          * 
          * @param cmd           Pointer to the command instance to be executed
          * @param argv          Pointer to command line arguments
-         * @param args_left     Number of arguments left in command line
+         * @param argc          Number of arguments in command line
          * @param arg_indx      Index of argv to look at
          */
-        control_ret_t do_command(cmd_t * cmd, char ** argv, int args_left, int arg_indx);
+        control_ret_t do_command(const cmd_t * cmd, char ** argv, int argc, int arg_indx);
 
         /**
          * @brief Executes a single get comamnd
@@ -43,7 +43,7 @@ class Command
          * @param cmd           Pointer to the command instance to be executed
          * @param values        Pointer to store values read from the device
          */
-        control_ret_t command_get(cmd_t * cmd, cmd_param_t * values);
+        control_ret_t command_get(const cmd_t * cmd, cmd_param_t * values);
 
         /**
          * @brief Executes a single set command
@@ -51,7 +51,7 @@ class Command
          * @param cmd           Pointer to the command instance to be executed
          * @param values        Pointer to store values to write to the device
          */
-        control_ret_t command_set(cmd_t * cmd, const cmd_param_t * values);
+        control_ret_t command_set(const cmd_t * cmd, const cmd_param_t * values);
 };
 
 #endif

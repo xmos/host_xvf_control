@@ -8,7 +8,7 @@ using namespace std;
 
 #define PI_VALUE  3.14159265358979323846f
 
-string command_param_type_name(cmd_param_type_t type)
+string command_param_type_name(const cmd_param_type_t type)
 {
     string tstr;
 
@@ -46,11 +46,11 @@ string command_param_type_name(cmd_param_type_t type)
     return tstr;
 }
 
-cmd_param_t cmd_arg_str_to_val(cmd_t * cmd, const char * str)
+cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str)
 {
     cmd_param_t val;
     try{
-        switch(cmd->type)
+        switch(type)
         {
         case TYPE_CHAR:
             cerr << "TYPE_CHAR commands can only be READ_ONLY" << endl;
@@ -83,15 +83,15 @@ cmd_param_t cmd_arg_str_to_val(cmd_t * cmd, const char * str)
     }
     catch(const out_of_range & ex)
     {
-        cerr << "Value given is out of range of " << command_param_type_name(cmd->type) << " type"<< endl;
+        cerr << "Value given is out of range of " << command_param_type_name(type) << " type"<< endl;
         exit(CONTROL_BAD_COMMAND);
     }
     return val;
 }
 
-void print_arg(cmd_t * cmd, cmd_param_t val)
+void print_arg(const cmd_param_type_t type, const cmd_param_t val)
 {
-    switch(cmd->type)
+    switch(type)
     {
     case TYPE_CHAR:
         cout << static_cast<char>(val.ui8);
@@ -117,7 +117,7 @@ void print_arg(cmd_t * cmd, cmd_param_t val)
     }
 }
 
-size_t get_num_bytes_from_type(cmd_param_type_t type)
+size_t get_num_bytes_from_type(const cmd_param_type_t type)
 {
     size_t num_bytes;
     switch(type)

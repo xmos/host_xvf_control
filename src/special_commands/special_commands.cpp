@@ -213,7 +213,7 @@ control_ret_t dump_params(Command * command)
     return ret;
 }
 
-control_ret_t execute_cmd_list(Command * command, const char * filename)
+control_ret_t execute_cmd_list(Command * command, const string filename)
 {
     control_ret_t ret = CONTROL_ERROR;
     size_t largest_command = 0;
@@ -228,7 +228,7 @@ control_ret_t execute_cmd_list(Command * command, const char * filename)
     string line;
     while(getline(file, line))
     {
-        //TODO: think about -e use cases whether 128 bytes per line is enough
+        // TODO: think about -e use cases whether 128 bytes per line is enough
         size_t max_line_len = 128;
         char buff[max_line_len];
         int i = 0;
@@ -251,16 +251,15 @@ control_ret_t execute_cmd_list(Command * command, const char * filename)
             num++;
         }
         int cmd_indx = 0;
-        int arg_indx = cmd_indx + 1;
-        int args_left = num - 1;
+        int arg_indx =  cmd_indx + 1; // 0 is the command
         cmd_t * cmd = command_lookup(line_ch[cmd_indx]);
-        ret = command->do_command(cmd, line_ch, args_left, arg_indx);
+        ret = command->do_command(cmd, line_ch, num, arg_indx);
     }
     file.close();
     return ret;
 }
 
-control_ret_t test_control_interface(Command * command, const char * out_filename)
+control_ret_t test_control_interface(Command * command, const string out_filename)
 {
     control_ret_t ret;
     cmd_t * test_cmd = command_lookup("TEST_CONTROL");
