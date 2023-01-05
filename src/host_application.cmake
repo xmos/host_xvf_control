@@ -2,13 +2,15 @@
 
 set(COMMON_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/main.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/utils.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/utils/utils.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/utils/types_support.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/utils/platform_support.cpp
     ${CMAKE_CURRENT_LIST_DIR}/command/command.cpp
     ${CMAKE_CURRENT_LIST_DIR}/special_commands/special_commands.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/device/factory.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/special_commands/filters.cpp
 )
 set(COMMON_INCLUDES
-    ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/utils
     ${CMAKE_CURRENT_LIST_DIR}/device
     ${CMAKE_CURRENT_LIST_DIR}/command
     ${CMAKE_CURRENT_LIST_DIR}/special_commands
@@ -33,3 +35,8 @@ target_link_options(xvf_hostapp_rpi
     PRIVATE
         -rdynamic
 )
+
+# If using clang disable c-linkage warning
+if(HAVE_C_LINKAGE_WARNING)
+    target_compile_options(xvf_hostapp_rpi PRIVATE -Wno-return-type-c-linkage)
+endif()

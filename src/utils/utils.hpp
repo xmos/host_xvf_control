@@ -1,14 +1,12 @@
-// Copyright 2022 XMOS LIMITED.
+// Copyright 2022-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #ifndef COMMAND_UTILS_H_
 #define COMMAND_UTILS_H_
 
-#include <iostream>
 #include <cstring>
-#include <stdint.h>
-extern "C"
-#include "device_control_shared.h"
+#include <cstdint>
+#include "device.hpp"
 
 /** @brief Enum for read/write command types */
 enum cmd_rw_t {CMD_RO, CMD_WO, CMD_RW};
@@ -69,43 +67,70 @@ std::string to_upper(std::string str);
 std::string to_lower(std::string str);
 
 /**
- * @brief Get the dynamic library path.
+ * @brief Open the dynamic library
  * 
- * Will get the path to the running application and use lib_name
- * to get the full path to dynamic library. Works for Linux, Mac and Windows.
- * 
- * @param lib_name  Name of the library to load (without lib prefix)
+ * @param lib_name Name of the library to load (without lib prefix)
  */
-std::string get_dynamic_lib_path(std::string lib_name);
+void * get_dynamic_lib(const std::string lib_name);
+
+/** cmd_t * function pointer type */
+using cmd_map_fptr = cmd_t * (*)();
+
+/** uint32_t function pointer type */
+using num_cmd_fptr = uint32_t (*)();
+
+/** Function pointer that takes void * and returns unique_ptr<Device> */
+using device_fptr = std::unique_ptr<Device> (*)(void *);
+
+/**
+ * @brief Get the function pointer to get_command_map()
+ * 
+ * @param handle Pointer to the command_map shared object
+ */
+cmd_map_fptr get_cmd_map_fptr(void * handle);
+
+/**
+ * @brief Get the function pointer to get_num_commands()
+ * 
+ * @param handle Pointer to the command_map shared object
+ */
+num_cmd_fptr get_num_cmd_fptr(void * handle);
+
+/**
+ * @brief Get the function pointer to make_Dev()
+ * 
+ * @param handle Pointer to the device shared object
+ */
+device_fptr get_device_fptr(void * handle);
 
 /** @brief Get param type name string */
-std::string command_param_type_name(cmd_param_type_t type);
+std::string command_param_type_name(const cmd_param_type_t type);
 
 /** @brief Get read/write type string */
-std::string command_rw_type_name(cmd_rw_t rw);
+std::string command_rw_type_name(const cmd_rw_t rw);
 
 /** @brief Check if the right number of arguments has been given for the command */
-control_ret_t check_num_args(cmd_t * cmd, int args_left);
+control_ret_t check_num_args(const cmd_t * cmd, const size_t args_left);
 
 /** @brief Convert command line argument from string to cmd_param_t */
-cmd_param_t cmd_arg_str_to_val(cmd_t * cmd, const char * str);
+cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str);
 
 /** @brief Print cmd_param_t value */
-void print_arg(cmd_t * cmd, cmd_param_t val);
+void print_arg(const cmd_param_type_t type, const cmd_param_t val);
 
 /** @brief Exit on control_ret_t error */
 void check_cmd_error(std::string cmd_name, std::string rw, control_ret_t ret);
 
 /** @brief Get number of bytes for the particular param type */
-unsigned get_num_bytes_from_type(cmd_param_type_t type);
+size_t get_num_bytes_from_type(const cmd_param_type_t type);
 
 /** @brief Convert single value from bytes to cmd_param_t */
-cmd_param_t command_bytes_to_value(cmd_t * cmd, uint8_t * data, int index);
+cmd_param_t command_bytes_to_value(const cmd_param_type_t type, const uint8_t * data, unsigned index);
 
 /** @brief Convert single value from cmd_param_t to bytes */
-void command_bytes_from_value(cmd_t * cmd, uint8_t * data, int index, cmd_param_t value);
+void command_bytes_from_value(const cmd_param_type_t type, uint8_t * data, unsigned index, const cmd_param_t value);
 
 /** @brief Find Levenshtein distance for approximate string matching */
-int levDistance(const std::string source, const std::string target);
+int Levenshtein_distance(const std::string source, const std::string target);
 
 #endif

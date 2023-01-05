@@ -1,8 +1,7 @@
-// Copyright 2022 XMOS LIMITED.
+// Copyright 2022-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #include "special_commands.hpp"
-#include "factory.hpp"
 
 using namespace std;
 
@@ -19,16 +18,16 @@ int main(int argc, char ** argv)
     void * cmd_map_handle = load_command_map_dll();
     cmd_t * cmd = nullptr;
     opt_t * opt = nullptr;
-    string next_arg = argv[cmd_indx];
+    string next_cmd = argv[cmd_indx];
     // Using I2C by default for now as USB is not supported
     string lib_name = "device_rpi_i2c";
-    if(next_arg[0] != '-')
+    if(next_cmd[0] != '-')
     {
-        cmd = command_lookup(next_arg);
+        cmd = command_lookup(next_cmd);
     }
     else
     {
-        opt = option_lookup(next_arg);
+        opt = option_lookup(next_cmd);
         if (opt->long_name == "--help")
         {
             return print_help_menu();
@@ -59,32 +58,31 @@ int main(int argc, char ** argv)
         }
     }
 
-    string device_lib_path = get_dynamic_lib_path(lib_name);
-    factory fact(device_lib_path.c_str());
-    auto device = fact.make_dev(cmd_map_handle);
+    void * device_handle = get_dynamic_lib(lib_name);
+    device_fptr make_dev = get_device_fptr(device_handle);
+    auto device = make_dev(cmd_map_handle);
     Command command(device.get());
 
     int arg_indx = cmd_indx + 1;
-    int args_left = argc - cmd_indx - 1;
-    next_arg = argv[cmd_indx];
+    next_cmd = argv[cmd_indx];
 
     if (cmd != nullptr)
     {
-        return command.do_command(cmd, argv, args_left, arg_indx);
+        return command.do_command(cmd, argv, argc, arg_indx);
     }
 
-    if(next_arg[0] == '-')
+    if(next_cmd[0] == '-')
     {
-        opt = option_lookup(next_arg);
+        opt = option_lookup(next_cmd);
     }
     else
     {
-        cmd = command_lookup(next_arg);
+        cmd = command_lookup(next_cmd);
     }
 
     if (cmd != nullptr)
     {
-        return command.do_command(cmd, argv, args_left, arg_indx);
+        return command.do_command(cmd, argv, argc, arg_indx);
     }
     else
     {

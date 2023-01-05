@@ -1,4 +1,4 @@
-// Copyright 2022 XMOS LIMITED.
+// Copyright 2022-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #ifndef SPECIAL_COMMANDS_H_
@@ -57,7 +57,7 @@ control_ret_t dump_params(Command * command);
  * @note If filename is not specified will look for 'commands.txt'
  * @note Don't use --use inside text file
  */
-control_ret_t execute_cmd_list(Command * command, const char * filename = "commands.txt");
+control_ret_t execute_cmd_list(Command * command, const std::string = "commands.txt");
 
 /**
  * @brief Set or get AEC filter
@@ -69,7 +69,7 @@ control_ret_t execute_cmd_list(Command * command, const char * filename = "comma
  * @note This function will use separate files for each (mic, far-end) channel pair
  * @note So each filename will be 'aec_filter.bin.fx.mx'
  */
-control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, const char * filename = "aec_filter.bin\0");
+control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, const std::string filename = "aec_filter.bin");
 
 /**
  * @brief Set or get Non-Linear model
@@ -81,7 +81,7 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
  * @note This function will get number of rows and columns from the device
  * @note and expect filename to be 'nlm_buffer.bin.rx.cx'
  */
-control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get, const char * filename = "nlm_buffer.bin\0");
+control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get, const std::string filename = "nlm_buffer.bin");
 
 /**
  * @brief Function to test control interface.
@@ -91,6 +91,6 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
  * @param command       Pointer to the Command class object
  * @param filename      File name to use for an output buffer
  */
-control_ret_t test_control_interface(Command * command, const char * filename = "test_buffer.bin\0");
+control_ret_t test_control_interface(Command * command, const std::string filename = "test_buffer.bin");
 
 #endif

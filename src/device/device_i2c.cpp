@@ -1,7 +1,6 @@
-// Copyright 2022 XMOS LIMITED.
+// Copyright 2022-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
-#include <iostream>
 #include "device.hpp"
 #include "device_control_host.h"
 #include "dlfcn.h"
