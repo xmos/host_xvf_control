@@ -113,17 +113,17 @@ T get_function(void * handle, const string symbol)
     return func;
 }
 
-cmd_map_fp get_cmd_map_fp(void * handle)
+cmd_map_fptr get_cmd_map_fptr(void * handle)
 {
-    return get_function<cmd_map_fp>(handle, "get_command_map");
+    return get_function<cmd_map_fptr>(handle, "get_command_map");
 }
 
-num_cmd_fp get_num_cmd_fp(void * handle)
+num_cmd_fptr get_num_cmd_fptr(void * handle)
 {
-    return get_function<num_cmd_fp>(handle, "get_num_commands");
+    return get_function<num_cmd_fptr>(handle, "get_num_commands");
 }
 
-device_fp get_device_fp(void * handle)
+device_fptr get_device_fptr(void * handle)
 {
-    return get_function<device_fp>(handle, "make_Dev");
+    return get_function<device_fptr>(handle, "make_Dev");
 }

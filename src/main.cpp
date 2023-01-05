@@ -59,7 +59,7 @@ int main(int argc, char ** argv)
     }
 
     void * device_handle = get_dynamic_lib(lib_name);
-    device_fp make_dev = get_device_fp(device_handle);
+    device_fptr make_dev = get_device_fptr(device_handle);
     auto device = make_dev(cmd_map_handle);
     Command command(device.get());
 

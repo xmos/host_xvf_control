@@ -28,8 +28,8 @@ void * load_command_map_dll()
 {
     void * handle = get_dynamic_lib("command_map");
 
-    cmd_map_fp get_command_map = get_cmd_map_fp(handle);
-    num_cmd_fp get_num_commands = get_num_cmd_fp(handle);
+    cmd_map_fptr get_command_map = get_cmd_map_fptr(handle);
+    num_cmd_fptr get_num_commands = get_num_cmd_fptr(handle);
 
     commands = get_command_map();
     num_commands = get_num_commands();
