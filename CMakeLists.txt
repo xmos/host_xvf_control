@@ -2,6 +2,7 @@
 ## This cmake file will not be integrated with the top-level cmake structure till this is resolved
 cmake_minimum_required(VERSION 3.13)
 
+option(TESTING "If set, cmake will build tests" OFF)
 # Turn the option ON to use clang, you may need to change the path to your clang compiler
 option(USE_CLANG "If set, cmake will use clang insted of gcc" OFF)
 if(USE_CLANG)
@@ -25,3 +26,7 @@ set(DEVICE_CONTROL_PATH ${FWK_RTOS}/modules/sw_services/device_control)
 
 include(src/host_drivers.cmake)
 include(src/host_application.cmake)
+
+if(TESTING)
+    add_subdirectory(test)
+endif()
