@@ -14,7 +14,7 @@ USE THE VOCALFUSION SOFTWARE.**
 This licence agreement (“**Agreement**”) is a legal agreement
 between you (acting in your individual capacity or on behalf of a legal
 entity) (“**Licensee**" or “**you**”) and **XMOS LIMITED** Company
-No. 05494985 of 9th Floor, 107 Cheapside, London, EC2V 6DN
+No. 05494985 of Programme, All Saints Street, Bristol, United Kingdom, BS1 2LZ
 (“**XMOS**”, “**us**" or ”**we**").
 
 The Agreement relates to the Devices defined below, which the Licensee
@@ -55,7 +55,7 @@ install certain XMOS Tools, available at http://www.xmos.ai/.
 
     **Purpose**: has the meaning given to it in clause 1.
 
-    **Software:** the Vocalfusion software downloaded by the User from the
+    **Software:** the VocalFusion software downloaded by the User from the
     XMOS website, or provided by an XMOS representative, which includes the
     Third-Party Software, customized for the Devices and any Updates and
     documentation made available with this Agreement.
@@ -69,7 +69,7 @@ install certain XMOS Tools, available at http://www.xmos.ai/.
 
     **User(s):** shall mean you and any named third party authorised by the
     Licensee and XMOS who acts on behalf of the Licensee to integrate the
-    Software into the Device (such as an ODM or Third Party Design House)
+    Software with the Device (such as an ODM or Third Party Design House)
     provided in each case they have agreed to be bound by this Agreement.
 
     **XMOS Confidential Information:** has the meaning at clause 4.
@@ -78,8 +78,8 @@ install certain XMOS Tools, available at http://www.xmos.ai/.
 by the terms of this Agreement, XMOS grants Licensee a
 non-exclusive, non-transferable, non-sub licensable, licence for
 Users to download the Software and install and configure the
-Software on the Devices only on the terms of this Agreement (the
-“**Purpose**”). Licensee and any Users may install and use any
+Software on or for use in conjunction with the Devices only on the terms of this
+Agreement (“**Purpose**”). Licensee and any Users may install and use any
 documents provided as is reasonably necessary for the Purpose.
 Licensee agrees that the terms of this Agreement will apply to any
 end devices which it (or Users on its behalf) build which contain
@@ -269,7 +269,7 @@ requiring fail-safe performance, including without limitation the
 operation of nuclear facilities, aircraft navigation or
 communication systems, air traffic control, life support machines,
 or weapons systems (collectively "high risk activities") in which
-the failure of the Software] (or derived works from the use of the
+the failure of the Software (or derived works from the use of the
 Software) could lead directly or indirectly to death, personal
 injury, or severe physical or environmental damage or loss of data.
 XMOS and its licensors specifically disclaim any express or implied
@@ -359,13 +359,14 @@ partial exercise of any right or remedy provided under this Agreement or
 by law shall prevent or restrict the further exercise of that or any
 other right or remedy.
 
-XMOS address for notices is: 9th Floor, 107 Cheapside, London, EC2V 6DN,
-marked for the attention of CFO. If XMOS needs to communicate with
-Licensee, it shall contact Licensee at the address provided to XMOS in
-any order information or at Licensee’s principle place of business,
-marked for the attention of Legal/CEO. Notice shall be deemed received
+XMOS address for notices is: 5th Floor East, Programme, All Saints Street,
+Bristol, United Kingdom, BS1 2LZ, marked for the attention of the CFO.
+If XMOS needs to communicate with the Licensee, it shall contact the Licensee at
+the address provided to XMOS in any order information or at the Licensee’s
+principle place of business, marked for the attention of Legal/CEO.
+Notice shall be deemed received
 as follows: on the day delivered if personally delivered during normal
-business hours; and on the 5\ :sup:`th` business day following mailing
+business hours; and on the 5th business day following mailing
 by first class certified mail (or the equivalent) postage prepaid,
 addressed to the parties as above. Each party may change its address for
 notice or its designated recipient by informing the other party in
@@ -422,4 +423,4 @@ jurisdiction in the event of any dispute relating to this Agreement.
 
 ENDS
 
-Last Updated: Sept 2021
+Last Updated: Jan 2023
