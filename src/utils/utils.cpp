@@ -49,7 +49,7 @@ void check_cmd_error(string cmd_name, string rw, control_ret_t ret)
     rw[0] = toupper(rw[0]);
     if(ret != CONTROL_SUCCESS)
     {
-        cerr << rw << " command " << cmd_name << " returned control_ret_t error " << ret << endl;
+        cerr << rw << " command " << cmd_name << " returned control_ret_t error " << static_cast<int>(ret) << endl;
         exit(ret);
     }
 }
