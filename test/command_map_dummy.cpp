@@ -11,14 +11,14 @@ enum cmd_rw_t {CMD_RO, CMD_WO, CMD_RW};
 
 /**
  * @brief Enum for supported param types
- * 
+ *
  * @note Add new cmd_param_type's to the end of the list.
  * @note TYPE_CHAR can only be READ ONLY.
  */
 enum cmd_param_type_t {TYPE_CHAR, TYPE_UINT8, TYPE_INT32, TYPE_FLOAT, TYPE_UINT32, TYPE_RADIANS};
 
 /** @brief Command configuration structure
- * 
+ *
  * @note cmd_name has to be upper case
  */
 struct cmd_t
@@ -39,8 +39,11 @@ struct cmd_t
     std::string info;
 };
 
-cmd_t commands = {0, "TEST_COMMAND", TYPE_FLOAT, 0, CMD_RW, 60, "test"};
-size_t num_commands = 1;
+static cmd_t commands[] = {
+                        {0, "CMD_FLOAT", TYPE_FLOAT, 0, CMD_RW, 20, "test float"},
+                        {0, "CMD_UINT8", TYPE_UINT8, 1, CMD_RW, 20, "test uint8"}
+};
+static size_t num_commands = std::end(commands) - std::begin(commands);
 
 extern "C"
 uint32_t get_num_commands()
@@ -49,15 +52,15 @@ uint32_t get_num_commands()
 }
 
 extern "C"
-cmd_t* get_command_map()
+cmd_t * get_command_map()
 {
-    return &commands;
+    return commands;
 }
 
-int i2c_info = 0x2C;    // I2C slave address
+static const int dummy_info = 0x74736574;    // 'test' in ascii
 
 extern "C"
-int * get_info_i2c()
+const int * get_info()
 {
-    return &i2c_info;
+    return &dummy_info;
 }

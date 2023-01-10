@@ -58,6 +58,7 @@ Device::~Device()
     if(device_initialised)
     {
         control_cleanup_spi();
+        device_initialised = false;
     }
 }
 

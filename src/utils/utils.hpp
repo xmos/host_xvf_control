@@ -60,11 +60,20 @@ struct opt_t
     std::string more_info;
 };
 
+/** @brief Default driver name to use
+ * 
+ * @note Using I2C by default for now as USB is currently not supported
+*/
+const std::string default_driver_name = "device_i2c";
+
 /** @brief Convert string to uper case */
 std::string to_upper(std::string str);
 
 /** @brief Convert string to lower case */
 std::string to_lower(std::string str);
+
+/** @brief Gets device driver name to load */
+std::string get_device_lib_name(std::string protocol_name);
 
 /**
  * @brief Open the dynamic library

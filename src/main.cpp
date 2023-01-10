@@ -19,8 +19,8 @@ int main(int argc, char ** argv)
     cmd_t * cmd = nullptr;
     opt_t * opt = nullptr;
     string next_cmd = argv[cmd_indx];
-    // Using I2C by default for now as USB is not supported
-    string lib_name = "device_rpi_i2c";
+
+    string lib_name = default_driver_name;
     if(next_cmd[0] != '-')
     {
         cmd = command_lookup(next_cmd);
@@ -38,22 +38,7 @@ int main(int argc, char ** argv)
         }
         else if (opt->long_name == "--use")
         {
-            string protocol_name = argv[cmd_indx + 1];
-            if (to_upper(protocol_name) == "I2C")
-            {
-                lib_name = "device_rpi_i2c";
-            }
-            else if (to_upper(protocol_name) == "SPI")
-            {
-                lib_name = "device_rpi_spi";
-            }
-            else
-            {
-                // Using I2C by default for now as USB is not supported
-                cout << "Could not find " << to_upper(protocol_name) << " in supported protocols"
-                << endl << "Will use I2C by default" << endl;
-            }
-
+            lib_name = get_device_lib_name(argv[cmd_indx + 1]);
             cmd_indx += 2; // fetched --use something
         }
     }

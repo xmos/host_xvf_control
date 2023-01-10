@@ -57,6 +57,7 @@ Device::~Device()
     if(device_initialised)
     {
         control_cleanup_i2c();
+        device_initialised = false;
     }
 }
 

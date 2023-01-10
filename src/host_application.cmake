@@ -17,26 +17,26 @@ set(COMMON_INCLUDES
     ${DEVICE_CONTROL_PATH}/api
 )
 
-add_executable(xvf_hostapp_rpi)
+add_executable(xvf_hostapp)
 
-target_sources(xvf_hostapp_rpi
+target_sources(xvf_hostapp
     PRIVATE
         ${COMMON_SOURCES}
 )
-target_include_directories(xvf_hostapp_rpi
+target_include_directories(xvf_hostapp
     PUBLIC
         ${COMMON_INCLUDES}
 )
-target_link_libraries(xvf_hostapp_rpi
+target_link_libraries(xvf_hostapp
     PUBLIC 
         dl
 )
-target_link_options(xvf_hostapp_rpi
+target_link_options(xvf_hostapp
     PRIVATE
         -rdynamic
 )
 
 # If using clang disable c-linkage warning
 if(HAVE_C_LINKAGE_WARNING)
-    target_compile_options(xvf_hostapp_rpi PRIVATE -Wno-return-type-c-linkage)
+    target_compile_options(xvf_hostapp PRIVATE -Wno-return-type-c-linkage)
 endif()

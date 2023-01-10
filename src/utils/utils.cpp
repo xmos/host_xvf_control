@@ -24,6 +24,26 @@ string to_lower(string str)
     return str;
 }
 
+string get_device_lib_name(string protocol_name)
+{
+    string lib_name = default_driver_name;
+    if (to_upper(protocol_name) == "I2C")
+    {
+        lib_name = "device_i2c";
+    }
+    else if (to_upper(protocol_name) == "SPI")
+    {
+        lib_name = "device_spi";
+    }
+    else
+    {
+        // Using I2C by default for now as USB is currently not supported
+        cout << "Could not find " << to_upper(protocol_name) << " in supported protocols"
+        << endl << "Will use I2C by default" << endl;
+    }
+    return lib_name;
+}
+
 void check_cmd_error(string cmd_name, string rw, control_ret_t ret)
 {
     rw[0] = toupper(rw[0]);
@@ -77,7 +97,8 @@ control_ret_t check_num_args(const cmd_t * cmd, const size_t args_left)
     {
         cerr << "Command: " << cmd->cmd_name << " is a read/write command." << endl
         << "If you want to read do not give any arguments to this command." << endl
-        << "If you want to write give " << cmd->num_values << " argument(s) to this command." << endl;
+        << "If you want to write give " << cmd->num_values << " argument(s) to this command, "
+        << args_left << " are given." << endl;
         exit(CONTROL_DATA_LENGTH_ERROR);
     }
     return CONTROL_SUCCESS;
