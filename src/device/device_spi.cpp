@@ -4,26 +4,27 @@
 #include "device.hpp"
 #include "device_control_host.h"
 #include "dlfcn.h"
+#include "bcm2835.h"
 
 using namespace std;
 
 extern "C"{
-control_ret_t control_init_i2c(unsigned char i2c_slave_address);
+control_ret_t control_init_spi_pi(spi_mode_t spi_mode, bcm2835SPIClockDivider clock_divider);
 control_ret_t control_write_command(control_resid_t resid, control_cmd_t cmd,
                       const uint8_t payload[], size_t payload_len);
 control_ret_t control_read_command(control_resid_t resid, control_cmd_t cmd,
                      uint8_t payload[], size_t payload_len);
-control_ret_t control_cleanup_i2c();
+control_ret_t control_cleanup_spi();
 }
 
 Device::Device(void * handle)
 {
     // declaring int * function pointer type
     using info_t = int * (*)();
-    info_t info = reinterpret_cast<info_t>(dlsym(handle, "get_info_i2c"));
+    info_t info = reinterpret_cast<info_t>(dlsym(handle, "get_info_spi"));
     if(info == NULL)
     {
-        cerr << "Error while loading get_info_i2c() from libcommand_map" << endl;
+        cerr << "Error while loading get_info_spi() from libcommand_map" << endl;
         exit(CONTROL_ERROR);
     }
     device_info = info();
@@ -34,7 +35,7 @@ control_ret_t Device::device_init()
     control_ret_t ret = CONTROL_SUCCESS;
     if(!device_initialised)
     {
-        ret = control_init_i2c(device_info[0]);
+        ret = control_init_spi_pi(static_cast<spi_mode_t>(device_info[0]), static_cast<bcm2835SPIClockDivider>(device_info[1]));
         device_initialised = true;
     }
     return ret;
@@ -56,7 +57,7 @@ Device::~Device()
 {
     if(device_initialised)
     {
-        control_cleanup_i2c();
+        control_cleanup_spi();
     }
 }
 
