@@ -13,7 +13,7 @@ float_cmd = "CMD_FLOAT"
 uint8_cmd = "CMD_UINT8"
 control_protocol = "i2c"
 
-host_bin = "xvf_hostapp"
+host_bin = "xvf_host"
 build_dir = "../build/"
 test_dir = "../build/test/"
 host_bin_path = build_dir + host_bin

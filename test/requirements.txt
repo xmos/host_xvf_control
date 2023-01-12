@@ -1,2 +1,4 @@
+# python_version 3.9
+
 pytest
-numpy
+numpy==1.23.1 

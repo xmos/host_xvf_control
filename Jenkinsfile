@@ -21,7 +21,7 @@ pipeline {
                 dir('build') {
                     sh 'cmake -S .. -DTESTING=ON && make'
                     // archive RPI binaries
-                    archiveArtifacts artifacts: 'xvf_hostapp_rpi, libdevice_*', fingerprint: true
+                    archiveArtifacts artifacts: 'xvf_host, libdevice_*', fingerprint: true
                 }
                 dir('test') {
                     sh 'python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt'

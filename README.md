@@ -18,14 +18,14 @@ Build with cmake:
 
 In order to use the application you should have the following files in the same location
 
-    xvf_hostapp_{platform}
+    xvf_host(.exe)
     libcommand_map.(so/dll/dylib)
-    libdevice_{platform}_{protocol}.(so/dll/dylib)
+    libdevice_{protocol}.(so/dll/dylib)
 
 The application and the device drivers can be obtained by following the build instructions of this repo. Command map is a part of the firmware code and built separately.
 To find out use cases and more information about the application use:
 
-    ./xvf_hostapp_{platform} --help
+    ./xvf_host --help
 
 ## Supported platforms and control protocols
 
