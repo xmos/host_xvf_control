@@ -32,7 +32,7 @@ control_ret_t Device::device_init()
     control_ret_t ret = CONTROL_SUCCESS;
     if(!device_initialised)
     {
-        char check[4];
+        char check[5] = {'0', '0', '0', '0', '\0'};
         memcpy(check, device_info, 4 * sizeof(char));
         string check_str = check;
         cerr << "got check_string " << check_str << endl;
