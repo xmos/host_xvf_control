@@ -21,7 +21,7 @@ pipeline {
                         sh 'git submodule update --init --jobs 4'
                         // build
                         dir('build') {
-                            sh 'cmake -S .. -DTESTING=ON && make'
+                            sh 'cmake -S .. -DTESTING=ON && make -j4'
                             // archive RPI binaries
                             archiveArtifacts artifacts: 'xvf_host, libdevice_*', fingerprint: true
                         }
@@ -34,19 +34,17 @@ pipeline {
                 }
                 stage ('Test') {
                     steps {
-                        withVenv{
-                            dir('test') {
-                                sh 'pytest -s'
-                            }
+                        dir('test') {
+                            sh 'source ../.venv/bin/activate && pytest -s'
                         }
                     }
                 }
-            }
+            } // stages
             post {
                 cleanup {
                     cleanWs()
                 }
             }
-        } // RPI build
+        } // RPI build & test
     } // stages
 } // pipeline
