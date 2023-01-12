@@ -35,6 +35,7 @@ control_ret_t Device::device_init()
         char check[4];
         memcpy(check, device_info, sizeof(int32_t));
         string check_str = check;
+        cerr << "got check_string " << check_str << endl;
         if(check_str != "test")
         {
             ret = CONTROL_REGISTRATION_FAILED;
