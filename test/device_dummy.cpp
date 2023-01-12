@@ -33,7 +33,7 @@ control_ret_t Device::device_init()
     if(!device_initialised)
     {
         char check[4];
-        memcpy(check, device_info, sizeof(int32_t));
+        memcpy(check, device_info, 4 * sizeof(char));
         string check_str = check;
         cerr << "got check_string " << check_str << endl;
         if(check_str != "test")
