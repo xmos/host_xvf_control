@@ -13,19 +13,33 @@ pipeline {
             agent {
                 label 'armv7l&&raspian'
             }
-            steps {
-                runningOn(env.NODE_NAME)
-                // fetch submodules
-                sh 'git submodule update --init --jobs 4'
-                // build
-                dir('build') {
-                    sh 'cmake -S .. -DTESTING=ON && make'
-                    // archive RPI binaries
-                    archiveArtifacts artifacts: 'xvf_host, libdevice_*', fingerprint: true
+            stages {
+                stage ('Build') {
+                    steps {
+                        runningOn(env.NODE_NAME)
+                        // fetch submodules
+                        sh 'git submodule update --init --jobs 4'
+                        // build
+                        dir('build') {
+                            sh 'cmake -S .. -DTESTING=ON && make'
+                            // archive RPI binaries
+                            archiveArtifacts artifacts: 'xvf_host, libdevice_*', fingerprint: true
+                        }
+                    }
                 }
-                dir('test') {
-                    sh 'python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt'
-                    sh 'pytest -s'
+                stage ('Create Python enviroment') {
+                    steps {
+                        installPipfile(true)
+                    }
+                }
+                stage ('Test') {
+                    steps {
+                        withVenv{
+                            dir('test') {
+                                sh 'pytest -s'
+                            }
+                        }
+                    }
                 }
             }
             post {
