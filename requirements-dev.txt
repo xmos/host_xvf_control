@@ -1,4 +1,5 @@
-# python_version 3.9
+# python_version 3.7
 
 pytest
-numpy==1.21.6 
+# pinning old numpy for PI tests
+numpy==1.18
