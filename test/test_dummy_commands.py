@@ -6,7 +6,7 @@ import os
 import shutil
 import subprocess
 from random import randint, random
-import numpy as np
+#import numpy as np
 
 num_vals = 20
 num_frames = 10
