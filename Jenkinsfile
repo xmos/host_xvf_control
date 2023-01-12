@@ -9,7 +9,7 @@ getApproval()
 pipeline {
     agent none
     stages {
-        stage('RPI Build') {
+        stage('RPI Build & Test') {
             agent {
                 label 'armv7l&&raspian'
             }
@@ -19,9 +19,13 @@ pipeline {
                 sh 'git submodule update --init --jobs 4'
                 // build
                 dir('build') {
-                    sh 'cmake -S .. && make'
+                    sh 'cmake -S .. -DTESTING=ON && make'
                     // archive RPI binaries
                     archiveArtifacts artifacts: 'xvf_hostapp_rpi, libdevice_*', fingerprint: true
+                }
+                dir('test') {
+                    sh 'python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt'
+                    sh 'pytest -s'
                 }
             }
             post {

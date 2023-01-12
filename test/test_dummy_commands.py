@@ -11,6 +11,7 @@ num_vals = 20
 num_frames = 10
 float_cmd = "CMD_FLOAT"
 uint8_cmd = "CMD_UINT8"
+control_protocol = "i2c"
 
 host_bin = "xvf_hostapp"
 build_dir = "../build/"
@@ -20,7 +21,7 @@ host_bin_copy = test_dir + host_bin
 cmd_map_dummy_path = test_dir + "libcommand_map_dummy.so"
 cmd_map_path = test_dir + "libcommand_map.so"
 device_dummy_path = test_dir + "libdevice_dummy.so"
-device_path = test_dir + "libdevice_i2c.so"
+device_path = test_dir + "libdevice_"+ control_protocol + ".so"
 
 def check_files():
     assert Path(host_bin_path).is_file() or Path(host_bin_copy).is_file(), f"host app binary not found here {host_bin}"
@@ -56,9 +57,9 @@ def run_cmd(command, verbose = False):
     assert not result.returncode
     return result.stdout
 
-def execute_command(cmd_name, cmd_vals = None, protocol = "i2c"):
+def execute_command(cmd_name, cmd_vals = None):
     
-    command = "sudo ./" + host_bin + " -u " + protocol + " " + cmd_name
+    command = "sudo ./" + host_bin + " -u " + control_protocol + " " + cmd_name
     if cmd_vals.all() != None:
         cmd_write = command + " " + ' '.join(str(val) for val in cmd_vals)
         run_cmd(cmd_write, True)
@@ -77,9 +78,9 @@ def execute_command(cmd_name, cmd_vals = None, protocol = "i2c"):
     else:
         return words[1:]
 
-def single_command_test(cmd_name, cmd_vals, protocol = 'i2c'):
+def single_command_test(cmd_name, cmd_vals):
     # Set and get values within the command range and test closeness
-    out_list = execute_command(cmd_name, cmd_vals, protocol)
+    out_list = execute_command(cmd_name, cmd_vals)
 
     for i in range(len(cmd_vals)):
         read_output = float(out_list[i])
@@ -95,5 +96,7 @@ def test_dummy_commands():
     vals = gen_rand_array('float', np.iinfo(np.int32).min, np.iinfo(np.int32).max)
     single_command_test(float_cmd, vals)
 
-    os.chdir(current_dir)
+    vals = gen_rand_array('int', 0, 255)
+    single_command_test(uint8_cmd, vals)
 
+    os.chdir(current_dir)

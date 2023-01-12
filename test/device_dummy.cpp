@@ -9,7 +9,7 @@
 using namespace std;
 
 
-const int num_vals = 20;
+const size_t num_vals = 20;
 uint8_t buffer[num_vals * sizeof(float)] = {0};
 const string buf_filename = "test_buf.bin";
 const size_t buff_size = end(buffer) - begin(buffer);
@@ -46,11 +46,11 @@ control_ret_t Device::device_init()
 
 control_ret_t Device::device_get(control_resid_t res_id, control_cmd_t cmd_id, uint8_t payload[], size_t payload_len)
 {
-    if(payload_len != (num_vals * sizeof(float) + 1)) // Max buffer len + 1 for the status
+    if(payload_len > (buff_size + 1)) // Max buffer len + 1 for the status
     {
         return CONTROL_DATA_LENGTH_ERROR;
     }
-    payload[1] = 0;
+    payload[0] = 0;
 
     ifstream rf(buf_filename, ios::out | ios::binary);
     if(!rf)
@@ -83,7 +83,7 @@ control_ret_t Device::device_get(control_resid_t res_id, control_cmd_t cmd_id, u
         exit(CONTROL_ERROR);
     }
 
-    switch(cmd_id)
+    switch(cmd_id & 0x7F)
     {
     case 0:
         memcpy(&payload[1], buffer, num_vals * sizeof(float));
@@ -95,7 +95,7 @@ control_ret_t Device::device_get(control_resid_t res_id, control_cmd_t cmd_id, u
 
 control_ret_t Device::device_set(control_resid_t res_id, control_cmd_t cmd_id, const uint8_t payload[], size_t payload_len)
 {
-    if(payload_len != (num_vals * sizeof(float))) // Max buffer len
+    if(payload_len > buff_size) // Max buffer len
     {
         return CONTROL_DATA_LENGTH_ERROR;
     }
