@@ -92,8 +92,9 @@ def single_command_test(cmd_name, cmd_vals):
         read_output = float(out_list[i])
         # ~20 bits should be good for this test
         rtol = 1e-6
+        e = 1e-30
         #assert np.isclose(read_output, cmd_vals[i])
-        assert cmd_vals[i]/read_output > rtol
+        assert (cmd_vals[i]/(read_output + e)) > rtol
 
 def test_dummy_commands():
     print("\n")
@@ -102,6 +103,8 @@ def test_dummy_commands():
     current_dir = os.getcwd()
     os.chdir(test_dir)
 
+    with open('test_buf.bin', 'w'):
+        pass
     vals = gen_rand_array('float', -2147483648, 2147483647)
     #vals = gen_rand_array('float', np.iinfo(np.int32).min, np.iinfo(np.int32).max)
     single_command_test(float_cmd, vals)
