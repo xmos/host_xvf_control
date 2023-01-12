@@ -29,7 +29,8 @@ pipeline {
                 }
                 stage ('Create Python enviroment') {
                     steps {
-                        sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install -r requirements-dev.txt'
+                        //sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install -r requirements-dev.txt'
+                        sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install pytest'
                     }
                 }
                 stage ('Test') {
