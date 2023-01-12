@@ -64,7 +64,8 @@ def run_cmd(command, verbose = False):
 
 def execute_command(cmd_name, cmd_vals = None):
     
-    command = "sudo ./" + host_bin + " -u " + control_protocol + " " + cmd_name
+    #command = "sudo ./" + host_bin + " -u " + control_protocol + " " + cmd_name
+    command = "./" + host_bin + " -u " + control_protocol + " " + cmd_name
     #if cmd_vals.all() != None:
     if cmd_vals != None:
         cmd_write = command + " " + ' '.join(str(val) for val in cmd_vals)

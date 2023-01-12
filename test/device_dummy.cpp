@@ -54,6 +54,7 @@ control_ret_t Device::device_get(control_resid_t res_id, control_cmd_t cmd_id, u
 
     ifstream rf(buf_filename, ios::out | ios::binary);
     if(!rf)
+    //if(rf.bad())
     {
         cerr << "Could not open a file " << buf_filename << endl;
         return CONTROL_ERROR;
@@ -109,7 +110,9 @@ control_ret_t Device::device_set(control_resid_t res_id, control_cmd_t cmd_id, c
     }
 
     ofstream wf(buf_filename, ios::out | ios::binary);
+    //cout << "good " << wf.good() << " fail " << wf.fail() << " bad " << wf.bad() << endl;
     if(!wf)
+    //if(wf.bad())
     {
         cerr << "Could not open a file " << buf_filename << endl;
         return CONTROL_ERROR;
