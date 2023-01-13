@@ -19,6 +19,8 @@ if system_name == "Linux":
     file_type = ".so"
 elif system_name == "Darwin":
     file_type = ".dylib"
+elif system_name == "Windows":
+    file_type = ".dll"
 else:
     assert 0, "Unsupported operating system"
 

@@ -17,14 +17,15 @@ const size_t buff_size = end(buffer) - begin(buffer);
 Device::Device(void * handle)
 {
     // declaring int * function pointer type
-    using info_t = int * (*)();
+    /*using info_t = int * (*)();
     info_t info = reinterpret_cast<info_t>(dlsym(handle, "get_info"));
     if(info == NULL)
     {
         cerr << "Error while loading get_info from command_map" << endl;
         exit(CONTROL_ERROR);
     }
-    device_info = info();
+    device_info = info();*/
+    get_device_info(handle , "get_info");
 }
 
 control_ret_t Device::device_init()

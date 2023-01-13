@@ -26,6 +26,14 @@ class Device
          */
         bool device_initialised = false;
 
+        /**
+         * @brief Get the device_info pointer from the command_map shared object
+         * 
+         * @param handle    Pointer to the command_map shared object
+         * @param symbol    Fuction name to get the device_info from
+         */
+        void get_device_info(void * handle, const std::string symbol);
+
     public:
 
         /**

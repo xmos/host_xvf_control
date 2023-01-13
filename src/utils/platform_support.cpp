@@ -15,6 +15,7 @@
 
 #elif defined(_WIN32)
 #include <Windows.h>        // GetModuleFileNameA
+#include <errhandlingapi.h> // GetLastError
 
 #else
 #error "Unknown Operating System"
@@ -71,7 +72,7 @@ void report_error()
 #if (defined(__linux__) || defined(__APPLE__))
     cerr << dlerror() << endl;
 #elif defined(_WIN32)
-#error "Windows is currently not supported"
+    cerr << GetLastError() << endl;
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows
@@ -84,7 +85,7 @@ void * get_dynamic_lib(const string lib_name)
     static_cast<void>(dlerror()); // clear errors
     void * handle = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
 #elif defined(_WIN32)
-#error "Windows is currently not supported"
+    void * handle = reinterpret_cast<void *>(LoadLibraryA(dyn_lib_path.c_str()));
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows
@@ -103,7 +104,7 @@ T get_function(void * handle, const string symbol)
     static_cast<void>(dlerror()); // clear errors
     T func = reinterpret_cast<T>(dlsym(handle, symbol.c_str()));
 #elif defined(_WIN32)
-#error "Windows is currently not supported"
+    T func = reinterpret_cast<T>(GetProcAddress(handle, symbol.c_str()));
 #else
 #error "Unsupported operating system"
 #endif // unix vs windows

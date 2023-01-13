@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage ('Cross-platform Builds and Tests') {
             parallel {
-                stage('RPI Build & Test') {
+                stage ('RPI Build & Test') {
                     agent {
                         label 'armv7l&&raspian'
                     }
@@ -89,6 +89,24 @@ pipeline {
                         }
                     }
                 } // Mac Build & Test
+                stage ('Windows Build & Test') {
+                    agent {
+                        label 'windows10'
+                    }
+                    stages {
+                        stage ('Build') {
+                            runningOn(env.NODE_NAME)
+                                // fetch submodules
+                                sh 'git submodule update --init --jobs 4'
+                                // build
+                                dir('build') {
+                                    sh 'cmake -G "NMake Makefiles" -S .. -DTESTING=ON && nmake'
+                                    // archive Mac binaries
+                                    sh 'mkdir windows && cp xvf_host windows/'
+                                    archiveArtifacts artifacts: 'windows/*', fingerprint: true
+                        }
+                    }
+                }
             } // parallel
         } // Cross-platform Builds and Tests
     } // stages
