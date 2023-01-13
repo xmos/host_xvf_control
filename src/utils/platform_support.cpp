@@ -47,7 +47,7 @@ string get_dynamic_lib_path(const string lib_name)
         cerr << "Could not get binary path into " << PATH_MAX << " string" << endl;
         exit(CONTROL_ERROR);
     }
-    full_lib_name += ".dylib"
+    full_lib_name += ".dylib";
 #elif defined(_WIN32)
     full_lib_name = '\\' + full_lib_name;
     char path[MAX_PATH];
