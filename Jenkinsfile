@@ -98,12 +98,12 @@ pipeline {
                             steps {
                                 runningOn(env.NODE_NAME)
                                 // fetch submodules
-                                sh 'git submodule update --init --jobs 4'
+                                bat 'git submodule update --init --jobs 4'
                                 // build
                                 dir('build') {
-                                    sh 'cmake -G "NMake Makefiles" -S .. -DTESTING=ON && nmake'
+                                    runVS('cmake -G "NMake Makefiles" -S .. -DTESTING=ON && nmake')
                                     // archive Mac binaries
-                                    sh 'mkdir windows && cp xvf_host windows/'
+                                    bat 'mkdir windows && cp xvf_host windows/'
                                     archiveArtifacts artifacts: 'windows/*', fingerprint: true
                                 }
                             }
