@@ -56,7 +56,7 @@ pipeline {
                     }
                     stages {
                         stage ('Build') {
-                            step {
+                            steps {
                                 runningOn(env.NODE_NAME)
                                 // fetch submodules
                                 sh 'git submodule update --init --jobs 4'
