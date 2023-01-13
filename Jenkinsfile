@@ -91,7 +91,7 @@ pipeline {
                 } // Mac Build & Test
                 stage ('Windows Build & Test') {
                     agent {
-                        label 'windows10'
+                        label 'windows10&&x86_64'
                     }
                     stages {
                         stage ('Build') {
