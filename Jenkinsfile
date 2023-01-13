@@ -64,7 +64,7 @@ pipeline {
                                 dir('build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive Mac binaries
-                                    sh 'mkdir mac_x86 && cp xvf_host libdevice_* mac_x86/'
+                                    sh 'mkdir mac_x86 && cp xvf_host mac_x86/'
                                     archiveArtifacts artifacts: 'mac_x86/*', fingerprint: true
                                 }
                             }
