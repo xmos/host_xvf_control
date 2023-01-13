@@ -6,7 +6,7 @@ import os
 import shutil
 import subprocess
 from random import randint, random
-#import numpy as np
+from platform import system
 
 num_vals = 20
 num_frames = 10
@@ -14,15 +14,23 @@ float_cmd = "CMD_FLOAT"
 uint8_cmd = "CMD_UINT8"
 control_protocol = "i2c"
 
+system_name = system()
+if system_name == "Linux":
+    file_type = ".so"
+elif system_name == "Darwin":
+    file_type = ".dylib"
+else:
+    assert 0, "Unsupported operating system"
+
 host_bin = "xvf_host"
 build_dir = "../build/"
 test_dir = "../build/test/"
 host_bin_path = build_dir + host_bin
 host_bin_copy = test_dir + host_bin
-cmd_map_dummy_path = test_dir + "libcommand_map_dummy.so"
-cmd_map_path = test_dir + "libcommand_map.so"
-device_dummy_path = test_dir + "libdevice_dummy.so"
-device_path = test_dir + "libdevice_"+ control_protocol + ".so"
+cmd_map_dummy_path = test_dir + "libcommand_map_dummy" + file_type
+cmd_map_path = test_dir + "libcommand_map" + file_type
+device_dummy_path = test_dir + "libdevice_dummy" + file_type
+device_path = test_dir + "libdevice_"+ control_protocol + file_type
 
 def check_files():
     assert Path(host_bin_path).is_file() or Path(host_bin_copy).is_file(), f"host app binary not found here {host_bin}"
@@ -42,10 +50,8 @@ def gen_rand_array(type, min, max, size=num_vals):
     vals = [0 for i in range (size)]
     if type == "float":
         vals = [random() * (max - min) + min for i in range(size)]
-        #vals = np.random.rand(size) * (max - min) + min
     elif type == "int":
         vals = [randint(min, max+1) for i in range(size)]
-        #vals = np.random.randint(min, max+1, size, dtype = np.int32)
     else:
         print('Unknown type: ', type)
     return vals
@@ -64,9 +70,7 @@ def run_cmd(command, verbose = False):
 
 def execute_command(cmd_name, cmd_vals = None):
     
-    #command = "sudo ./" + host_bin + " -u " + control_protocol + " " + cmd_name
     command = "./" + host_bin + " -u " + control_protocol + " " + cmd_name
-    #if cmd_vals.all() != None:
     if cmd_vals != None:
         cmd_write = command + " " + ' '.join(str(val) for val in cmd_vals)
         run_cmd(cmd_write, True)
@@ -93,7 +97,6 @@ def single_command_test(cmd_name, cmd_vals):
         # ~20 bits should be good for this test
         rtol = 1e-6
         e = 1e-30
-        #assert np.isclose(read_output, cmd_vals[i])
         assert (cmd_vals[i]/(read_output + e)) > rtol
 
 def test_dummy_commands():
@@ -106,7 +109,6 @@ def test_dummy_commands():
     with open('test_buf.bin', 'w'):
         pass
     vals = gen_rand_array('float', -2147483648, 2147483647)
-    #vals = gen_rand_array('float', np.iinfo(np.int32).min, np.iinfo(np.int32).max)
     single_command_test(float_cmd, vals)
 
     vals = gen_rand_array('int', 0, 255)

@@ -5,6 +5,10 @@
 #include <fstream>
 #include <iomanip>
 
+#if defined(__APPLE__)
+#include <sstream>
+#endif
+
 using namespace std;
 
 opt_t options[] = {
