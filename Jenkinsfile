@@ -9,78 +9,87 @@ getApproval()
 pipeline {
     agent none
     stages {
-        stage('RPI Build & Test') {
-            agent {
-                label 'armv7l&&raspian'
-            }
-            stages {
-                stage ('Build') {
-                    steps {
-                        runningOn(env.NODE_NAME)
-                        // fetch submodules
-                        sh 'git submodule update --init --jobs 4'
-                        // build
-                        dir('build') {
-                            sh 'cmake -S .. -DTESTING=ON && make -j4'
-                            // archive RPI binaries
-                            sh 'mkdir rpi && cp xvf_host libdevice_* rpi/'
-                            archiveArtifacts artifacts: 'rpi/*', fingerprint: true
+        stage ('Cross-platform Builds and Tests') {
+            parallel {
+                stage('RPI Build & Test') {
+                    agent {
+                        label 'armv7l&&raspian'
+                    }
+                    stages {
+                        stage ('Build') {
+                            steps {
+                                runningOn(env.NODE_NAME)
+                                // fetch submodules
+                                sh 'git submodule update --init --jobs 4'
+                                // build
+                                dir('build') {
+                                    sh 'cmake -S .. -DTESTING=ON && make -j4'
+                                    // archive RPI binaries
+                                    sh 'mkdir rpi && cp xvf_host libdevice_* rpi/'
+                                    archiveArtifacts artifacts: 'rpi/*', fingerprint: true
+                                }
+                            }
+                        }
+                        stage ('Create Python enviroment') {
+                            steps {
+                                //sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install -r requirements-dev.txt'
+                                sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install pytest'
+                            }
+                        }
+                        stage ('Test') {
+                            steps {
+                                dir('test') {
+                                    sh 'source ../.venv/bin/activate && pytest -s'
+                                }
+                            }
+                        }
+                    } // stages
+                    post {
+                        cleanup {
+                            cleanWs()
                         }
                     }
-                }
-                stage ('Create Python enviroment') {
-                    steps {
-                        //sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install -r requirements-dev.txt'
-                        sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install pytest'
+                } // RPI build & test
+                stage ('Mac Build & Test') {
+                    agent {
+                        label 'macos&&x86_64'
                     }
-                }
-                stage ('Test') {
-                    steps {
-                        dir('test') {
-                            sh 'source ../.venv/bin/activate && pytest -s'
+                    stages {
+                        stage ('Build') {
+                            step {
+                                runningOn(env.NODE_NAME)
+                                // fetch submodules
+                                sh 'git submodule update --init --jobs 4'
+                                // build
+                                dir('build') {
+                                    sh 'cmake -S .. -DTESTING=ON && make -j4'
+                                    // archive Mac binaries
+                                    sh 'mkdir mac_x86 && cp xvf_host libdevice_* mac_x86/'
+                                    archiveArtifacts artifacts: 'mac_x86/*', fingerprint: true
+                                }
+                            }
+                        }
+                        stage ('Create Python enviroment') {
+                            steps {
+                                //sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install -r requirements-dev.txt'
+                                sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install pytest'
+                            }
+                        }
+                        stage ('Test') {
+                            steps {
+                                dir('test') {
+                                    sh 'source ../.venv/bin/activate && pytest -s'
+                                }
+                            }
+                        }
+                    } // stages
+                    post {
+                        cleanup {
+                            cleanWs()
                         }
                     }
-                }
-            } // stages
-            post {
-                cleanup {
-                    cleanWs()
-                }
-            }
-        } // RPI build & test
-        stage ('Mac Build & Test') {
-            agent {
-                label 'macos&&x86_64'
-            }
-            stages {
-                stage ('Build') {
-                    step {
-                        runningOn(env.NODE_NAME)
-                        // fetch submodules
-                        sh 'git submodule update --init --jobs 4'
-                        // build
-                        dir('build') {
-                            sh 'cmake -S .. -DTESTING=ON && make -j4'
-                            // archive Mac binaries
-                            sh 'mkdir mac_x86 && cp xvf_host libdevice_* mac_x86/'
-                            archiveArtifacts artifacts: 'mac_x86/*', fingerprint: true
-                        }
-                    }
-                }
-                stage ('Create Python enviroment') {
-                    steps {
-                        //sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install -r requirements-dev.txt'
-                        sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install pytest'
-                    }
-                }
-                stage ('Test') {
-                    steps {
-                        dir('test') {
-                            sh 'source ../.venv/bin/activate && pytest -s'
-                        }
-                    }
-                }
-            }
-        }
+                } // Mac Build & Test
+            } // parallel
+        } // Cross-platform Builds and Tests
     } // stages
 } // pipeline
