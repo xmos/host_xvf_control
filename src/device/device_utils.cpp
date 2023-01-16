@@ -34,7 +34,7 @@ void report_error()
 #endif // unix vs windows
 }
 
-void Device::get_device_info(void * handle, const string symbol)
+void Device::get_device_info(dy_lib_t handle, const string symbol)
 {
     using device_info_fptr = int * (*)();
 #if (defined(__linux__) || defined(__APPLE__))

@@ -8,7 +8,7 @@ using namespace std;
 
 string to_upper(string str)
 {
-    for(int i = 0; i < str.length(); i++)
+    for(unsigned i = 0; i < str.length(); i++)
     {
         str[i] = toupper(str[i]);
     }
@@ -17,7 +17,7 @@ string to_upper(string str)
 
 string to_lower(string str)
 {
-    for(int i = 0; i < str.length(); i++)
+    for(unsigned i = 0; i < str.length(); i++)
     {
         str[i] = tolower(str[i]);
     }

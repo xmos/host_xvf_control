@@ -15,7 +15,7 @@ control_ret_t control_read_command(control_resid_t resid, control_cmd_t cmd,
 control_ret_t control_cleanup_i2c();
 }
 
-Device::Device(void * handle)
+Device::Device(dy_lib_t handle)
 {
     // declaring int * function pointer type
     /*using info_t = int * (*)();
@@ -61,8 +61,15 @@ Device::~Device()
     }
 }
 
-extern "C"
-unique_ptr<Device> make_Dev(void * handle)
+//extern "C"
+/*unique_ptr<Device> make_Dev(void * handle)
 {
     return make_unique<Device>(handle);
+}*/
+
+extern "C"
+Device * make_Dev(dy_lib_t handle)
+{
+    static Device dev_obj(handle);
+    return &dev_obj;
 }

@@ -3,7 +3,6 @@
 
 #include "device.hpp"
 #include <cstring>
-#include <dlfcn.h>
 #include <fstream>
 
 using namespace std;
@@ -14,7 +13,7 @@ uint8_t buffer[num_vals * sizeof(float)] = {0};
 const string buf_filename = "test_buf.bin";
 const size_t buff_size = end(buffer) - begin(buffer);
 
-Device::Device(void * handle)
+Device::Device(dy_lib_t handle)
 {
     // declaring int * function pointer type
     /*using info_t = int * (*)();
@@ -140,8 +139,18 @@ Device::~Device()
     }
 }
 
-extern "C"
-unique_ptr<Device> make_Dev(void * handle)
+//extern "C"
+/*unique_ptr<Device> make_Dev(void * handle)
 {
     return make_unique<Device>(handle);
+}*/
+
+extern "C"
+#if defined(_WIN32)
+__declspec(dllexport)
+#endif
+Device * make_Dev(dy_lib_t handle)
+{
+    static Device dev_obj(handle);
+    return &dev_obj;
 }

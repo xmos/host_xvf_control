@@ -9,6 +9,13 @@ extern "C"
 #include <memory>
 #include <iostream>
 
+#if defined(_WIN32)
+#include <windows.h>
+typedef HMODULE dy_lib_t;
+#elif (defined(__APPLE__) || defined(__linux__))
+typedef void * dy_lib_t;
+#endif
+
 /**
  * @brief Class for interfacing device_contol
  */
@@ -32,7 +39,7 @@ class Device
          * @param handle    Pointer to the command_map shared object
          * @param symbol    Fuction name to get the device_info from
          */
-        void get_device_info(void * handle, const std::string symbol);
+        void get_device_info(dy_lib_t handle, const std::string symbol);
 
     public:
 
@@ -41,7 +48,7 @@ class Device
          * 
          * @param handle    Pointer to the command_map shared object
          */
-        Device(void * handle);
+        Device(dy_lib_t handle);
 
         /** @brief Initialise a host (master) interface */
         virtual control_ret_t device_init();
@@ -74,12 +81,18 @@ class Device
         virtual ~Device();
 };
 
-extern "C"
+//extern "C"
 /**
  * @brief Return unique pointer to the Device class object
  * 
  * @param handle    Pointer to the command_map shared object
  */
-std::unique_ptr<Device> make_Dev(void * handle);
+//std::unique_ptr<Device> make_Dev(void * handle);
+
+extern "C"
+#if defined(_WIN32)
+__declspec(dllexport)
+#endif
+Device * make_Dev(dy_lib_t handle);
 
 #endif

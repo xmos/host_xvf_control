@@ -24,27 +24,33 @@ elif system_name == "Windows":
 else:
     assert 0, "Unsupported operating system"
 
-host_bin = "xvf_host"
-build_dir = "../build/"
-test_dir = "../build/test/"
-host_bin_path = build_dir + host_bin
-host_bin_copy = test_dir + host_bin
-cmd_map_dummy_path = test_dir + "libcommand_map_dummy" + file_type
-cmd_map_path = test_dir + "libcommand_map" + file_type
-device_dummy_path = test_dir + "libdevice_dummy" + file_type
-device_path = test_dir + "libdevice_"+ control_protocol + file_type
+host_bin = "xvf_host.exe" if system_name == "Windows" else "xvf_host"
+cmd_map_so = "command_map" if system_name == "Windows" else "libcommand_map"
+device_so = "device_" if system_name == "Windows" else "libdevice_"
+build_dir = Path(__file__).parents[1] / "build"
+test_dir = build_dir / "test"
+host_bin_path = build_dir / host_bin 
+host_bin_copy = test_dir / host_bin
+cmd_map_dummy_path = test_dir / (cmd_map_so + "_dummy" + file_type)
+cmd_map_path = test_dir / (cmd_map_so + file_type)
+device_dummy_path = test_dir / (device_so + "dummy" + file_type)
+device_path = test_dir / (device_so + control_protocol + file_type)
 
 def check_files():
-    assert Path(host_bin_path).is_file() or Path(host_bin_copy).is_file(), f"host app binary not found here {host_bin}"
-    if (not Path(host_bin_copy).is_file()) or (Path(host_bin_path).is_file() and Path(host_bin_copy).is_file()):
+    assert host_bin_path.is_file() or host_bin_copy.is_file(), f"host app binary not found here {host_bin}"
+    if (not host_bin_copy.is_file()) or (host_bin_path.is_file() and host_bin_copy.is_file()):
         shutil.copy2(host_bin_path,  host_bin_copy)
 
-    assert Path(cmd_map_dummy_path).is_file() or Path(cmd_map_path).is_file(), f"not found {cmd_map_dummy_path}"
-    if (not Path(cmd_map_path).is_file()) or (Path(cmd_map_dummy_path).is_file() and Path(cmd_map_path).is_file()):
+    assert cmd_map_dummy_path.is_file() or cmd_map_path.is_file(), f"not found {cmd_map_dummy_path}"
+    if (not cmd_map_path.is_file()) or (cmd_map_dummy_path.is_file() and cmd_map_path.is_file()):
+        if cmd_map_path.is_file():
+            os.remove(cmd_map_path)
         os.rename(cmd_map_dummy_path, cmd_map_path)
 
-    assert Path(device_dummy_path).is_file() or Path(device_path).is_file(), f"not found {device_dummy_path}"
-    if (not Path(device_path).is_file()) or (Path(device_dummy_path).is_file() and Path(device_path).is_file()):
+    assert device_dummy_path.is_file() or device_path.is_file(), f"not found {device_dummy_path}"
+    if (not device_path.is_file()) or (device_dummy_path.is_file() and device_path.is_file()):
+        if device_path.is_file():
+            os.remove(device_path)
         os.rename(device_dummy_path, device_path)
 
 def gen_rand_array(type, min, max, size=num_vals):

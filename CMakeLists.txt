@@ -19,6 +19,8 @@ set(CMAKE_CXX_EXTENSIONS Off)
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-Wreturn-type-c-linkage HAVE_C_LINKAGE_WARNING)
 
+message("CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
+
 project(host_xvf_control)
 
 set(FWK_RTOS ${CMAKE_SOURCE_DIR}/fwk_rtos)

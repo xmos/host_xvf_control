@@ -25,9 +25,9 @@ using namespace std;
 
 string get_dynamic_lib_path(const string lib_name)
 {
-    string full_lib_name = "lib" + lib_name;
 
 #if defined(__linux__)
+    string full_lib_name = "lib" + lib_name;
     char * dir_path;
     char path[PATH_MAX];
     full_lib_name = '/' + full_lib_name;
@@ -39,6 +39,7 @@ string get_dynamic_lib_path(const string lib_name)
     }
     full_lib_name += ".so";
 #elif defined(__APPLE__)
+    string full_lib_name = "lib" + lib_name;
     char * dir_path;
     char path[PATH_MAX];
     full_lib_name = '/' + full_lib_name;
@@ -50,6 +51,7 @@ string get_dynamic_lib_path(const string lib_name)
     }
     full_lib_name += ".dylib";
 #elif defined(_WIN32)
+    string full_lib_name = lib_name;
     full_lib_name = '\\' + full_lib_name;
     char path[MAX_PATH];
     if(0 == GetModuleFileNameA(GetModuleHandle(NULL), path, MAX_PATH))
@@ -78,14 +80,14 @@ void report_error()
 #endif // unix vs windows
 }
 
-void * get_dynamic_lib(const string lib_name)
+dy_lib_t get_dynamic_lib(const string lib_name)
 {
     string dyn_lib_path = get_dynamic_lib_path(lib_name);
 #if (defined(__linux__) || defined(__APPLE__))
     static_cast<void>(dlerror()); // clear errors
-    void * handle = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
+    dy_lib_t handle = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
 #elif defined(_WIN32)
-    void * handle = reinterpret_cast<void *>(LoadLibraryA(dyn_lib_path.c_str()));
+    dy_lib_t handle = LoadLibrary(dyn_lib_path.c_str());
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows
@@ -98,7 +100,7 @@ void * get_dynamic_lib(const string lib_name)
 }
 
 template<typename T>
-T get_function(void * handle, const string symbol)
+T get_function(dy_lib_t handle, const string symbol)
 {
 #if (defined(__linux__) || defined(__APPLE__))
     static_cast<void>(dlerror()); // clear errors
@@ -116,17 +118,17 @@ T get_function(void * handle, const string symbol)
     return func;
 }
 
-cmd_map_fptr get_cmd_map_fptr(void * handle)
+cmd_map_fptr get_cmd_map_fptr(dy_lib_t handle)
 {
     return get_function<cmd_map_fptr>(handle, "get_command_map");
 }
 
-num_cmd_fptr get_num_cmd_fptr(void * handle)
+num_cmd_fptr get_num_cmd_fptr(dy_lib_t handle)
 {
     return get_function<num_cmd_fptr>(handle, "get_num_commands");
 }
 
-device_fptr get_device_fptr(void * handle)
+device_fptr get_device_fptr(dy_lib_t handle)
 {
     return get_function<device_fptr>(handle, "make_Dev");
 }

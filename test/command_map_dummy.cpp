@@ -46,12 +46,18 @@ static cmd_t commands[] = {
 static size_t num_commands = std::end(commands) - std::begin(commands);
 
 extern "C"
+#if defined(_WIN32)
+__declspec(dllexport)
+#endif
 uint32_t get_num_commands()
 {
     return num_commands;
 }
 
 extern "C"
+#if defined(_WIN32)
+__declspec(dllexport)
+#endif
 cmd_t * get_command_map()
 {
     return commands;
@@ -60,6 +66,9 @@ cmd_t * get_command_map()
 static const int dummy_info = 0x74736574;    // 'test' in ascii
 
 extern "C"
+#if defined(_WIN32)
+__declspec(dllexport)
+#endif
 const int * get_info()
 {
     return &dummy_info;

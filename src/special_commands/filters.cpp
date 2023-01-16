@@ -64,7 +64,7 @@ control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_i
             exit(CONTROL_ERROR);
         }
 
-        for(int i = 0; i < buffer_length; i++)
+        for(uint32_t i = 0; i < buffer_length; i++)
         {
             wf.write(reinterpret_cast<char *>(&aec_filter[i].f), sizeof(float));
         }
@@ -96,7 +96,7 @@ control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_i
         }
 
         // Read from file into aec buffer. Will need to be done byte by byte since aec_filter is of type cmd_param_t
-        for(int i = 0; i < buffer_length; i++)
+        for(uint32_t i = 0; i < buffer_length; i++)
         {
             rf.read(reinterpret_cast<char *>(&aec_filter[i].f), sizeof(float));
         }
