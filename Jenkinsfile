@@ -101,7 +101,7 @@ pipeline {
                                 bat 'git submodule update --init --jobs 4'
                                 // build
                                 dir('build') {
-                                    bat 'call "%PROGRAMFILES(x86)%\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\VsDevCmd.bat" && cmake -G "NMake Makefiles" -S .. -DTESTING=ON && nmake'
+                                    bat 'call "%PROGRAMFILES(x86)%\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\Tools\\VsDevCmd.bat" && cmake -G "NMake Makefiles" -S .. -DTESTING=ON && nmake'
                                     // archive Mac binaries
                                     bat 'mkdir windows && cp xvf_host windows/'
                                     archiveArtifacts artifacts: 'windows/*', fingerprint: true
