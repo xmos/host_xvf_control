@@ -108,6 +108,18 @@ pipeline {
                                 }
                             }
                         }
+                        stage ('Create Python enviroment') {
+                            steps {
+                                bat 'python3 -m venv .venv && .venv\Scripts\activate && pip3 install pytest'
+                            }
+                        }
+                        stage ('Test') {
+                            steps {
+                                dir('test') {
+                                    bat '..\.venv\Scripts\activate && pytest -s'
+                                }
+                            }
+                        }
                     } // stages
                     post {
                         cleanup {

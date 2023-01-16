@@ -62,11 +62,11 @@ Device::~Device()
     }
 }
 
-extern "C"
-unique_ptr<Device> make_Dev(void * handle)
+//extern "C"
+/*unique_ptr<Device> make_Dev(void * handle)
 {
     return make_unique<Device>(handle);
-}
+}*/
 
 extern "C"
 Device * make_Dev(dy_lib_t handle)
