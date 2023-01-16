@@ -69,38 +69,33 @@ string get_dynamic_lib_path(const string lib_name)
     return lib_path_str;
 }
 
-void report_error()
-{
-#if (defined(__linux__) || defined(__APPLE__))
-    cerr << dlerror() << endl;
-#elif defined(_WIN32)
-    cerr << GetLastError() << endl;
-#else
-#error "Unknown Operating System"
-#endif // unix vs windows
-}
-
-dy_lib_t get_dynamic_lib(const string lib_name)
+dl_handle_t get_dynamic_lib(const string lib_name)
 {
     string dyn_lib_path = get_dynamic_lib_path(lib_name);
 #if (defined(__linux__) || defined(__APPLE__))
     static_cast<void>(dlerror()); // clear errors
-    dy_lib_t handle = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
+    dl_handle_t handle = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
 #elif defined(_WIN32)
-    dy_lib_t handle = LoadLibrary(dyn_lib_path.c_str());
+    dl_handle_t handle = LoadLibrary(dyn_lib_path.c_str());
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows
     if(handle == NULL)
     {
-        report_error();
+#if (defined(__linux__) || defined(__APPLE__))
+        cerr << dlerror() << endl;
+#elif defined(_WIN32)
+        cerr << "Could not load " << lib_name << ", got " << GetLastError() << " error code" << endl;
+#else
+#error "Unknown Operating System"
+#endif // unix vs windows        
         exit(CONTROL_ERROR);
     }
     return handle;
 }
 
 template<typename T>
-T get_function(dy_lib_t handle, const string symbol)
+T get_function(dl_handle_t handle, const string symbol)
 {
 #if (defined(__linux__) || defined(__APPLE__))
     static_cast<void>(dlerror()); // clear errors
@@ -112,23 +107,29 @@ T get_function(dy_lib_t handle, const string symbol)
 #endif // unix vs windows
     if(func == NULL)
     {
-        report_error();
+#if (defined(__linux__) || defined(__APPLE__))
+        cerr << dlerror() << endl;
+#elif defined(_WIN32)
+        cerr << "Could not load " << symbol << " function, got " << GetLastError() << "error code" << endl;
+#else
+#error "Unknown Operating System"
+#endif // unix vs windows        
         exit(CONTROL_ERROR);
     }
     return func;
 }
 
-cmd_map_fptr get_cmd_map_fptr(dy_lib_t handle)
+cmd_map_fptr get_cmd_map_fptr(dl_handle_t handle)
 {
     return get_function<cmd_map_fptr>(handle, "get_command_map");
 }
 
-num_cmd_fptr get_num_cmd_fptr(dy_lib_t handle)
+num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle)
 {
     return get_function<num_cmd_fptr>(handle, "get_num_commands");
 }
 
-device_fptr get_device_fptr(dy_lib_t handle)
+device_fptr get_device_fptr(dl_handle_t handle)
 {
     return get_function<device_fptr>(handle, "make_Dev");
 }

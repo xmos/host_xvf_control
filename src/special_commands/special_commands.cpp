@@ -28,9 +28,9 @@ size_t num_options = end(options) - begin(options);
 cmd_t * commands;
 size_t num_commands;
 
-dy_lib_t load_command_map_dll()
+dl_handle_t load_command_map_dll()
 {
-    dy_lib_t handle = get_dynamic_lib("command_map");
+    dl_handle_t handle = get_dynamic_lib("command_map");
 
     cmd_map_fptr get_command_map = get_cmd_map_fptr(handle);
     num_cmd_fptr get_num_commands = get_num_cmd_fptr(handle);
@@ -236,7 +236,7 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
         const size_t max_line_len = 128;
         char buff[max_line_len];
         int i = 0;
-        //char * line_ch[largest_command];
+
         char ** line_ch = new char * [largest_command];
         int num = 0;
         stringstream ss(line);

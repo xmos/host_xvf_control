@@ -14,7 +14,7 @@ int main(int argc, char ** argv)
         return CONTROL_SUCCESS;
     }
     int cmd_indx = 1;
-    dy_lib_t cmd_map_handle = load_command_map_dll();
+    dl_handle_t cmd_map_handle = load_command_map_dll();
     cmd_t * cmd = nullptr;
     opt_t * opt = nullptr;
     string next_cmd = argv[cmd_indx];
@@ -42,10 +42,9 @@ int main(int argc, char ** argv)
         }
     }
 
-    dy_lib_t device_handle = get_dynamic_lib(lib_name);
+    dl_handle_t device_handle = get_dynamic_lib(lib_name);
     device_fptr make_dev = get_device_fptr(device_handle);
     auto device = make_dev(cmd_map_handle);
-    //Command command(device.get());
     Command command(device);
 
     int arg_indx = cmd_indx + 1;

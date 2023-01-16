@@ -84,7 +84,7 @@ std::string get_device_lib_name(std::string protocol_name);
  * 
  * @param lib_name Name of the library to load (without lib prefix)
  */
-dy_lib_t get_dynamic_lib(const std::string lib_name);
+dl_handle_t get_dynamic_lib(const std::string lib_name);
 
 /** cmd_t * function pointer type */
 using cmd_map_fptr = cmd_t * (*)();
@@ -92,7 +92,7 @@ using cmd_map_fptr = cmd_t * (*)();
 /** uint32_t function pointer type */
 using num_cmd_fptr = uint32_t (*)();
 
-/** Function pointer that takes void * and returns unique_ptr<Device> */
+/** Function pointer that takes void * and returns Device */
 using device_fptr = Device * (*)(void *);
 
 /**
@@ -100,21 +100,21 @@ using device_fptr = Device * (*)(void *);
  * 
  * @param handle Pointer to the command_map shared object
  */
-cmd_map_fptr get_cmd_map_fptr(dy_lib_t handle);
+cmd_map_fptr get_cmd_map_fptr(dl_handle_t handle);
 
 /**
  * @brief Get the function pointer to get_num_commands()
  * 
  * @param handle Pointer to the command_map shared object
  */
-num_cmd_fptr get_num_cmd_fptr(dy_lib_t handle);
+num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle);
 
 /**
  * @brief Get the function pointer to make_Dev()
  * 
  * @param handle Pointer to the device shared object
  */
-device_fptr get_device_fptr(dy_lib_t handle);
+device_fptr get_device_fptr(dl_handle_t handle);
 
 /** @brief Get param type name string */
 std::string command_param_type_name(const cmd_param_type_t type);

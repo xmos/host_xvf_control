@@ -11,9 +11,11 @@ extern "C"
 
 #if defined(_WIN32)
 #include <windows.h>
-typedef HMODULE dy_lib_t;
+/** @brief Typedef for storing dynamically opened library  */
+typedef HMODULE dl_handle_t;
 #elif (defined(__APPLE__) || defined(__linux__))
-typedef void * dy_lib_t;
+/** @brief Typedef for storing dynamically opened library  */
+typedef void * dl_handle_t;
 #endif
 
 /**
@@ -39,7 +41,7 @@ class Device
          * @param handle    Pointer to the command_map shared object
          * @param symbol    Fuction name to get the device_info from
          */
-        void get_device_info(dy_lib_t handle, const std::string symbol);
+        void get_device_info(dl_handle_t handle, const std::string symbol);
 
     public:
 
@@ -48,7 +50,7 @@ class Device
          * 
          * @param handle    Pointer to the command_map shared object
          */
-        Device(dy_lib_t handle);
+        Device(dl_handle_t handle);
 
         /** @brief Initialise a host (master) interface */
         virtual control_ret_t device_init();
@@ -93,6 +95,6 @@ extern "C"
 #if defined(_WIN32)
 __declspec(dllexport)
 #endif
-Device * make_Dev(dy_lib_t handle);
+Device * make_Dev(dl_handle_t handle);
 
 #endif

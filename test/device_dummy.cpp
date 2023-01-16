@@ -13,17 +13,8 @@ uint8_t buffer[num_vals * sizeof(float)] = {0};
 const string buf_filename = "test_buf.bin";
 const size_t buff_size = end(buffer) - begin(buffer);
 
-Device::Device(dy_lib_t handle)
+Device::Device(dl_handle_t handle)
 {
-    // declaring int * function pointer type
-    /*using info_t = int * (*)();
-    info_t info = reinterpret_cast<info_t>(dlsym(handle, "get_info"));
-    if(info == NULL)
-    {
-        cerr << "Error while loading get_info from command_map" << endl;
-        exit(CONTROL_ERROR);
-    }
-    device_info = info();*/
     get_device_info(handle , "get_info");
 }
 
@@ -139,17 +130,11 @@ Device::~Device()
     }
 }
 
-//extern "C"
-/*unique_ptr<Device> make_Dev(void * handle)
-{
-    return make_unique<Device>(handle);
-}*/
-
 extern "C"
 #if defined(_WIN32)
 __declspec(dllexport)
 #endif
-Device * make_Dev(dy_lib_t handle)
+Device * make_Dev(dl_handle_t handle)
 {
     static Device dev_obj(handle);
     return &dev_obj;
