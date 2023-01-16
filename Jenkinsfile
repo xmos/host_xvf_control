@@ -91,7 +91,7 @@ pipeline {
                 } // Mac Build & Test
                 stage ('Windows Build & Test') {
                     agent {
-                        label 'windows10&&x86_64'
+                        label 'sw-bld-win0'
                     }
                     stages {
                         stage ('Build') {
@@ -101,7 +101,7 @@ pipeline {
                                 bat 'git submodule update --init --jobs 4'
                                 // build
                                 dir('build') {
-                                    runVS('cmake -G "NMake Makefiles" -S .. -DTESTING=ON && nmake')
+                                    bat 'call "%PROGRAMFILES(x86)%\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\VsDevCmd.bat" && cmake -G "NMake Makefiles" -S .. -DTESTING=ON && nmake'
                                     // archive Mac binaries
                                     bat 'mkdir windows && cp xvf_host windows/'
                                     archiveArtifacts artifacts: 'windows/*', fingerprint: true
