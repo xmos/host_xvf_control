@@ -8,16 +8,16 @@
 using namespace std;
 
 opt_t options[] = {
-            {"--help",                    "-h",        "display this information",            "0"                                        },
-            {"--list-commands",           "-l",        "print the list of commands",          "0"                                        },
-            {"--dump-params",             "-d",        "print all the parameters",            "0"                                        },
-            {"--execute-command-list",    "-e",        "execute commands from .txt file,",    "one command per line, don't need -u *"    },
-            {"--use",                     "-u",        "use specific harware protocol,",      "I2C and SPI are available to use"         },
-            {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files,",     "default is aec_filter.bin.fx.mx"          },
-            {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files,",     "default is aec_filter.bin.fx.mx"          },
-            {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file,",  "default is nlm_buffer.bin"                },
-            {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file,",  "default is nlm_buffer.bin"                },
-            {"--test-control-interface",  "-tc",       "test control interface",              "default is test_buffer.bin"               }
+            {"--help",                    "-h",        "display this information"                                   },
+            {"--list-commands",           "-l",        "print the list of commands"                                     },
+            {"--dump-params",             "-d",        "print all the parameters"                                },
+            {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u *"    },
+            {"--use",                     "-u",        "use specific harware protocol, I2C and SPI are available to use"         },
+            {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files, default is aec_filter.bin.fx.mx"          },
+            {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"          },
+            {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"                },
+            {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"                },
+            {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"               }
 };
 size_t num_options = end(options) - begin(options);
 
@@ -112,6 +112,7 @@ control_ret_t print_help_menu()
     }
     size_t long_opt_offset = longest_short_opt + 5;
     size_t info_offset = long_opt_offset + longest_long_opt + 4;
+    const size_t hard_stop = get_term_width();
 
     cout << "usage: xvf_hostapp_rpi [ command | option ]" << endl
     << setw(68) << "[ -u | --use <protocol>] [ command | option ]" << endl
@@ -123,17 +124,33 @@ control_ret_t print_help_menu()
         size_t short_len = opt.short_name.length();
         size_t long_len = opt.long_name.length();
         size_t info_len = opt.info.length();
+        size_t first_word_len = opt.info.find_first_of(' ');
         int first_space = long_opt_offset - short_len + long_len;
-        int second_space = info_offset - long_len - long_opt_offset + info_len;
+        //int second_space = info_offset - long_len - long_opt_offset + info_len;
+        int second_space = info_offset - long_len - long_opt_offset + first_word_len;
 
         cout << "  " << opt.short_name <<  "," << setw(first_space) << opt.long_name
-        << setw(second_space) << opt.info << endl;
-        if(opt.more_info != "0")
+        << setw(second_space);
+        
+        stringstream ss(opt.info);
+        string word;
+        size_t curr_pos = info_offset;
+        while(ss >> word)
         {
-            size_t more_info_len = opt.more_info.length();
-            int space = info_offset + more_info_len + 3; // +3 since we used two spaces and a comma in the line before
-            cout << setw(space) << opt.more_info << endl;
+            size_t word_len = word.length();
+            size_t future_pos = curr_pos + word_len;
+            if(future_pos >= hard_stop)
+            {
+                cout << endl << setw(info_offset + word_len) << word << " ";
+                curr_pos = info_offset + word_len + 1;
+            }
+            else
+            {
+                cout << word << " ";
+                curr_pos = future_pos + 1;
+            }
         }
+        cout << endl << endl;
     }
     return CONTROL_SUCCESS;
 }
@@ -181,8 +198,8 @@ control_ret_t print_command_list()
         size_t args_len = to_string(cmd->num_values).length();
         string type = command_param_type_name(cmd->type);
         size_t type_len = type.length();
-        size_t info_len = cmd->info.length();
         size_t first_word_len = cmd->info.find_first_of(' ');
+    
         int first_space = rw_offset - name_len + rw_len;
         int second_space = args_offset - rw_len - rw_offset + args_len;
         int third_space = type_offset - args_len - args_offset + type_len;
@@ -196,10 +213,10 @@ control_ret_t print_command_list()
         string word;
         size_t curr_pos = info_offset;
         while(ss >> word)
-            {
+        {
             size_t word_len = word.length();
             size_t future_pos = curr_pos + word_len;
-            if(future_pos > hard_stop)
+            if(future_pos >= hard_stop)
             {
                 cout << endl << setw(info_offset + word_len) << word << " ";
                 curr_pos = info_offset + word_len + 1;

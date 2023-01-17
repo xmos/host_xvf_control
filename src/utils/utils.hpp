@@ -56,8 +56,6 @@ struct opt_t
     std::string short_name;
     /** Option info */
     std::string info;
-    /** Second line of info */
-    std::string more_info;
 };
 
 /** @brief Convert string to uper case */
