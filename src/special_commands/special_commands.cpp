@@ -129,25 +129,25 @@ control_ret_t print_help_menu()
         //int second_space = info_offset - long_len - long_opt_offset + info_len;
         int second_space = info_offset - long_len - long_opt_offset + first_word_len;
 
-        cout << "  " << opt.short_name <<  "," << setw(first_space) << opt.long_name
+        cout << "  " << opt.short_name << setw(first_space) << opt.long_name
         << setw(second_space);
-        
+
         stringstream ss(opt.info);
         string word;
-        size_t curr_pos = info_offset;
+        size_t curr_pos = info_offset + 2;
         while(ss >> word)
         {
             size_t word_len = word.length();
-            size_t future_pos = curr_pos + word_len;
+            size_t future_pos = curr_pos + word_len + 1;
             if(future_pos >= hard_stop)
             {
-                cout << endl << setw(info_offset + word_len) << word << " ";
-                curr_pos = info_offset + word_len + 1;
+                cout << endl << setw(info_offset + word_len + 2) << word << " ";
+                curr_pos = info_offset + word_len + 2 + 1;
             }
             else
             {
                 cout << word << " ";
-                curr_pos = future_pos + 1;
+                curr_pos = future_pos;
             }
         }
         cout << endl << endl;
@@ -199,7 +199,7 @@ control_ret_t print_command_list()
         string type = command_param_type_name(cmd->type);
         size_t type_len = type.length();
         size_t first_word_len = cmd->info.find_first_of(' ');
-    
+
         int first_space = rw_offset - name_len + rw_len;
         int second_space = args_offset - rw_len - rw_offset + args_len;
         int third_space = type_offset - args_len - args_offset + type_len;
@@ -207,24 +207,24 @@ control_ret_t print_command_list()
 
         cout << cmd->cmd_name << setw(first_space) << rw
         << setw(second_space) << cmd->num_values << setw(third_space)
-        << type << setw(fourth_space);
+        << type << setw(fourth_space);// << cmd->info.substr(0, first_word_len);
 
-        stringstream ss(cmd->info);
+        stringstream ss(cmd->info/*.erase(0, first_word_len)*/);
         string word;
         size_t curr_pos = info_offset;
         while(ss >> word)
         {
             size_t word_len = word.length();
-            size_t future_pos = curr_pos + word_len;
+            size_t future_pos = curr_pos + word_len + 1;
             if(future_pos >= hard_stop)
             {
                 cout << endl << setw(info_offset + word_len) << word << " ";
-                curr_pos = info_offset + word_len + 1;
+                curr_pos = info_offset + word_len;
             }
             else
             {
                 cout << word << " ";
-                curr_pos = future_pos + 1;
+                curr_pos = future_pos;
             }
         }
         cout << endl << endl;
