@@ -61,11 +61,6 @@ target_link_libraries(device_i2c
 )
 target_link_options(device_i2c PRIVATE -fPIC)
 
-# If using clang disable c-linkage warning
-if(HAVE_C_LINKAGE_WARNING)
-    target_compile_options(device_i2c PRIVATE -Wno-return-type-c-linkage)
-endif(HAVE_C_LINKAGE_WARNING)
-
 # Build a wrapper driver for spi
 
 add_library(device_spi SHARED)
@@ -85,10 +80,4 @@ target_link_libraries(device_spi
 )
 target_link_libraries(device_spi PRIVATE -fPIC)
 
-# If using clang disable c-linkage warning
-if(HAVE_C_LINKAGE_WARNING)
-    target_compile_options(device_spi PRIVATE -Wno-return-type-c-linkage)
-endif(HAVE_C_LINKAGE_WARNING)
-
 endif()
-

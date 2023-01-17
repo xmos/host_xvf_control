@@ -1,5 +1,0 @@
-# python_version 3.7
-
-pytest
-# pinning old numpy for PI tests
-numpy==1.18

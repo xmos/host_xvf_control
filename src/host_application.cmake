@@ -27,22 +27,14 @@ target_include_directories(xvf_host
     PUBLIC
         ${COMMON_INCLUDES}
 )
+
 if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 target_link_libraries(xvf_host
-    PUBLIC 
+    PUBLIC
         dl
 )
 target_link_options(xvf_host
     PRIVATE
         -rdynamic
 )
-endif()
-#target_compile_options(xvf_host
-#    PRIVATE
-#        -std=c++14
-#)
-
-# If using clang disable c-linkage warning
-if(HAVE_C_LINKAGE_WARNING)
-    target_compile_options(xvf_host PRIVATE -Wno-return-type-c-linkage)
 endif()

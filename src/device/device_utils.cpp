@@ -23,31 +23,27 @@
 
 using namespace std;
 
-void report_error()
-{
-#if (defined(__linux__) || defined(__APPLE__))
-    cerr << dlerror() << endl;
-#elif defined(_WIN32)
-    cerr << GetLastError() << endl;
-#else
-#error "Unknown Operating System"
-#endif // unix vs windows
-}
-
 void Device::get_device_info(dl_handle_t handle, const string symbol)
 {
-    using device_info_fptr = int * (*)();
+    // declaring int * function pointer type
+    using get_info_fptr = int * (*)();
 #if (defined(__linux__) || defined(__APPLE__))
     static_cast<void>(dlerror()); // clear errors
-    device_info_fptr func = reinterpret_cast<device_info_fptr>(dlsym(handle, symbol.c_str()));
+    get_info_fptr func = reinterpret_cast<get_info_fptr>(dlsym(handle, symbol.c_str()));
 #elif defined(_WIN32)
-    device_info_fptr func = reinterpret_cast<device_info_fptr>(GetProcAddress(handle, symbol.c_str()));
+    get_info_fptr func = reinterpret_cast<get_info_fptr>(GetProcAddress(handle, symbol.c_str()));
 #else
 #error "Unsupported operating system"
 #endif // unix vs windows
     if(func == NULL)
     {
-        report_error();
+#if (defined(__linux__) || defined(__APPLE__))
+        cerr << dlerror() << endl;
+#elif defined(_WIN32)
+        cerr << "Could not load " << symbol << " function, got " << GetLastError() << "error code" << endl;
+#else
+#error "Unknown Operating System"
+#endif // unix vs windows
         exit(CONTROL_ERROR);
     }
     device_info = func();

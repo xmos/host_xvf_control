@@ -83,15 +83,12 @@ class Device
         virtual ~Device();
 };
 
-//extern "C"
-/**
- * @brief Return unique pointer to the Device class object
- * 
- * @param handle    Pointer to the command_map shared object
- */
-//std::unique_ptr<Device> make_Dev(void * handle);
-
 extern "C"
+/**
+ * @brief Returns a pointer to the Device class object
+ * 
+ * @param handle    Handle of the command_map shared object
+ */
 #if defined(_WIN32)
 __declspec(dllexport)
 #endif
