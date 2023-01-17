@@ -164,6 +164,8 @@ control_ret_t print_command_list()
     size_t args_offset = rw_offset + longest_rw + 2;
     size_t type_offset = args_offset + longest_args + 2;
     size_t info_offset = type_offset + longest_type + 2;
+const size_t hard_stop = 120;
+//cout << "chars left: " << hard_stop - info_offset << endl;
 
     for(size_t i = 0; i < num_commands; i ++)
     {
@@ -181,13 +183,34 @@ control_ret_t print_command_list()
         string type = command_param_type_name(cmd->type);
         size_t type_len = type.length();
         size_t info_len = cmd->info.length();
+size_t found = cmd->info.find_first_of(' ');
         int first_space = rw_offset - name_len + rw_len;
         int second_space = args_offset - rw_len - rw_offset + args_len;
         int third_space = type_offset - args_len - args_offset + type_len;
-        int fourth_space = info_offset - type_len - type_offset + info_len;
+//        int fourth_space = info_offset - type_len - type_offset + info_len;
+int fourth_space = info_offset - type_len - type_offset + found;
         cout << cmd->cmd_name << setw(first_space) << rw
         << setw(second_space) << cmd->num_values << setw(third_space)
-        << type << setw(fourth_space) << cmd->info << endl;
+        << type << setw(fourth_space);
+stringstream ss(cmd->info);
+string word;
+size_t curr_pos = info_offset;
+while(ss >> word)
+{
+size_t word_len = word.length();
+size_t future_pos = curr_pos + word_len + 1; // one for the space
+if(future_pos > hard_stop)
+{
+cout << endl << setw(info_offset + word_len) << word << " ";
+curr_pos = info_offset + word_len + 1;
+}
+else
+{
+cout << word << " ";
+curr_pos = future_pos;
+}
+}
+cout << endl << endl;
     }
     return CONTROL_SUCCESS;
 }
