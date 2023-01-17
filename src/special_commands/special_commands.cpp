@@ -8,16 +8,16 @@
 using namespace std;
 
 opt_t options[] = {
-            {"--help",                    "-h",        "display this information"                                   },
-            {"--list-commands",           "-l",        "print the list of commands"                                     },
-            {"--dump-params",             "-d",        "print all the parameters"                                },
+            {"--help",                    "-h",        "display this information"                                                  },
+            {"--list-commands",           "-l",        "print the list of commands"                                                },
+            {"--dump-params",             "-d",        "print all the parameters"                                                  },
             {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u *"    },
-            {"--use",                     "-u",        "use specific harware protocol, I2C and SPI are available to use"         },
-            {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files, default is aec_filter.bin.fx.mx"          },
-            {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"          },
-            {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"                },
-            {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"                },
-            {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"               }
+            {"--use",                     "-u",        "use specific harware protocol, I2C and SPI are available to use"           },
+            {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files, default is aec_filter.bin.fx.mx"           },
+            {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"           },
+            {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"              },
+            {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"              },
+            {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                        }
 };
 size_t num_options = end(options) - begin(options);
 
@@ -126,15 +126,14 @@ control_ret_t print_help_menu()
         size_t info_len = opt.info.length();
         size_t first_word_len = opt.info.find_first_of(' ');
         int first_space = long_opt_offset - short_len + long_len;
-        //int second_space = info_offset - long_len - long_opt_offset + info_len;
         int second_space = info_offset - long_len - long_opt_offset + first_word_len;
 
-        cout << "  " << opt.short_name << setw(first_space) << opt.long_name
-        << setw(second_space);
+        cout << "  " << opt.short_name << setw(first_space) 
+        << opt.long_name << setw(second_space);
 
         stringstream ss(opt.info);
         string word;
-        size_t curr_pos = info_offset + 2;
+        size_t curr_pos = info_offset + 2; // adding 2 to compensate for two spaces
         while(ss >> word)
         {
             size_t word_len = word.length();
@@ -207,9 +206,9 @@ control_ret_t print_command_list()
 
         cout << cmd->cmd_name << setw(first_space) << rw
         << setw(second_space) << cmd->num_values << setw(third_space)
-        << type << setw(fourth_space);// << cmd->info.substr(0, first_word_len);
+        << type << setw(fourth_space);
 
-        stringstream ss(cmd->info/*.erase(0, first_word_len)*/);
+        stringstream ss(cmd->info);
         string word;
         size_t curr_pos = info_offset;
         while(ss >> word)
