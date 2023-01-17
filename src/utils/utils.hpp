@@ -133,4 +133,7 @@ void command_bytes_from_value(const cmd_param_type_t type, uint8_t * data, unsig
 /** @brief Find Levenshtein distance for approximate string matching */
 int Levenshtein_distance(const std::string source, const std::string target);
 
+/** @brief Get current terminal width */
+size_t get_term_width();
+
 #endif
