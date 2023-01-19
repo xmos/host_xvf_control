@@ -105,10 +105,10 @@ void print_arg(const cmd_param_type_t type, const cmd_param_t val)
         cout << static_cast<int>(val.ui8) << " ";
         break;
     case TYPE_FLOAT:
-        cout << val.f << " ";
+        cout << setprecision(7) << val.f << " ";
         break;
     case TYPE_RADIANS:
-        cout << setprecision(6) << fixed << val.f << setprecision(2) << fixed << " (" << val.f  * 180.0f / PI_VALUE << " deg)" << " ";
+        cout << setprecision(5) << fixed << val.f << setprecision(2) << fixed << " (" << val.f  * 180.0f / PI_VALUE << " deg)" << " ";
         break;
     case TYPE_INT32:
         cout << val.i32 << " ";

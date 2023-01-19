@@ -59,7 +59,7 @@ def gen_rand_array(type, min, max, size=num_vals):
     if type == "float":
         vals = [random() * (max - min) + min for i in range(size)]
     elif type == "int":
-        vals = [randint(min, max+1) for i in range(size)]
+        vals = [randint(min, max) for i in range(size)]
     else:
         print('Unknown type: ', type)
     return vals
@@ -105,7 +105,9 @@ def single_command_test(cmd_name, cmd_vals):
         # ~20 bits should be good for this test
         rtol = 1e-6
         e = 1e-30
-        assert (cmd_vals[i]/(read_output + e)) > rtol
+        abs_diff = abs(cmd_vals[i] - read_output)
+        rel_error = abs(abs_diff/(cmd_vals[i] + e))
+        assert rel_error < rtol
 
 def test_dummy_commands():
     print("\n")
