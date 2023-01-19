@@ -131,9 +131,6 @@ Device::~Device()
 }
 
 extern "C"
-#if defined(_WIN32)
-__declspec(dllexport)
-#endif
 Device * make_Dev(dl_handle_t handle)
 {
     static Device dev_obj(handle);

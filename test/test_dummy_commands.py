@@ -118,10 +118,12 @@ def test_dummy_commands():
 
     with open('test_buf.bin', 'w'):
         pass
-    vals = gen_rand_array('float', -2147483648, 2147483647)
-    single_command_test(float_cmd, vals)
+    
+    for i in range(num_frames):
+        vals = gen_rand_array('float', -2147483648, 2147483647)
+        single_command_test(float_cmd, vals)
 
-    vals = gen_rand_array('int', 0, 255)
-    single_command_test(uint8_cmd, vals)
+        vals = gen_rand_array('int', 0, 255)
+        single_command_test(uint8_cmd, vals)
 
     os.chdir(current_dir)

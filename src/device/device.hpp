@@ -89,9 +89,6 @@ extern "C"
  * 
  * @param handle    Handle of the command_map shared object
  */
-#if defined(_WIN32)
-__declspec(dllexport)
-#endif
 Device * make_Dev(dl_handle_t handle);
 
 #endif

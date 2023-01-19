@@ -16,7 +16,7 @@ target_include_directories(device_dummy
         ${DEVICE_CONTROL_PATH}/api
 )
 
-# If using clang disable c-linkage warning
-if(HAVE_C_LINKAGE_WARNING)
-    target_compile_options(device_dummy PRIVATE -Wno-return-type-c-linkage)
-endif(HAVE_C_LINKAGE_WARNING)
+if(WIN32)
+    generate_export_header(command_map_dummy)
+    generate_export_header(device_dummy)
+endif()
