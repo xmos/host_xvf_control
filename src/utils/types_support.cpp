@@ -108,7 +108,7 @@ void print_arg(const cmd_param_type_t type, const cmd_param_t val)
         cout << val.f << " ";
         break;
     case TYPE_RADIANS:
-        cout << val.f << setprecision(2) << fixed << " (" << val.f  * 180.0f / PI_VALUE << " deg)" << setprecision(5) << " ";
+        cout << setprecision(6) << fixed << val.f << setprecision(2) << fixed << " (" << val.f  * 180.0f / PI_VALUE << " deg)" << " ";
         break;
     case TYPE_INT32:
         cout << val.i32 << " ";
