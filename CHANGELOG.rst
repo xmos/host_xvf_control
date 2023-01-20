@@ -1,6 +1,11 @@
 Host XVF Control change log
 ===========================
 
+0.2.0
+-----
+
+  * ADDED: Builds for x86 Mac and Windows
+
 0.1.0
 -----
 

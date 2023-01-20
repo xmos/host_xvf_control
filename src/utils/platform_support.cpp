@@ -3,32 +3,34 @@
 
 #include "utils.hpp"
 
-#if defined(__unix__)
+#if defined(__linux__)
 #include <dlfcn.h>          // dlopen/dlsym/dlerror/dlclose
 #include <unistd.h>         // readlink
-#if defined(__linux__)
 #include <linux/limits.h>   // PATH_MAX
+
 #elif defined(__APPLE__)
+#include <dlfcn.h>          // dlopen/dlsym/dlerror/dlclose
+#include <unistd.h>         // readlink
 #include <mach-o/dyld.h>    // _NSGetExecutablePath
-#else
-#error "Unknown UNIX Operating System"
-#endif // linux  vs mac
+
 #elif defined(_WIN32)
 #include <Windows.h>        // GetModuleFileNameA
+#include <errhandlingapi.h> // GetLastError
+
 #else
 #error "Unknown Operating System"
-#endif // unix vs windows
+#endif
 
 using namespace std;
 
 string get_dynamic_lib_path(const string lib_name)
 {
+
+#if defined(__linux__)
     string full_lib_name = "lib" + lib_name;
-#ifdef __unix__
     char * dir_path;
     char path[PATH_MAX];
     full_lib_name = '/' + full_lib_name;
-#if defined(__linux__)
     ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
     if (count == -1)
     {
@@ -37,15 +39,19 @@ string get_dynamic_lib_path(const string lib_name)
     }
     full_lib_name += ".so";
 #elif defined(__APPLE__)
+    string full_lib_name = "lib" + lib_name;
+    char * dir_path;
+    char path[PATH_MAX];
+    full_lib_name = '/' + full_lib_name;
     uint32_t size = PATH_MAX;
     if (_NSGetExecutablePath(path, &size) != 0)
     {
         cerr << "Could not get binary path into " << PATH_MAX << " string" << endl;
         exit(CONTROL_ERROR);
     }
-    full_lib_name += ".dylib"
-#endif  // linux vs mac
+    full_lib_name += ".dylib";
 #elif defined(_WIN32)
+    string full_lib_name = lib_name;
     full_lib_name = '\\' + full_lib_name;
     char path[MAX_PATH];
     if(0 == GetModuleFileNameA(GetModuleHandle(NULL), path, MAX_PATH))
@@ -54,7 +60,7 @@ string get_dynamic_lib_path(const string lib_name)
         exit(CONTROL_ERROR);
     }
     full_lib_name += ".dll";
-#endif // unix vs windows
+#endif // linux vs apple vs windows
     string full_path = path;
     size_t found = full_path.find_last_of("/\\"); // works for both unix and windows
     string dir_path_str = full_path.substr(0, found);
@@ -63,67 +69,67 @@ string get_dynamic_lib_path(const string lib_name)
     return lib_path_str;
 }
 
-void * get_dynamic_lib(const string lib_name)
+dl_handle_t get_dynamic_lib(const string lib_name)
 {
     string dyn_lib_path = get_dynamic_lib_path(lib_name);
-#ifdef __unix__
+#if (defined(__linux__) || defined(__APPLE__))
     static_cast<void>(dlerror()); // clear errors
-    void * handle = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
+    dl_handle_t handle = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
 #elif defined(_WIN32)
-#error "Windows is currently not supported"
+    dl_handle_t handle = LoadLibrary(dyn_lib_path.c_str());
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows
     if(handle == NULL)
     {
-#ifdef __unix__
+#if (defined(__linux__) || defined(__APPLE__))
         cerr << dlerror() << endl;
 #elif defined(_WIN32)
-#error "Windows is currently not supported"
+        cerr << "Could not load " << lib_name << ", got " << GetLastError() << " error code" << endl;
 #else
 #error "Unknown Operating System"
-#endif // unix vs windows
+#endif // unix vs windows        
         exit(CONTROL_ERROR);
     }
     return handle;
 }
 
 template<typename T>
-T get_function(void * handle, const string symbol)
+T get_function(dl_handle_t handle, const string symbol)
 {
-#ifdef __unix__
+#if (defined(__linux__) || defined(__APPLE__))
     static_cast<void>(dlerror()); // clear errors
     T func = reinterpret_cast<T>(dlsym(handle, symbol.c_str()));
 #elif defined(_WIN32)
-#error "Windows is currently not supported"
+    T func = reinterpret_cast<T>(GetProcAddress(handle, symbol.c_str()));
 #else
 #error "Unsupported operating system"
 #endif // unix vs windows
     if(func == NULL)
     {
-#ifdef __unix__
-    cerr << dlerror() << endl;
+#if (defined(__linux__) || defined(__APPLE__))
+        cerr << dlerror() << endl;
 #elif defined(_WIN32)
-#error "Windows is currently not supported"
+        cerr << "Could not load " << symbol << " function, got " << GetLastError() << "error code" << endl;
 #else
-#error "Unsupported operating system"
+#error "Unknown Operating System"
 #endif // unix vs windows
         exit(CONTROL_ERROR);
     }
     return func;
 }
 
-cmd_map_fptr get_cmd_map_fptr(void * handle)
+cmd_map_fptr get_cmd_map_fptr(dl_handle_t handle)
 {
     return get_function<cmd_map_fptr>(handle, "get_command_map");
 }
 
-num_cmd_fptr get_num_cmd_fptr(void * handle)
+num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle)
 {
     return get_function<num_cmd_fptr>(handle, "get_num_commands");
 }
 
-device_fptr get_device_fptr(void * handle)
+device_fptr get_device_fptr(dl_handle_t handle)
 {
     return get_function<device_fptr>(handle, "make_Dev");
 }

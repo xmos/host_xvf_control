@@ -8,6 +8,10 @@
 #include <cstdint>
 #include "device.hpp"
 
+#if defined(_WIN32)
+#include <string>
+#endif
+
 /** @brief Enum for read/write command types */
 enum cmd_rw_t {CMD_RO, CMD_WO, CMD_RW};
 
@@ -60,18 +64,27 @@ struct opt_t
     std::string more_info;
 };
 
+/** @brief Default driver name to use
+ * 
+ * @note Using I2C by default for now as USB is currently not supported
+*/
+const std::string default_driver_name = "device_i2c";
+
 /** @brief Convert string to uper case */
 std::string to_upper(std::string str);
 
 /** @brief Convert string to lower case */
 std::string to_lower(std::string str);
 
+/** @brief Gets device driver name to load */
+std::string get_device_lib_name(std::string protocol_name);
+
 /**
  * @brief Open the dynamic library
  * 
  * @param lib_name Name of the library to load (without lib prefix)
  */
-void * get_dynamic_lib(const std::string lib_name);
+dl_handle_t get_dynamic_lib(const std::string lib_name);
 
 /** cmd_t * function pointer type */
 using cmd_map_fptr = cmd_t * (*)();
@@ -79,29 +92,29 @@ using cmd_map_fptr = cmd_t * (*)();
 /** uint32_t function pointer type */
 using num_cmd_fptr = uint32_t (*)();
 
-/** Function pointer that takes void * and returns unique_ptr<Device> */
-using device_fptr = std::unique_ptr<Device> (*)(void *);
+/** Function pointer that takes void * and returns Device */
+using device_fptr = Device * (*)(void *);
 
 /**
  * @brief Get the function pointer to get_command_map()
  * 
  * @param handle Pointer to the command_map shared object
  */
-cmd_map_fptr get_cmd_map_fptr(void * handle);
+cmd_map_fptr get_cmd_map_fptr(dl_handle_t handle);
 
 /**
  * @brief Get the function pointer to get_num_commands()
  * 
  * @param handle Pointer to the command_map shared object
  */
-num_cmd_fptr get_num_cmd_fptr(void * handle);
+num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle);
 
 /**
  * @brief Get the function pointer to make_Dev()
  * 
  * @param handle Pointer to the device shared object
  */
-device_fptr get_device_fptr(void * handle);
+device_fptr get_device_fptr(dl_handle_t handle);
 
 /** @brief Get param type name string */
 std::string command_param_type_name(const cmd_param_type_t type);

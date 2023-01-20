@@ -5,6 +5,10 @@
 #include <fstream>
 #include <iomanip>
 
+#if (defined(__APPLE__) || defined(_WIN32))
+#include <sstream>
+#endif
+
 using namespace std;
 
 opt_t options[] = {
@@ -24,9 +28,9 @@ size_t num_options = end(options) - begin(options);
 cmd_t * commands;
 size_t num_commands;
 
-void * load_command_map_dll()
+dl_handle_t load_command_map_dll()
 {
-    void * handle = get_dynamic_lib("command_map");
+    dl_handle_t handle = get_dynamic_lib("command_map");
 
     cmd_map_fptr get_command_map = get_cmd_map_fptr(handle);
     num_cmd_fptr get_num_commands = get_num_cmd_fptr(handle);
@@ -39,7 +43,7 @@ void * load_command_map_dll()
 opt_t * option_lookup(const string str)
 {
     string low_str = to_lower(str);
-    for(int i = 0; i < num_options; i++)
+    for(size_t i = 0; i < num_options; i++)
     {
         opt_t * opt = &options[i];
         if ((low_str == opt->long_name) || (low_str == opt->short_name))
@@ -50,7 +54,7 @@ opt_t * option_lookup(const string str)
 
     int shortest_dist = 100;
     int indx  = 0;
-    for(int i = 0; i < num_options; i++)
+    for(size_t i = 0; i < num_options; i++)
     {
         opt_t * opt = &options[i];
         int dist_long = Levenshtein_distance(low_str, opt->long_name);
@@ -82,8 +86,8 @@ cmd_t * command_lookup(const string str)
     }
 
     int shortest_dist = 100;
-    int indx  = 0;
-    for(int i = 0; i < num_commands; i++)
+    size_t indx  = 0;
+    for(size_t i = 0; i < num_commands; i++)
     {
         cmd_t * cmd = &commands[i];
         int dist = Levenshtein_distance(up_str, cmd->cmd_name);
@@ -229,10 +233,11 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
     while(getline(file, line))
     {
         // TODO: think about -e use cases whether 128 bytes per line is enough
-        size_t max_line_len = 128;
+        const size_t max_line_len = 128;
         char buff[max_line_len];
         int i = 0;
-        char * line_ch[largest_command];
+
+        char ** line_ch = new char * [largest_command];
         int num = 0;
         stringstream ss(line);
         string word;
@@ -254,6 +259,7 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
         int arg_indx =  cmd_indx + 1; // 0 is the command
         cmd_t * cmd = command_lookup(line_ch[cmd_indx]);
         ret = command->do_command(cmd, line_ch, num, arg_indx);
+        delete []line_ch;
     }
     file.close();
     return ret;
@@ -286,7 +292,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
         exit(CONTROL_DATA_LENGTH_ERROR);
     }
 
-    for(int i = 0; i < num_all_vals; i++)
+    for(size_t i = 0; i < num_all_vals; i++)
     {
         rf.read(reinterpret_cast<char *>(&test_in_buffer[i].ui8), sizeof(uint8_t));
     }
@@ -316,7 +322,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
         exit(CONTROL_ERROR);
     }
 
-    for(int i = 0; i < num_all_vals; i++)
+    for(size_t i = 0; i < num_all_vals; i++)
     {
         wf.write(reinterpret_cast<char *>(&test_out_buffer[i].ui8), sizeof(uint8_t));
     }

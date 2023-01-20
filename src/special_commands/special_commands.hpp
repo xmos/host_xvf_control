@@ -7,7 +7,7 @@
 #include "command.hpp"
 
 /** @brief Load the command_map shared object and get the cmd_t array from it */
-void * load_command_map_dll();
+dl_handle_t load_command_map_dll();
 
 /**
  * @brief Look up the string in the command list.
