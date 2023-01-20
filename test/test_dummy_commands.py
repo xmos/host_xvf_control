@@ -113,7 +113,7 @@ def test_dummy_commands():
     print("\n")
     check_files()
 
-    with open('test_buf.bin', 'w'):
+    with open(test_dir / 'test_buf.bin', 'w'):
         pass
     
     for i in range(num_frames):
