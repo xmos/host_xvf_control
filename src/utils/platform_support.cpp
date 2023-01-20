@@ -113,7 +113,7 @@ T get_function(dl_handle_t handle, const string symbol)
         cerr << "Could not load " << symbol << " function, got " << GetLastError() << "error code" << endl;
 #else
 #error "Unknown Operating System"
-#endif // unix vs windows        
+#endif // unix vs windows
         exit(CONTROL_ERROR);
     }
     return func;
