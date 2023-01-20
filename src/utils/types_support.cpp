@@ -86,6 +86,11 @@ cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str)
         cerr << "Value given is out of range of " << command_param_type_name(type) << " type"<< endl;
         exit(CONTROL_BAD_COMMAND);
     }
+    catch(const invalid_argument & ex)
+    {
+        cerr << "Argument " << str << " is invalid" << endl;
+        exit(CONTROL_BAD_COMMAND);
+    }
     return val;
 }
 
@@ -100,10 +105,10 @@ void print_arg(const cmd_param_type_t type, const cmd_param_t val)
         cout << static_cast<int>(val.ui8) << " ";
         break;
     case TYPE_FLOAT:
-        cout << val.f << " ";
+        cout << setprecision(7) << val.f << " ";
         break;
     case TYPE_RADIANS:
-        cout << val.f << setprecision(2) << fixed << " (" << val.f  * 180.0f / PI_VALUE << " deg)" << setprecision(5) << " ";
+        cout << setprecision(5) << fixed << val.f << setprecision(2) << fixed << " (" << val.f  * 180.0f / PI_VALUE << " deg)" << " ";
         break;
     case TYPE_INT32:
         cout << val.i32 << " ";
