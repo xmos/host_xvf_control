@@ -78,7 +78,7 @@ def run_cmd(command, verbose = False):
 
 def execute_command(cmd_name, cmd_vals = None):
     
-    command = './' + host_bin + " -u " + control_protocol + " " + cmd_name
+    command = str(host_bin_copy) + " -u " + control_protocol + " " + cmd_name
     if cmd_vals != None:
         cmd_write = command + " " + ' '.join(str(val) for val in cmd_vals)
         run_cmd(cmd_write, True)
