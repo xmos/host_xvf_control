@@ -65,7 +65,7 @@ def gen_rand_array(type, min, max, size=num_vals):
     return vals
 
 def run_cmd(command, verbose = False):
-    result = subprocess.run(command.split(), capture_output=True)
+    result = subprocess.run(command.split(), capture_output=True, cwd=test_dir)
     if verbose or result.returncode:
         print('\n')
         print("cmd: ", result.args)
@@ -113,9 +113,6 @@ def test_dummy_commands():
     print("\n")
     check_files()
 
-    current_dir = os.getcwd()
-    os.chdir(test_dir)
-
     with open('test_buf.bin', 'w'):
         pass
     
@@ -125,5 +122,3 @@ def test_dummy_commands():
 
         vals = gen_rand_array('int', 0, 255)
         single_command_test(uint8_cmd, vals)
-
-    os.chdir(current_dir)

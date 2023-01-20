@@ -77,9 +77,9 @@ control_ret_t Device::device_get(control_resid_t res_id, control_cmd_t cmd_id, u
     switch(cmd_id & 0x7F)
     {
     case 0:
-        memcpy(&payload[1], buffer, num_vals * sizeof(float));
+        memcpy(&payload[1], buffer, payload_len);
     case 1:
-        memcpy(&payload[1], buffer, num_vals * sizeof(uint8_t));
+        memcpy(&payload[1], buffer, payload_len);
     }
     return CONTROL_SUCCESS;
 }
@@ -94,9 +94,9 @@ control_ret_t Device::device_set(control_resid_t res_id, control_cmd_t cmd_id, c
     switch(cmd_id)
     {
     case 0:
-        memcpy(buffer, payload, num_vals * sizeof(float));
+        memcpy(buffer, payload, payload_len);
     case 1:
-        memcpy(buffer, payload, num_vals * sizeof(uint8_t));
+        memcpy(buffer, payload, payload_len);
     }
 
     ofstream wf(buf_filename, ios::in | ios::binary);
