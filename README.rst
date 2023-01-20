@@ -37,16 +37,16 @@ Build with cmake from the host_xvf_contol/ folder:
 Using
 *****
 
-In order to use the application you should have the following files in the same location
+In order to use the application you should have the following files in the same location:
 
 - xvf_host(.exe)
 - (lib)command_map.(so/dll/dylib)
 - (lib)device_{protocol}.(so/dll/dylib)
 
 .. note::
-    Linux dynamic libraries end with '.so'
-    Apple dynamic libraries end with '.dylib'
-    Windows dynamic libraries don't have 'lib' prefix and end with '.dll'
+    - Linux dynamic libraries end with ``.so``
+    - Apple dynamic libraries end with ``.dylib``
+    - Windows dynamic libraries don't have ``lib`` prefix and end with ``.dll``
 
 The application and the device drivers can be obtained by following the build instructions of this repo. Command map is a part of the firmware code and built separately.
 To find out use cases and more information about the application use:
@@ -78,4 +78,4 @@ Supported platforms and control protocols
 
 .. note:: 
     Mac and Windows builds don't have hardware drivers for now. If you want to test Mac or Windows applications,
-    use ``-DTESTING=ON`` option when you do cmake, it will build dummy device and command_map shared objects for all platforms.
+    use ``-DTESTING=ON`` option when you do cmake, it will build dummy device and command_map dynamic libraries for all platforms.
