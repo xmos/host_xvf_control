@@ -5,6 +5,7 @@ Host XVF Control change log
 -----
 
   * ADDED: Builds for x86 Mac and Windows
+  * CHANGED: UI for ``--help`` and ``--list-commands`` options
 
 0.1.0
 -----

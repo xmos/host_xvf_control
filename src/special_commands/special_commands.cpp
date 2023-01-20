@@ -116,6 +116,7 @@ control_ret_t print_help_menu()
     }
     size_t long_opt_offset = longest_short_opt + 5;
     size_t info_offset = long_opt_offset + longest_long_opt + 4;
+    // Getting current terminal width here to set the cout line limit
     const size_t hard_stop = get_term_width();
 
     cout << "usage: xvf_hostapp_rpi [ command | option ]" << endl
@@ -131,21 +132,22 @@ control_ret_t print_help_menu()
         size_t first_word_len = opt.info.find_first_of(' ');
         int first_space = long_opt_offset - short_len + long_len;
         int second_space = info_offset - long_len - long_opt_offset + first_word_len;
+        int num_spaces = 2; // adding two black spaces at the beggining to make it look nicer
 
-        cout << "  " << opt.short_name << setw(first_space) 
+        cout << setw(num_spaces) << " " << opt.short_name << setw(first_space) 
         << opt.long_name << setw(second_space);
 
         stringstream ss(opt.info);
         string word;
-        size_t curr_pos = info_offset + 2; // adding 2 to compensate for two spaces
+        size_t curr_pos = info_offset + num_spaces;
         while(ss >> word)
         {
             size_t word_len = word.length();
             size_t future_pos = curr_pos + word_len + 1;
             if(future_pos >= hard_stop)
             {
-                cout << endl << setw(info_offset + word_len + 2) << word << " ";
-                curr_pos = info_offset + word_len + 2 + 1;
+                cout << endl << setw(info_offset + word_len + num_spaces) << word << " ";
+                curr_pos = info_offset + word_len + num_spaces + 1;
             }
             else
             {
@@ -184,6 +186,7 @@ control_ret_t print_command_list()
     size_t args_offset = rw_offset + longest_rw + 2;
     size_t type_offset = args_offset + longest_args + 2;
     size_t info_offset = type_offset + longest_type + 2;
+    // Getting current terminal width here to set the cout line limit
     const size_t hard_stop = get_term_width();
 
     for(size_t i = 0; i < num_commands; i ++)
