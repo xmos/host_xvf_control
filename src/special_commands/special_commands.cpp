@@ -188,6 +188,7 @@ control_ret_t print_command_list()
     size_t info_offset = type_offset + longest_type + 2;
     // Getting current terminal width here to set the cout line limit
     const size_t hard_stop = get_term_width();
+    cout << endl << "Terminal width " << hard_stop << endl;
 
     for(size_t i = 0; i < num_commands; i ++)
     {
