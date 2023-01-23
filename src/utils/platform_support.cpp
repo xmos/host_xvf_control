@@ -141,7 +141,9 @@ size_t get_term_width()
 #if (defined(__linux__) || defined(__APPLE__))
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-    return w.ws_col;
+    // running on jenkins returns 0
+    if(w.ws_col == 0){return 120;}
+    else {return w.ws_col;}
 #elif defined(_WIN32)
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
