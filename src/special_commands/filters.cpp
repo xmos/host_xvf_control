@@ -86,7 +86,7 @@ control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_i
         }
 
         rf.seekg (0, rf.end);
-        int32_t size = rf.tellg();
+        streamoff size = rf.tellg();
         rf.seekg (0, rf.beg);
 
         if(size != (buffer_length * sizeof(float)))
@@ -204,7 +204,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
         }
 
         rf.seekg (0, rf.end);
-        int32_t size = rf.tellg();
+        streamoff size = rf.tellg();
         rf.seekg (0, rf.beg);
 
         if(size != (NLM_buffer_length * sizeof(float)))
