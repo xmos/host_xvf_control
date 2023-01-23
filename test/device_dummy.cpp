@@ -51,7 +51,7 @@ control_ret_t Device::device_get(control_resid_t res_id, control_cmd_t cmd_id, u
     }
 
     rf.seekg (0, rf.end);
-    int32_t size = rf.tellg();
+    streamoff size = rf.tellg();
     rf.seekg (0, rf.beg);
 
     if(size != buff_size)

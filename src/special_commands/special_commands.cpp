@@ -285,7 +285,7 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
         string word;
         while(ss >> word)
         {
-            strcpy(&buff[i], word.c_str());
+            memcpy(&buff[i], word.c_str(), word.length());
             line_ch[num] = &buff[i];
             i += word.length() + 1;
             if(i > max_line_len)
@@ -325,7 +325,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     }
 
     rf.seekg (0, rf.end);
-    int32_t size = rf.tellg();
+    streamoff size = rf.tellg();
     rf.seekg (0, rf.beg);
 
     if(size != (num_all_vals * sizeof(uint8_t)))

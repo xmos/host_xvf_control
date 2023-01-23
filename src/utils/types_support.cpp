@@ -58,11 +58,11 @@ cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str)
         case TYPE_UINT8:
         {
             int32_t tmp = stoi(str, nullptr, 0);
-            if ((tmp >= UINT8_MAX) && (tmp < 0))
+            if ((tmp > UINT8_MAX) || (tmp < 0))
             {
                 throw out_of_range("");
             }
-            val.ui8 = (uint8_t)tmp;
+            val.ui8 = static_cast<uint8_t>(tmp);
         }
         case TYPE_INT32:
             val.i32 = stoi(str, nullptr, 0);
@@ -83,11 +83,13 @@ cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str)
     }
     catch(const out_of_range & ex)
     {
+        static_cast<void>(ex);
         cerr << "Value given is out of range of " << command_param_type_name(type) << " type"<< endl;
         exit(CONTROL_BAD_COMMAND);
     }
     catch(const invalid_argument & ex)
     {
+        static_cast<void>(ex);
         cerr << "Argument " << str << " is invalid" << endl;
         exit(CONTROL_BAD_COMMAND);
     }
