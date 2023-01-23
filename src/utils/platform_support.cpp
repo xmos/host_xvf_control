@@ -6,12 +6,14 @@
 #if defined(__linux__)
 #include <dlfcn.h>          // dlopen/dlsym/dlerror/dlclose
 #include <unistd.h>         // readlink
+#include <sys/ioctl.h>      // ioctl
 #include <linux/limits.h>   // PATH_MAX
 
 #elif defined(__APPLE__)
 #include <dlfcn.h>          // dlopen/dlsym/dlerror/dlclose
 #include <unistd.h>         // readlink
 #include <mach-o/dyld.h>    // _NSGetExecutablePath
+#include <sys/ioctl.h>      // ioctl
 
 #elif defined(_WIN32)
 #include <Windows.h>        // GetModuleFileNameA
@@ -132,4 +134,21 @@ num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle)
 device_fptr get_device_fptr(dl_handle_t handle)
 {
     return get_function<device_fptr>(handle, "make_Dev");
+}
+
+size_t get_term_width()
+{
+#if (defined(__linux__) || defined(__APPLE__))
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    // running on jenkins returns 0
+    if(w.ws_col == 0){return 120;}
+    else {return w.ws_col;}
+#elif defined(_WIN32)
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    return csbi.srWindow.Right - csbi.srWindow.Left + 1;
+#else
+#error "Unsupported operating system"
+#endif
 }

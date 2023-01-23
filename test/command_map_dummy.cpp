@@ -40,8 +40,8 @@ struct cmd_t
 };
 
 static cmd_t commands[] = {
-                        {0, "CMD_FLOAT", TYPE_FLOAT, 0, CMD_RW, 20, "test float"},
-                        {0, "CMD_UINT8", TYPE_UINT8, 1, CMD_RW, 20, "test uint8"}
+                        {0, "CMD_FLOAT", TYPE_FLOAT, 0, CMD_RW, 20, "This is a test command for testing multiple float reads and writes. Need to keep command descriprion large to test -l option."},
+                        {0, "CMD_UINT8", TYPE_UINT8, 1, CMD_RW, 20, "This is a test command for testing multiple uint8 reads and writes. Need to keep command descriprion large to test -l option."}
 };
 static size_t num_commands = std::end(commands) - std::begin(commands);
 

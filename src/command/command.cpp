@@ -47,8 +47,7 @@ control_ret_t Command::command_get(const cmd_t * cmd, cmd_param_t * values)
         }
         else
         {
-            cerr << "Read command " << cmd->cmd_name << " returned control_ret_t error " << data[0] << endl;
-            exit(data[0]);
+            check_cmd_error(cmd->cmd_name, "read", static_cast<control_ret_t>(data[0]));
         }
     }
 
@@ -88,8 +87,7 @@ control_ret_t Command::command_set(const cmd_t * cmd, const cmd_param_t * values
         }
         else
         {
-            cerr << "Write command " << cmd->cmd_name << " returned control_ret_t error " << ret << endl;
-            exit(ret);
+            check_cmd_error(cmd->cmd_name, "write", ret);
         }
     }
 

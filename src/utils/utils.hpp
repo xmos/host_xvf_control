@@ -60,8 +60,6 @@ struct opt_t
     std::string short_name;
     /** Option info */
     std::string info;
-    /** Second line of info */
-    std::string more_info;
 };
 
 /** @brief Default driver name to use
@@ -145,5 +143,8 @@ void command_bytes_from_value(const cmd_param_type_t type, uint8_t * data, unsig
 
 /** @brief Find Levenshtein distance for approximate string matching */
 int Levenshtein_distance(const std::string source, const std::string target);
+
+/** @brief Get current terminal width */
+size_t get_term_width();
 
 #endif
