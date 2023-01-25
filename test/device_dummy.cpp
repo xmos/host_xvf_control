@@ -79,6 +79,7 @@ control_ret_t Device::device_get(control_resid_t res_id, control_cmd_t cmd_id, u
     {
         case 5:
             memcpy(&payload[1], ch_ar, payload_len);
+            break;
         default:
             memcpy(&payload[1], buffer, payload_len);
     }

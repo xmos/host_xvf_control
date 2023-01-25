@@ -97,7 +97,7 @@ def execute_command(cmd_name, cmd_vals = None):
 
     stdout = run_cmd(command, True)
 
-    words = str(stdout, 'utf-8').split(' ')
+    words = str(stdout[:-1], 'utf-8').split(' ')
 
     # This will check that the right command is returned
     assert words[0] == cmd_name
@@ -142,4 +142,6 @@ def test_dummy_commands():
         single_command_test(uint8_cmd, vals)
 
         output = execute_command(char_cmd)
-        assert output == "my name is Pavel\0"
+        sentence = " ".join(str(word) for word in output)
+
+        assert sentence == "my name is Pavel\0\0\0\0"
