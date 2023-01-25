@@ -97,7 +97,7 @@ def execute_command(cmd_name, cmd_vals = None):
 
     stdout = run_cmd(command, True)
 
-    words = str(stdout[:-1], 'utf-8').split(' ')
+    words = str(stdout, 'utf-8').strip().split(' ')
 
     # This will check that the right command is returned
     assert words[0] == cmd_name
