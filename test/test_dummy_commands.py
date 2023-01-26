@@ -11,30 +11,40 @@ from platform import system
 num_vals = 20
 num_frames = 10
 float_cmd = "CMD_FLOAT"
+int32_cmd = "CMD_INT32"
+uint32_cmd = "CMD_UINT32"
+rads_cmd = "CMD_RADS"
 uint8_cmd = "CMD_UINT8"
+char_cmd = "CMD_CHAR"
 control_protocol = "i2c"
+dl_prefix = ""
+dl_suffix = ""
+bin_suffix = ""
 
 system_name = system()
 if system_name == "Linux":
-    file_type = ".so"
+    dl_prefix = "lib"
+    dl_suffix = ".so"
 elif system_name == "Darwin":
-    file_type = ".dylib"
+    dl_prefix = "lib"
+    dl_suffix = ".dylib"
 elif system_name == "Windows":
-    file_type = ".dll"
+    dl_suffix = ".dll"
+    bin_suffix = ".exe"
 else:
     assert 0, "Unsupported operating system"
 
-host_bin = "xvf_host.exe" if system_name == "Windows" else "xvf_host"
-cmd_map_so = "command_map" if system_name == "Windows" else "libcommand_map"
-device_so = "device_" if system_name == "Windows" else "libdevice_"
+host_bin = "xvf_host" + bin_suffix
+cmd_map_so = dl_prefix + "command_map"
+device_so = dl_prefix + "device_"
 build_dir = Path(__file__).parents[1] / "build"
 test_dir = build_dir / "test"
 host_bin_path = build_dir / host_bin 
 host_bin_copy = test_dir / host_bin
-cmd_map_dummy_path = test_dir / (cmd_map_so + "_dummy" + file_type)
-cmd_map_path = test_dir / (cmd_map_so + file_type)
-device_dummy_path = test_dir / (device_so + "dummy" + file_type)
-device_path = test_dir / (device_so + control_protocol + file_type)
+cmd_map_dummy_path = test_dir / (cmd_map_so + "_dummy" + dl_suffix)
+cmd_map_path = test_dir / (cmd_map_so + dl_suffix)
+device_dummy_path = test_dir / (device_so + "dummy" + dl_suffix)
+device_path = test_dir / (device_so + control_protocol + dl_suffix)
 
 def check_files():
     assert host_bin_path.is_file() or host_bin_copy.is_file(), f"host app binary not found here {host_bin}"
@@ -66,6 +76,7 @@ def gen_rand_array(type, min, max, size=num_vals):
 
 def run_cmd(command, verbose = False):
     result = subprocess.run(command, capture_output=True, cwd=test_dir, shell=True)
+
     if verbose or result.returncode:
         print('\n')
         print("cmd: ", result.args)
@@ -75,6 +86,7 @@ def run_cmd(command, verbose = False):
     
     assert not result.returncode
     return result.stdout
+    #stdout = subprocess.check_output(command, shell=True)
 
 def execute_command(cmd_name, cmd_vals = None):
     
@@ -85,7 +97,7 @@ def execute_command(cmd_name, cmd_vals = None):
 
     stdout = run_cmd(command, True)
 
-    words = str(stdout, 'utf-8').split(' ')
+    words = str(stdout, 'utf-8').strip().split(' ')
 
     # This will check that the right command is returned
     assert words[0] == cmd_name
@@ -120,5 +132,16 @@ def test_dummy_commands():
         vals = gen_rand_array('float', -2147483648, 2147483647)
         single_command_test(float_cmd, vals)
 
+        vals = gen_rand_array('int', -2147483648, 2147483647)
+        single_command_test(int32_cmd, vals)
+
+        vals = gen_rand_array('int', 0, 4294967295)
+        single_command_test(uint32_cmd, vals)
+
         vals = gen_rand_array('int', 0, 255)
         single_command_test(uint8_cmd, vals)
+
+        output = execute_command(char_cmd)
+        sentence = " ".join(str(word) for word in output)
+
+        assert sentence == "my name is Pavel\0\0\0\0"

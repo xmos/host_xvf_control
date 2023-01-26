@@ -40,6 +40,7 @@ string get_dynamic_lib_path(const string lib_name)
         exit(CONTROL_ERROR);
     }
     full_lib_name += ".so";
+    path[count] = '\0'; // readlink doesn't always add NULL for some reason
 #elif defined(__APPLE__)
     string full_lib_name = "lib" + lib_name;
     char * dir_path;
