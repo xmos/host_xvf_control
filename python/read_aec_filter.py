@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 def read_aec_filter(filelist, show_plot):
     num_files = len(filelist)
-    fig, axs = plt.subplots(num_files, 2, figsize=(10,7))
+    fig, axs = plt.subplots(num_files, 2, figsize=(14,7))
     
     fig.suptitle('AEC impulse response', fontsize=14)
     for i in range(len(filelist)):
@@ -18,7 +18,7 @@ def read_aec_filter(filelist, show_plot):
         axs[i,0].plot(buf)
         axs[i,0].set(xlabel='samples', ylabel='Amplitude')
         axs[i,1].plot(freq, H)
-        axs[i,1].set(xlabel='frequency(Hz)', ylabel='Log Magnitude')
+        axs[i,1].set(xlabel='frequency(Hz)', ylabel='Magnitude(dB)')
         axs[i,1].set_ylim([max(-75, np.min(H)), np.max(H)+5])
         if i:
             axs[i,0].sharex(axs[0,0])
@@ -28,7 +28,9 @@ def read_aec_filter(filelist, show_plot):
     if show_plot:
         plt.tight_layout()
         plt.show()
-    figinstance.savefig("aec_filter_demo.png", dpi=200)
+
+    plot_name = filelist[0].name.split('.')[0] + ".png" 
+    figinstance.savefig(plot_name, dpi=200)
 
 
 if __name__ == "__main__":
