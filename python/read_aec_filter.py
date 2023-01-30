@@ -9,7 +9,8 @@ def read_aec_filter(filelist, show_plot):
     
     fig.suptitle('AEC impulse response', fontsize=14)
     for i in range(len(filelist)):
-        axs[i,0].set_title(f'{filelist[i].name}')
+        axs[i,0].set_title(f'{filelist[i].name}, time')
+        axs[i,1].set_title(f'{filelist[i].name}, freq')
         buf = np.fromfile(filelist[i], dtype=np.float32)
         Buf = np.fft.rfft(buf)
         freq = np.linspace(0, 8000, num=int(len(buf)/2)+1) # Map 0-8kHz into 3072/2 bins
