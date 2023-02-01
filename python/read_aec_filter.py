@@ -14,7 +14,7 @@ def read_aec_filter(filelist, show_plot):
         buf = np.fromfile(str(filelist[i]), dtype=np.float32)
         Buf = np.fft.rfft(buf)
         freq = np.linspace(0, 8000, num=int(len(buf)/2)+1) # Map 0-8kHz into 3072/2 bins
-        H = 20*np.log10(np.abs(Buf))
+        H = 20*np.log10(np.abs(Buf + 1e-39))
         axs[i,0].plot(buf)
         axs[i,0].set(xlabel='samples', ylabel='Amplitude')
         axs[i,1].plot(freq, H)
