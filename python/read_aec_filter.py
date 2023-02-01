@@ -11,18 +11,18 @@ def read_aec_filter(filelist, show_plot):
     for i in range(len(filelist)):
         axs[i,0].set_title(f'{filelist[i].name}, time')
         axs[i,1].set_title(f'{filelist[i].name}, freq')
-        buf = np.fromfile(filelist[i], dtype=np.float32)
+        buf = np.fromfile(str(filelist[i]), dtype=np.float32)
         Buf = np.fft.rfft(buf)
         freq = np.linspace(0, 8000, num=int(len(buf)/2)+1) # Map 0-8kHz into 3072/2 bins
-        H = 20*np.log10(np.abs(Buf))
+        H = 20*np.log10(np.abs(Buf + 1e-39))
         axs[i,0].plot(buf)
         axs[i,0].set(xlabel='samples', ylabel='Amplitude')
         axs[i,1].plot(freq, H)
         axs[i,1].set(xlabel='frequency(Hz)', ylabel='Magnitude(dB)')
         axs[i,1].set_ylim([max(-75, np.min(H)), np.max(H)+5])
         if i:
-            axs[i,0].sharex(axs[0,0])
-            axs[i,1].sharex(axs[0,1])
+            axs[i,0].get_shared_x_axes().join(axs[i,0], axs[0,0])
+            axs[i,1].get_shared_x_axes().join(axs[i,1], axs[0,1])
     
     figinstance = plt.gcf()
     if show_plot:
