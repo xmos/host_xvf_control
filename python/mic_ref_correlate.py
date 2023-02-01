@@ -44,7 +44,7 @@ def calc_correlation(data0, data1, rate, plotname):
     fig.suptitle(f'{Path(plotname).stem}')
     
     axes[0].set_title('ref-mic delay')
-    axes[0].set(ylabel='max(corr) delay', xlabel='time')
+    axes[0].set(ylabel='corr delay (samples)', xlabel='time')
     axes[0].plot(t, c_delay_full)
     axes[2].set_title('corr peak2ave ratio')
     axes[2].set(ylabel='peak2ave ratio', xlabel='time')
