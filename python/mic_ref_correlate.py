@@ -21,12 +21,12 @@ def calc_correlation(data0, data1, rate, plotname):
         start = int(i)
         data0_extract = data0[start:start+N] # mic
         data1_extract = data1[start:start+N] # ref   
-        correlation = np.correlate(data1_extract, data0_extract, "same")#same pads to get out size = input size
+        correlation = scipy.signal.correlate(data0_extract, data1_extract, "full")#same pads to get out size = input size
         argmax = np.argmax(np.abs(correlation))
         peak = np.abs(correlation[argmax])
         average = np.mean(np.abs(correlation))
         peak2ave = peak / average
-        c_delay = N // 2 - argmax #delay relative to channel 0 (python)
+        c_delay = argmax - (N-1)#delay relative to channel 0 (python)
         c_delay_full.append(c_delay)
         peak2ave_full.append(peak2ave)
         if avg_corr is None:
@@ -40,15 +40,15 @@ def calc_correlation(data0, data1, rate, plotname):
     t = np.array([i for i in range(len(c_delay_full))], dtype=np.float32)
     t = t * ((N-overlap)/float(rate))
 
-    fig, axes = plt.subplots(2, 1, figsize=(10,8))
+    fig, axes = plt.subplots(3, 1, figsize=(10,8))
     fig.suptitle(f'{Path(plotname).stem}')
     
     axes[0].set_title('ref-mic delay')
     axes[0].set(ylabel='max(corr) delay', xlabel='time')
     axes[0].plot(t, c_delay_full)
-    #axes[1,0].set_title('corr peak2ave ratio')
-    #axes[1,0].set(ylabel='peak2ave ratio', xlabel='time')
-    #axes[1,0].plot(t, peak2ave_full)
+    axes[2].set_title('corr peak2ave ratio')
+    axes[2].set(ylabel='peak2ave ratio', xlabel='time')
+    axes[2].plot(t, peak2ave_full)
     axes[1].set_title('Mean correlation')
     axes[1].set(ylabel='correlation', xlabel='lag')
     axes[1].plot(np.abs(avg_corr))
