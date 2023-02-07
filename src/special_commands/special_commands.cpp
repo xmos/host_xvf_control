@@ -173,7 +173,8 @@ control_ret_t print_command_list()
     {
         cmd_t * cmd = &commands[i];
         // skipping special and test commands
-        if((cmd->cmd_name.find(spec_cmd) != string::npos) || (cmd->cmd_name.find(test_cmd) != string::npos))
+        //if((cmd->cmd_name.find(spec_cmd) != string::npos) || (cmd->cmd_name.find(test_cmd) != string::npos))
+        if(cmd->hidden_cmd)
         {
             continue;
         }
@@ -193,7 +194,8 @@ control_ret_t print_command_list()
     {
         cmd_t * cmd = &commands[i];
         // skipping special and test commands
-        if((cmd->cmd_name.find(spec_cmd) != string::npos) || (cmd->cmd_name.find(test_cmd) != string::npos))
+        //if((cmd->cmd_name.find(spec_cmd) != string::npos) || (cmd->cmd_name.find(test_cmd) != string::npos))
+        if(cmd->hidden_cmd)
         {
             continue;
         }
@@ -247,7 +249,8 @@ control_ret_t dump_params(Command * command)
     {
         cmd_t * cmd = &commands[i];
         // skipping special and test commands
-        if((cmd->cmd_name.find(spec_cmd) != string::npos) || (cmd->cmd_name.find(test_cmd) != string::npos))
+        //if((cmd->cmd_name.find(spec_cmd) != string::npos) || (cmd->cmd_name.find(test_cmd) != string::npos))
+        if(cmd->hidden_cmd)
         {
             continue;
         }
