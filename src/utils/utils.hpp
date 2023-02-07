@@ -46,7 +46,7 @@ struct cmd_t
     unsigned num_values;
     /** Command info */
     std::string info;
-    /** Command visability status */
+    /** Command visibility status */
     bool hidden_cmd;
 };
 
