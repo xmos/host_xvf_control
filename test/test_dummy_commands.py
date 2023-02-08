@@ -9,7 +9,7 @@ from random import randint, random
 from platform import system
 
 num_vals = 20
-num_frames = 1
+num_frames = 10
 float_cmd = "CMD_FLOAT"
 int32_cmd = "CMD_INT32"
 uint32_cmd = "CMD_UINT32"
@@ -64,10 +64,11 @@ def check_files():
             os.remove(device_path)
         os.rename(device_dummy_path, device_path)
 
-    if not cmd_list_path.is_file():
-        with open(cmd_list_path, "w") as f:
-            f.write("CMD_D 156 -894564 4586543\n")
-            f.write("CMD_D")
+    if cmd_list_path.is_file(): os.remove(cmd_list_path)
+    with open(cmd_list_path, "w") as f:
+        f.write("CMD_D 156 -894564 4586543\n")
+        f.write("\n")
+        f.write("CMD_D")
 
 def gen_rand_array(type, min, max, size=num_vals):
     vals = []

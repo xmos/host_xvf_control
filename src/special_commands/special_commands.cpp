@@ -283,6 +283,11 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
         int num = 0;
         stringstream ss(line);
         string word;
+        // if newline
+        if(ss.peek() == -1)
+        {
+            continue;
+        }
         while(ss >> word)
         {
             memcpy(&buff[i], word.c_str(), word.length());
