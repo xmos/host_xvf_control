@@ -45,7 +45,8 @@ static cmd_t commands[] = {
                         {0, "CMD_UINT32", TYPE_UINT32,  2, CMD_RW, 20, "This is a test command for testing multiple uint32 reads and writes. Need to keep command descriprion large to test -l option."  },
                         {0, "CMD_RADS",   TYPE_RADIANS, 3, CMD_RW, 20, "This is a test command for testing multiple radians reads and writes. Need to keep command descriprion large to test -l option." },
                         {0, "CMD_UINT8",  TYPE_UINT8,   4, CMD_RW, 20, "This is a test command for testing multiple uint8 reads and writes. Need to keep command descriprion large to test -l option."   },
-                        {0, "CMD_CHAR",   TYPE_CHAR,    5, CMD_RO, 20, "This is a test command for testing multiple char reads and writes. Need to keep command descriprion large to test -l option."    }
+                        {0, "CMD_CHAR",   TYPE_CHAR,    5, CMD_RO, 20, "This is a test command for testing multiple char reads and writes. Need to keep command descriprion large to test -l option."    },
+                        {0, "CMD_D",      TYPE_INT32,   7, CMD_RW, 3,  "jsdkl'adsjg'l"                                                                                                                   }
 };
 static size_t num_commands = std::end(commands) - std::begin(commands);
 

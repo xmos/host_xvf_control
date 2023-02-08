@@ -84,7 +84,7 @@ cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str)
     catch(const out_of_range & ex)
     {
         static_cast<void>(ex);
-        cerr << "Value given is out of range of " << command_param_type_name(type) << " type"<< endl;
+        cerr << "Value " << str << " is out of range of " << command_param_type_name(type) << " type"<< endl;
         exit(CONTROL_BAD_COMMAND);
     }
     catch(const invalid_argument & ex)

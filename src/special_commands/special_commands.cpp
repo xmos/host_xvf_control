@@ -286,8 +286,9 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
         while(ss >> word)
         {
             memcpy(&buff[i], word.c_str(), word.length());
+            buff[i + word.length()] = '\0';
             line_ch[num] = &buff[i];
-            i += word.length() + 1;
+            i += word.length() + 2;
             if(i > max_line_len)
             {
                 cerr << "Line:" << endl << line
