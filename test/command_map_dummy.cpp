@@ -48,7 +48,8 @@ static cmd_t commands[] = {
                         {0, "CMD_RADS",   TYPE_RADIANS, 3, CMD_RW, 20, "This is a test command for testing multiple radians reads and writes. Need to keep command descriprion large to test -l option.", false  },
                         {0, "CMD_UINT8",  TYPE_UINT8,   4, CMD_RW, 20, "This is a test command for testing multiple uint8 reads and writes. Need to keep command descriprion large to test -l option.",   false  },
                         {0, "CMD_CHAR",   TYPE_CHAR,    5, CMD_RO, 20, "This is a test command for testing multiple char reads and writes. Need to keep command descriprion large to test -l option.",    false  },
-                        {0, "CMD_HIDDEN", TYPE_UINT8,   6, CMD_RW, 20, "This command is suppossed to be hidden and not show up wehn using -l or -d",                                                      true   }
+                        {0, "CMD_HIDDEN", TYPE_UINT8,   6, CMD_RW, 20, "This command is suppossed to be hidden and not show up wehn using -l or -d",                                                      true   },
+                        {0, "CMD_SMALL",  TYPE_INT32,   7, CMD_RW, 3,  "This is a small command for testing -e option",                                                                                   false  }
 };
 static size_t num_commands = std::end(commands) - std::begin(commands);
 

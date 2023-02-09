@@ -16,6 +16,7 @@ uint32_cmd = "CMD_UINT32"
 rads_cmd = "CMD_RADS"
 uint8_cmd = "CMD_UINT8"
 char_cmd = "CMD_CHAR"
+small_cmd = "CMD_SMALL"
 control_protocol = "i2c"
 dl_prefix = ""
 dl_suffix = ""
@@ -45,6 +46,7 @@ cmd_map_dummy_path = test_dir / (cmd_map_so + "_dummy" + dl_suffix)
 cmd_map_path = test_dir / (cmd_map_so + dl_suffix)
 device_dummy_path = test_dir / (device_so + "dummy" + dl_suffix)
 device_path = test_dir / (device_so + control_protocol + dl_suffix)
+cmd_list_path = test_dir / "commands.txt"
 
 def check_files():
     assert host_bin_path.is_file() or host_bin_copy.is_file(), f"host app binary not found here {host_bin}"
@@ -62,6 +64,12 @@ def check_files():
         if device_path.is_file():
             os.remove(device_path)
         os.rename(device_dummy_path, device_path)
+
+    if cmd_list_path.is_file(): os.remove(cmd_list_path)
+    with open(cmd_list_path, "w") as f:
+        f.write(small_cmd + " 156   -894564     4586543\n")
+        f.write("\n")
+        f.write(small_cmd)
 
 def gen_rand_array(type, min, max, size=num_vals):
     vals = []
@@ -86,7 +94,6 @@ def run_cmd(command, verbose = False):
     
     assert not result.returncode
     return result.stdout
-    #stdout = subprocess.check_output(command, shell=True)
 
 def execute_command(cmd_name, cmd_vals = None):
     
@@ -100,7 +107,7 @@ def execute_command(cmd_name, cmd_vals = None):
     words = str(stdout, 'utf-8').strip().split(' ')
 
     # This will check that the right command is returned
-    assert words[0] == cmd_name
+    if cmd_name != "-e" : assert words[0] == cmd_name
 
     # Second word shuould be the value. Return as string so caller must cast to right type
     if len(words) == 2: # cmd and 1 value
@@ -145,3 +152,6 @@ def test_dummy_commands():
         sentence = " ".join(str(word) for word in output)
 
         assert sentence == "my name is Pavel\0\0\0\0"
+
+        # check that it does not fail
+        execute_command("-e")
