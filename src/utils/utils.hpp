@@ -46,6 +46,8 @@ struct cmd_t
     unsigned num_values;
     /** Command info */
     std::string info;
+    /** Command visibility status */
+    bool hidden_cmd;
 };
 
 /** @brief Option configuration structure

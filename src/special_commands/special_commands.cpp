@@ -162,8 +162,6 @@ control_ret_t print_help_menu()
 
 control_ret_t print_command_list()
 {
-    string spec_cmd = "SPECIAL_CMD_";
-    string test_cmd = "TEST_";
     size_t longest_command = 0;
     size_t longest_rw = 10; // READ/WRITE
     size_t longest_args = 2; // double digits
@@ -172,8 +170,8 @@ control_ret_t print_command_list()
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t * cmd = &commands[i];
-        // skipping special and test commands
-        if((cmd->cmd_name.find(spec_cmd) != string::npos) || (cmd->cmd_name.find(test_cmd) != string::npos))
+        // skipping hidden commands
+        if(cmd->hidden_cmd)
         {
             continue;
         }
@@ -192,8 +190,8 @@ control_ret_t print_command_list()
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t * cmd = &commands[i];
-        // skipping special and test commands
-        if((cmd->cmd_name.find(spec_cmd) != string::npos) || (cmd->cmd_name.find(test_cmd) != string::npos))
+        // skipping hidden commands
+        if(cmd->hidden_cmd)
         {
             continue;
         }
@@ -241,13 +239,12 @@ control_ret_t print_command_list()
 control_ret_t dump_params(Command * command)
 {
     control_ret_t ret = CONTROL_ERROR;
-    string spec_cmd = "SPECIAL_CMD_";
-    string test_cmd = "TEST_";
+
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t * cmd = &commands[i];
-        // skipping special and test commands
-        if((cmd->cmd_name.find(spec_cmd) != string::npos) || (cmd->cmd_name.find(test_cmd) != string::npos))
+        // skipping hidden commands
+        if(cmd->hidden_cmd)
         {
             continue;
         }
