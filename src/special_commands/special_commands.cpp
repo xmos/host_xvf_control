@@ -21,7 +21,8 @@ opt_t options[] = {
             {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"           },
             {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"              },
             {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"              },
-            {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                        }
+            {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                        },
+            {"--test-bytestream",         "-tb",       "test device by writing a user defined stream of bytes to it"               }
 };
 size_t num_options = end(options) - begin(options);
 
@@ -305,6 +306,54 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
         delete []line_ch;
     }
     file.close();
+    return ret;
+}
+
+control_ret_t test_bytestream(Command * command, const string in_filename)
+{
+    control_ret_t ret;
+    ifstream rf(in_filename, ios::in | ios::binary);
+    if(!rf)
+    {
+        cerr << "Could not open a file " << in_filename << endl;
+        exit(CONTROL_ERROR);
+    }
+    rf.seekg (0, rf.end);
+    streamoff size = rf.tellg();
+    rf.seekg (0, rf.beg);
+    // We need atleast the cmd_id, res_id and payload_len to be able to send to the device.
+    // Testing sending of fewer than 3 bytes will need changes in the device_control host code.
+    if(size < 3)
+    {
+        cerr << "test_bytestream expects atleast a 3 bytes long stream" << endl;
+        exit(CONTROL_DATA_LENGTH_ERROR);
+    }
+    uint8_t *data = new uint8_t[size]; 
+    for(int i=0; i<size; i++)
+    {
+        rf.read(reinterpret_cast<char *>(&data[i]), sizeof(uint8_t));
+    }
+
+    if(size > 3) // Everything starting from data[3] would be write payload.
+    {
+        if(size != data[2]+3)
+        {
+            cerr << "Write payload size error" << endl;
+            exit(CONTROL_DATA_LENGTH_ERROR);
+        }
+    }
+
+    if(data[1] & 0x80) // Read command
+    {
+        ret = command->command_get_low_level(data);
+    }
+    else
+    {
+        ret = command->command_set_low_level(data);
+    }
+
+    delete []data;
+
     return ret;
 }
 
