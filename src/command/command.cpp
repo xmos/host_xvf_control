@@ -96,6 +96,27 @@ control_ret_t Command::command_set(const cmd_t * cmd, const cmd_param_t * values
     return ret;
 }
 
+control_ret_t Command::command_get_low_level(uint8_t *data)
+{
+    // Send the byte stream to the device, assuming it has a valid packet format, i.e, res_id, cmd_id, payload_len
+    size_t read_len = data[2] + 1;
+    uint8_t * read_payload = new uint8_t[read_len];
+    control_ret_t ret = device->device_get(data[0], data[1], read_payload, read_len);
+    check_cmd_error("TEST_ERROR_HANDLING", "read", static_cast<control_ret_t>(read_payload[0]));
+    check_cmd_error("TEST_ERROR_HANDLING", "read", ret);
+    delete []read_payload;
+    return ret;
+}
+
+control_ret_t Command::command_set_low_level(uint8_t *data)
+{
+    // Send the byte stream to the device, assuming it has a valid packet format, i.e, res_id, cmd_id, payload_len, followed by payload
+    control_ret_t ret = device->device_set(data[0], data[1], &data[3], data[2]);
+    check_cmd_error("TEST_ERROR_HANDLING", "write", ret);
+
+    return ret;
+}
+
 control_ret_t Command::do_command(const cmd_t * cmd, char ** argv, int argc, int arg_indx)
 {
     const size_t args_left = argc - arg_indx;

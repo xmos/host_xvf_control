@@ -52,6 +52,28 @@ class Command
          * @param values        Pointer to store values to write to the device
          */
         control_ret_t command_set(const cmd_t * cmd, const cmd_param_t * values);
+
+        /**
+         * @brief Low level get command function.
+         *
+         * This function sends a read command to the device and returns the error
+         * returned from the device.
+         * 
+         * @param data          Byte array containing the read command
+         * @note                Only for internal testing.
+         */
+        control_ret_t command_get_low_level(uint8_t *data);
+
+        /**
+         * @brief Low level set command function
+         *
+         * This function sends a write command and payload to the device and
+         * returns the error code returned from the device.
+         *
+         * @param cmd           Byte array containing the write command and payload
+         * @note                Only for internal testing
+         */
+        control_ret_t command_set_low_level(uint8_t *data);
 };
 
 #endif

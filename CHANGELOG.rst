@@ -8,6 +8,7 @@ Host XVF Control change log
   * ADDED: ``hidden_cmd`` flag in ``cmd_t`` structure
   * ADDED: Builds for x86 Mac and Windows
   * CHANGED: UI for ``--help`` and ``--list-commands`` options
+  * ADDED: ``--test-bytestream`` option for internal testing
 
 0.1.0
 -----

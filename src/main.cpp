@@ -146,6 +146,10 @@ int main(int argc, char ** argv)
         {
             return test_control_interface(&command, argv[arg_indx]);
         }
+        if(opt->long_name == "--test-bytestream")
+        {
+            return test_bytestream(&command, argv[arg_indx]);
+        }
     }
     // Program should NEVER get to this point
     cout << "Host application behaved unexpectedly, please report this issue" << endl;
