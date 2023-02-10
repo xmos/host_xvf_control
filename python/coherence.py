@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import argparse
 import subprocess
+import glob
 
 
 def calc_coherence_new(file_dict, min_length, num_subplots, plot_name="mic_coherence.png", show_plot=True):
@@ -71,14 +72,28 @@ def calc_coherence_new(file_dict, min_length, num_subplots, plot_name="mic_coher
 def get_args():
     parser = argparse.ArgumentParser("Script to plot coherence between a set of input wav files")
     parser.add_argument("input_files", nargs='*', help="Input .wav files")
+    parser.add_argument("--dir", type=str, help="directory containing wav files", default=None)
     parser.add_argument("--figname", type=str, help="title to add to the output file name", default="mic_coherence.png")
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = get_args()
     
+    files = []
+    if args.dir is not None:
+        # Read all files in the directory
+        files = glob.glob(f"{Path(args.dir)}/*.wav")
+    else:
+        if(len(args.input_files) == 0):
+            print("No input files provided. Exit.")
+            exit(0)
+        files = args.input_files
+
+
+    
+    
     input_files = []
-    for fl in args.input_files:
+    for fl in files:
         rate, wav_data = scipy.io.wavfile.read(fl)
         if rate != 16000: # Downsample to 16kHz
             downsampled_file = f"{Path(fl).stem}_16khz.wav"

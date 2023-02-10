@@ -28,8 +28,9 @@ def read_aec_filter(filelist, show_plot):
     if show_plot:
         plt.tight_layout()
         plt.show()
-
+    
     plot_name = filelist[0].name.split('.')[0] + ".png" 
+    print(plot_name)
     figinstance.savefig(plot_name, dpi=200)
 
 

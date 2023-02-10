@@ -55,6 +55,7 @@ def calc_correlation(data0, data1, rate, plotname):
     plt.tight_layout()
     figinstance = plt.gcf()
     plt.show()
+    print(plotname)
     figinstance.savefig(plotname)
     return
 
