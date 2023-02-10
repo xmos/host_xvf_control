@@ -9,13 +9,14 @@ from random import randint, random
 from platform import system
 
 num_vals = 20
-num_frames = 1
+num_frames = 10
 float_cmd = "CMD_FLOAT"
 int32_cmd = "CMD_INT32"
 uint32_cmd = "CMD_UINT32"
 rads_cmd = "CMD_RADS"
 uint8_cmd = "CMD_UINT8"
 char_cmd = "CMD_CHAR"
+small_cmd = "CMD_SMALL"
 control_protocol = "i2c"
 dl_prefix = ""
 dl_suffix = ""
@@ -64,10 +65,11 @@ def check_files():
             os.remove(device_path)
         os.rename(device_dummy_path, device_path)
 
-    if not cmd_list_path.is_file():
-        with open(cmd_list_path, "w") as f:
-            f.write("CMD_D 156 -894564 4586543\n")
-            f.write("CMD_D")
+    if cmd_list_path.is_file(): os.remove(cmd_list_path)
+    with open(cmd_list_path, "w") as f:
+        f.write(small_cmd + " 156   -894564     4586543\n")
+        f.write("\n")
+        f.write(small_cmd)
 
 def gen_rand_array(type, min, max, size=num_vals):
     vals = []
@@ -92,7 +94,6 @@ def run_cmd(command, verbose = False):
     
     assert not result.returncode
     return result.stdout
-    #stdout = subprocess.check_output(command, shell=True)
 
 def execute_command(cmd_name, cmd_vals = None):
     
@@ -106,7 +107,7 @@ def execute_command(cmd_name, cmd_vals = None):
     words = str(stdout, 'utf-8').strip().split(' ')
 
     # This will check that the right command is returned
-    #assert words[0] == cmd_name
+    if cmd_name != "-e" : assert words[0] == cmd_name
 
     # Second word shuould be the value. Return as string so caller must cast to right type
     if len(words) == 2: # cmd and 1 value
