@@ -323,35 +323,20 @@ control_ret_t test_bytestream(Command * command, const string in_filename)
     rf.seekg (0, rf.end);
     streamoff size = rf.tellg();
     rf.seekg (0, rf.beg);
-    // We need atleast the cmd_id, res_id and payload_len to be able to send to the device.
-    // Testing sending of fewer than 3 bytes will need changes in the device_control host code.
-    if(size < 3)
-    {
-        cerr << "test_bytestream expects atleast a 3 bytes long stream" << endl;
-        exit(CONTROL_DATA_LENGTH_ERROR);
-    }
+
     uint8_t *data = new uint8_t[size]; 
     for(int i=0; i<size; i++)
     {
         rf.read(reinterpret_cast<char *>(&data[i]), sizeof(uint8_t));
     }
 
-    if(size > 3) // Everything starting from data[3] would be write payload.
+    if((size > 2) && (data[1] & 0x80)) // Read command
     {
-        if(size != data[2]+3)
-        {
-            cerr << "Write payload size error" << endl;
-            exit(CONTROL_DATA_LENGTH_ERROR);
-        }
-    }
-
-    if(data[1] & 0x80) // Read command
-    {
-        ret = command->command_get_low_level(data);
+        ret = command->command_get_low_level(data, size);
     }
     else
     {
-        ret = command->command_set_low_level(data);
+        ret = command->command_set_low_level(data, size);
     }
 
     delete []data;

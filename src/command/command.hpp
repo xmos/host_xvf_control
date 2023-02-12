@@ -62,7 +62,7 @@ class Command
          * @param data          Byte array containing the read command
          * @note                Only for internal testing.
          */
-        control_ret_t command_get_low_level(uint8_t *data);
+        control_ret_t command_get_low_level(uint8_t *data, size_t payload_len);
 
         /**
          * @brief Low level set command function
@@ -73,7 +73,7 @@ class Command
          * @param cmd           Byte array containing the write command and payload
          * @note                Only for internal testing
          */
-        control_ret_t command_set_low_level(uint8_t *data);
+        control_ret_t command_set_low_level(uint8_t *data, size_t payload_len);
 };
 
 #endif

@@ -96,24 +96,44 @@ control_ret_t Command::command_set(const cmd_t * cmd, const cmd_param_t * values
     return ret;
 }
 
-control_ret_t Command::command_get_low_level(uint8_t *data)
+control_ret_t Command::command_get_low_level(uint8_t *data, size_t payload_len)
 {
-    // Send the byte stream to the device, assuming it has a valid packet format, i.e, res_id, cmd_id, payload_len
-    size_t read_len = data[2] + 1;
-    uint8_t * read_payload = new uint8_t[read_len];
-    control_ret_t ret = device->device_get(data[0], data[1], read_payload, read_len);
-    check_cmd_error("TEST_ERROR_HANDLING", "read", static_cast<control_ret_t>(read_payload[0]));
-    check_cmd_error("TEST_ERROR_HANDLING", "read", ret);
-    delete []read_payload;
+    control_ret_t ret;
+    if(payload_len >= 3)
+    {
+        // Send the byte stream to the device, assuming it has a valid packet format, i.e, res_id, cmd_id, payload_len
+        size_t read_len = data[2] + 1;
+        uint8_t * read_payload = new uint8_t[read_len];
+        ret = device->device_get(data[0], data[1], read_payload, read_len);
+        check_cmd_error("TEST_ERROR_HANDLING", "read", static_cast<control_ret_t>(read_payload[0]));
+        check_cmd_error("TEST_ERROR_HANDLING", "read", ret);
+        delete []read_payload;
+    }
+    else
+    {
+        // There's not even 3 bytes in the byte stream. Test by sending whatever's there as the payload
+        ret = device->device_get(0, 0, data, payload_len);
+        check_cmd_error("TEST_ERROR_HANDLING", "read", static_cast<control_ret_t>(data[0]));
+        check_cmd_error("TEST_ERROR_HANDLING", "read", ret);
+    }
     return ret;
 }
 
-control_ret_t Command::command_set_low_level(uint8_t *data)
+control_ret_t Command::command_set_low_level(uint8_t *data, size_t payload_len)
 {
-    // Send the byte stream to the device, assuming it has a valid packet format, i.e, res_id, cmd_id, payload_len, followed by payload
-    control_ret_t ret = device->device_set(data[0], data[1], &data[3], data[2]);
-    check_cmd_error("TEST_ERROR_HANDLING", "write", ret);
-
+    control_ret_t ret;
+    if(payload_len >= 3)
+    {
+        // Send the byte stream to the device, assuming it has a valid packet format, i.e, res_id, cmd_id, payload_len, followed by payload
+        ret = device->device_set(data[0], data[1], &data[3], data[2]);
+        check_cmd_error("TEST_ERROR_HANDLING", "write", ret);
+    }
+    else
+    {
+        // There's not even 3 bytes in the byte stream. Test by sending whatever's there as the payload
+        ret = device->device_set(0, 0, data, payload_len);
+        check_cmd_error("TEST_ERROR_HANDLING", "write", ret);
+    }
     return ret;
 }
 
