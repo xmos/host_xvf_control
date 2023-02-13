@@ -7,7 +7,7 @@
 #include "command.hpp"
 
 /** @brief Load the command_map shared object and get the cmd_t array from it */
-void * load_command_map_dll();
+dl_handle_t load_command_map_dll();
 
 /**
  * @brief Look up the string in the command list.
@@ -92,5 +92,16 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
  * @param filename      File name to use for an output buffer
  */
 control_ret_t test_control_interface(Command * command, const std::string filename = "test_buffer.bin");
+
+/**
+ * @brief Function to test the device control interface error handling
+ *
+ * This option is used only for internal device testing. It writes a stream of data that it
+ * reads from a file to the device by using the low level command get and set functions.
+ *
+ * @param command       Pointer to the Command class object
+ * @param filename      File name containing the input byte stream
+ */
+control_ret_t test_bytestream(Command * command, const std::string in_filename);
 
 #endif

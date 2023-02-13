@@ -5,28 +5,33 @@
 #include <fstream>
 #include <iomanip>
 
+#if (defined(__APPLE__) || defined(_WIN32))
+#include <sstream>
+#endif
+
 using namespace std;
 
 opt_t options[] = {
-            {"--help",                    "-h",        "display this information",            "0"                                        },
-            {"--list-commands",           "-l",        "print the list of commands",          "0"                                        },
-            {"--dump-params",             "-d",        "print all the parameters",            "0"                                        },
-            {"--execute-command-list",    "-e",        "execute commands from .txt file,",    "one command per line, don't need -u *"    },
-            {"--use",                     "-u",        "use specific harware protocol,",      "I2C and SPI are available to use"         },
-            {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files,",     "default is aec_filter.bin.fx.mx"          },
-            {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files,",     "default is aec_filter.bin.fx.mx"          },
-            {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file,",  "default is nlm_buffer.bin"                },
-            {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file,",  "default is nlm_buffer.bin"                },
-            {"--test-control-interface",  "-tc",       "test control interface",              "default is test_buffer.bin"               }
+            {"--help",                    "-h",        "display this information"                                                  },
+            {"--list-commands",           "-l",        "print the list of commands"                                                },
+            {"--dump-params",             "-d",        "print all the parameters"                                                  },
+            {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u *"    },
+            {"--use",                     "-u",        "use specific harware protocol, I2C and SPI are available to use"           },
+            {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files, default is aec_filter.bin.fx.mx"           },
+            {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"           },
+            {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"              },
+            {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"              },
+            {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                        },
+            {"--test-bytestream",         "-tb",       "test device by writing a user defined stream of bytes to it"               }
 };
 size_t num_options = end(options) - begin(options);
 
 cmd_t * commands;
 size_t num_commands;
 
-void * load_command_map_dll()
+dl_handle_t load_command_map_dll()
 {
-    void * handle = get_dynamic_lib("command_map");
+    dl_handle_t handle = get_dynamic_lib("command_map");
 
     cmd_map_fptr get_command_map = get_cmd_map_fptr(handle);
     num_cmd_fptr get_num_commands = get_num_cmd_fptr(handle);
@@ -39,7 +44,7 @@ void * load_command_map_dll()
 opt_t * option_lookup(const string str)
 {
     string low_str = to_lower(str);
-    for(int i = 0; i < num_options; i++)
+    for(size_t i = 0; i < num_options; i++)
     {
         opt_t * opt = &options[i];
         if ((low_str == opt->long_name) || (low_str == opt->short_name))
@@ -50,7 +55,7 @@ opt_t * option_lookup(const string str)
 
     int shortest_dist = 100;
     int indx  = 0;
-    for(int i = 0; i < num_options; i++)
+    for(size_t i = 0; i < num_options; i++)
     {
         opt_t * opt = &options[i];
         int dist_long = Levenshtein_distance(low_str, opt->long_name);
@@ -82,8 +87,8 @@ cmd_t * command_lookup(const string str)
     }
 
     int shortest_dist = 100;
-    int indx  = 0;
-    for(int i = 0; i < num_commands; i++)
+    size_t indx  = 0;
+    for(size_t i = 0; i < num_commands; i++)
     {
         cmd_t * cmd = &commands[i];
         int dist = Levenshtein_distance(up_str, cmd->cmd_name);
@@ -112,6 +117,8 @@ control_ret_t print_help_menu()
     }
     size_t long_opt_offset = longest_short_opt + 5;
     size_t info_offset = long_opt_offset + longest_long_opt + 4;
+    // Getting current terminal width here to set the cout line limit
+    const size_t hard_stop = get_term_width();
 
     cout << "usage: xvf_hostapp_rpi [ command | option ]" << endl
     << setw(68) << "[ -u | --use <protocol>] [ command | option ]" << endl
@@ -123,25 +130,39 @@ control_ret_t print_help_menu()
         size_t short_len = opt.short_name.length();
         size_t long_len = opt.long_name.length();
         size_t info_len = opt.info.length();
+        size_t first_word_len = opt.info.find_first_of(' ');
         int first_space = long_opt_offset - short_len + long_len;
-        int second_space = info_offset - long_len - long_opt_offset + info_len;
+        int second_space = info_offset - long_len - long_opt_offset + first_word_len;
+        int num_spaces = 2; // adding two black spaces at the beggining to make it look nicer
 
-        cout << "  " << opt.short_name <<  "," << setw(first_space) << opt.long_name
-        << setw(second_space) << opt.info << endl;
-        if(opt.more_info != "0")
+        cout << setw(num_spaces) << " " << opt.short_name << setw(first_space) 
+        << opt.long_name << setw(second_space);
+
+        stringstream ss(opt.info);
+        string word;
+        size_t curr_pos = info_offset + num_spaces;
+        while(ss >> word)
         {
-            size_t more_info_len = opt.more_info.length();
-            int space = info_offset + more_info_len + 3; // +3 since we used two spaces and a comma in the line before
-            cout << setw(space) << opt.more_info << endl;
+            size_t word_len = word.length();
+            size_t future_pos = curr_pos + word_len + 1;
+            if(future_pos >= hard_stop)
+            {
+                cout << endl << setw(info_offset + word_len + num_spaces) << word << " ";
+                curr_pos = info_offset + word_len + num_spaces + 1;
+            }
+            else
+            {
+                cout << word << " ";
+                curr_pos = future_pos;
+            }
         }
+        cout << endl << endl;
     }
     return CONTROL_SUCCESS;
 }
 
 control_ret_t print_command_list()
 {
-    string spec_cmd = "SPECIAL_CMD_";
-    string test_cmd = "TEST_";
     size_t longest_command = 0;
     size_t longest_rw = 10; // READ/WRITE
     size_t longest_args = 2; // double digits
@@ -150,8 +171,8 @@ control_ret_t print_command_list()
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t * cmd = &commands[i];
-        // skipping special and test commands
-        if((cmd->cmd_name.find(spec_cmd) != string::npos) || (cmd->cmd_name.find(test_cmd) != string::npos))
+        // skipping hidden commands
+        if(cmd->hidden_cmd)
         {
             continue;
         }
@@ -164,12 +185,14 @@ control_ret_t print_command_list()
     size_t args_offset = rw_offset + longest_rw + 2;
     size_t type_offset = args_offset + longest_args + 2;
     size_t info_offset = type_offset + longest_type + 2;
+    // Getting current terminal width here to set the cout line limit
+    const size_t hard_stop = get_term_width();
 
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t * cmd = &commands[i];
-        // skipping special and test commands
-        if((cmd->cmd_name.find(spec_cmd) != string::npos) || (cmd->cmd_name.find(test_cmd) != string::npos))
+        // skipping hidden commands
+        if(cmd->hidden_cmd)
         {
             continue;
         }
@@ -180,14 +203,36 @@ control_ret_t print_command_list()
         size_t args_len = to_string(cmd->num_values).length();
         string type = command_param_type_name(cmd->type);
         size_t type_len = type.length();
-        size_t info_len = cmd->info.length();
+        size_t first_word_len = cmd->info.find_first_of(' ');
+
         int first_space = rw_offset - name_len + rw_len;
         int second_space = args_offset - rw_len - rw_offset + args_len;
         int third_space = type_offset - args_len - args_offset + type_len;
-        int fourth_space = info_offset - type_len - type_offset + info_len;
+        int fourth_space = info_offset - type_len - type_offset + first_word_len;
+
         cout << cmd->cmd_name << setw(first_space) << rw
         << setw(second_space) << cmd->num_values << setw(third_space)
-        << type << setw(fourth_space) << cmd->info << endl;
+        << type << setw(fourth_space);
+
+        stringstream ss(cmd->info);
+        string word;
+        size_t curr_pos = info_offset;
+        while(ss >> word)
+        {
+            size_t word_len = word.length();
+            size_t future_pos = curr_pos + word_len + 1;
+            if(future_pos >= hard_stop)
+            {
+                cout << endl << setw(info_offset + word_len) << word << " ";
+                curr_pos = info_offset + word_len;
+            }
+            else
+            {
+                cout << word << " ";
+                curr_pos = future_pos;
+            }
+        }
+        cout << endl << endl;
     }
     return CONTROL_SUCCESS;
 }
@@ -195,13 +240,12 @@ control_ret_t print_command_list()
 control_ret_t dump_params(Command * command)
 {
     control_ret_t ret = CONTROL_ERROR;
-    string spec_cmd = "SPECIAL_CMD_";
-    string test_cmd = "TEST_";
+
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t * cmd = &commands[i];
-        // skipping special and test commands
-        if((cmd->cmd_name.find(spec_cmd) != string::npos) || (cmd->cmd_name.find(test_cmd) != string::npos))
+        // skipping hidden commands
+        if(cmd->hidden_cmd)
         {
             continue;
         }
@@ -229,18 +273,25 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
     while(getline(file, line))
     {
         // TODO: think about -e use cases whether 128 bytes per line is enough
-        size_t max_line_len = 128;
+        const size_t max_line_len = 128;
         char buff[max_line_len];
         int i = 0;
-        char * line_ch[largest_command];
+
+        char ** line_ch = new char * [largest_command];
         int num = 0;
         stringstream ss(line);
         string word;
+        // if newline
+        if(ss.peek() == -1)
+        {
+            continue;
+        }
         while(ss >> word)
         {
-            strcpy(&buff[i], word.c_str());
+            memcpy(&buff[i], word.c_str(), word.length());
+            buff[i + word.length()] = '\0';
             line_ch[num] = &buff[i];
-            i += word.length() + 1;
+            i += word.length() + 2;
             if(i > max_line_len)
             {
                 cerr << "Line:" << endl << line
@@ -254,8 +305,57 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
         int arg_indx =  cmd_indx + 1; // 0 is the command
         cmd_t * cmd = command_lookup(line_ch[cmd_indx]);
         ret = command->do_command(cmd, line_ch, num, arg_indx);
+        delete []line_ch;
     }
     file.close();
+    return ret;
+}
+
+control_ret_t test_bytestream(Command * command, const string in_filename)
+{
+    control_ret_t ret;
+    ifstream rf(in_filename, ios::in | ios::binary);
+    if(!rf)
+    {
+        cerr << "Could not open a file " << in_filename << endl;
+        exit(CONTROL_ERROR);
+    }
+    rf.seekg (0, rf.end);
+    streamoff size = rf.tellg();
+    rf.seekg (0, rf.beg);
+    // We need atleast the cmd_id, res_id and payload_len to be able to send to the device.
+    // Testing sending of fewer than 3 bytes will need changes in the device_control host code.
+    if(size < 3)
+    {
+        cerr << "test_bytestream expects atleast a 3 bytes long stream" << endl;
+        exit(CONTROL_DATA_LENGTH_ERROR);
+    }
+    uint8_t *data = new uint8_t[size]; 
+    for(int i=0; i<size; i++)
+    {
+        rf.read(reinterpret_cast<char *>(&data[i]), sizeof(uint8_t));
+    }
+
+    if(size > 3) // Everything starting from data[3] would be write payload.
+    {
+        if(size != data[2]+3)
+        {
+            cerr << "Write payload size error" << endl;
+            exit(CONTROL_DATA_LENGTH_ERROR);
+        }
+    }
+
+    if(data[1] & 0x80) // Read command
+    {
+        ret = command->command_get_low_level(data);
+    }
+    else
+    {
+        ret = command->command_set_low_level(data);
+    }
+
+    delete []data;
+
     return ret;
 }
 
@@ -277,7 +377,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     }
 
     rf.seekg (0, rf.end);
-    int32_t size = rf.tellg();
+    streamoff size = rf.tellg();
     rf.seekg (0, rf.beg);
 
     if(size != (num_all_vals * sizeof(uint8_t)))
@@ -286,7 +386,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
         exit(CONTROL_DATA_LENGTH_ERROR);
     }
 
-    for(int i = 0; i < num_all_vals; i++)
+    for(size_t i = 0; i < num_all_vals; i++)
     {
         rf.read(reinterpret_cast<char *>(&test_in_buffer[i].ui8), sizeof(uint8_t));
     }
@@ -316,7 +416,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
         exit(CONTROL_ERROR);
     }
 
-    for(int i = 0; i < num_all_vals; i++)
+    for(size_t i = 0; i < num_all_vals; i++)
     {
         wf.write(reinterpret_cast<char *>(&test_out_buffer[i].ui8), sizeof(uint8_t));
     }

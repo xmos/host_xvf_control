@@ -3,7 +3,6 @@
 
 #include "device.hpp"
 #include "device_control_host.h"
-#include "dlfcn.h"
 
 using namespace std;
 
@@ -16,17 +15,9 @@ control_ret_t control_read_command(control_resid_t resid, control_cmd_t cmd,
 control_ret_t control_cleanup_i2c();
 }
 
-Device::Device(void * handle)
+Device::Device(dl_handle_t handle)
 {
-    // declaring int * function pointer type
-    using info_t = int * (*)();
-    info_t info = reinterpret_cast<info_t>(dlsym(handle, "get_info_i2c"));
-    if(info == NULL)
-    {
-        cerr << "Error while loading get_info_i2c() from libcommand_map" << endl;
-        exit(CONTROL_ERROR);
-    }
-    device_info = info();
+    get_device_info(handle , "get_info_i2c");
 }
 
 control_ret_t Device::device_init()
@@ -57,11 +48,13 @@ Device::~Device()
     if(device_initialised)
     {
         control_cleanup_i2c();
+        device_initialised = false;
     }
 }
 
 extern "C"
-unique_ptr<Device> make_Dev(void * handle)
+Device * make_Dev(dl_handle_t handle)
 {
-    return make_unique<Device>(handle);
+    static Device dev_obj(handle);
+    return &dev_obj;
 }

@@ -43,49 +43,41 @@ add_library(rtos::sw_services::device_control_host_spi ALIAS framework_rtos_sw_s
 
 # Build a wrapper driver for i2c
 
-add_library(device_rpi_i2c SHARED)
-target_sources(device_rpi_i2c
+add_library(device_i2c SHARED)
+target_sources(device_i2c
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/device/device_i2c.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/device/device_utils.cpp
+
 )
-target_include_directories(device_rpi_i2c
+target_include_directories(device_i2c
     PUBLIC
         ${CMAKE_CURRENT_LIST_DIR}/device
         ${DEVICE_CONTROL_PATH}/host
 )
-target_link_libraries(device_rpi_i2c
+target_link_libraries(device_i2c
     PUBLIC  
         rtos::sw_services::device_control_host_i2c
 )
-target_link_options(device_rpi_i2c PRIVATE -fPIC)
-
-# If using clang disable c-linkage warning
-if(HAVE_C_LINKAGE_WARNING)
-    target_compile_options(device_rpi_i2c PRIVATE -Wno-return-type-c-linkage)
-endif(HAVE_C_LINKAGE_WARNING)
+target_link_options(device_i2c PRIVATE -fPIC)
 
 # Build a wrapper driver for spi
 
-add_library(device_rpi_spi SHARED)
-target_sources(device_rpi_spi
+add_library(device_spi SHARED)
+target_sources(device_spi
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/device/device_spi.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/device/device_utils.cpp
 )
-target_include_directories(device_rpi_spi
+target_include_directories(device_spi
     PUBLIC
         ${CMAKE_CURRENT_LIST_DIR}/device
         ${DEVICE_CONTROL_PATH}/host
 )
-target_link_libraries(device_rpi_spi
+target_link_libraries(device_spi
     PUBLIC  
         rtos::sw_services::device_control_host_spi
 )
-target_link_libraries(device_rpi_spi PRIVATE -fPIC)
-
-# If using clang disable c-linkage warning
-if(HAVE_C_LINKAGE_WARNING)
-    target_compile_options(device_rpi_spi PRIVATE -Wno-return-type-c-linkage)
-endif(HAVE_C_LINKAGE_WARNING)
+target_link_libraries(device_spi PRIVATE -fPIC)
 
 endif()
-
