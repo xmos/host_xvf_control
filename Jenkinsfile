@@ -25,7 +25,7 @@ pipeline {
                                 dir('build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive RPI binaries
-                                    sh 'mkdir rpi && cp xvf_host libdevice_* rpi/'
+                                    sh 'mkdir rpi && cp xvf_host *.so rpi/'
                                     archiveArtifacts artifacts: 'rpi/*', fingerprint: true
                                 }
                             }
