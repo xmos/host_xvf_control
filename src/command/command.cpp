@@ -111,7 +111,7 @@ control_ret_t Command::command_get_low_level(uint8_t *data, size_t payload_len)
     }
     else
     {
-        // There's not even 3 bytes in the byte stream. Test by sending whatever's there as the payload
+        // There's not even 3 bytes in the byte stream. Test by sending whatever's there in the data[] as is to the device
         ret = device->device_get(0, 0, data, payload_len);
         check_cmd_error("TEST_ERROR_HANDLING", "read", static_cast<control_ret_t>(data[0]));
         check_cmd_error("TEST_ERROR_HANDLING", "read", ret);
@@ -119,19 +119,26 @@ control_ret_t Command::command_get_low_level(uint8_t *data, size_t payload_len)
     return ret;
 }
 
-control_ret_t Command::command_set_low_level(uint8_t *data, size_t payload_len)
+control_ret_t Command::command_set_low_level(uint8_t *data, size_t data_len)
 {
     control_ret_t ret;
-    if(payload_len >= 3)
+    if(data_len > 3)
     {
-        // Send the byte stream to the device, assuming it has a valid packet format, i.e, res_id, cmd_id, payload_len, followed by payload
-        ret = device->device_set(data[0], data[1], &data[3], data[2]);
+        if(data[2] != data_len-3) // The number of bytes in write payload is less than the data_length in data[2]. Send the bytestream as is to the device
+        {
+            ret = device->device_set(0, 0, data, data_len);
+        }
+        else
+        {
+            // Send the byte stream to the device, assuming it has a valid packet format, i.e, res_id, cmd_id, data_len, followed by payload
+            ret = device->device_set(data[0], data[1], &data[3], data[2]);
+        }
         check_cmd_error("TEST_ERROR_HANDLING", "write", ret);
     }
     else
     {
-        // There's not even 3 bytes in the byte stream. Test by sending whatever's there as the payload
-        ret = device->device_set(0, 0, data, payload_len);
+        // There's only 3 bytes or less in what's supposedly a write command. Test by sending whatever's there in the data[] as is to the device
+        ret = device->device_set(0, 0, data, data_len);
         check_cmd_error("TEST_ERROR_HANDLING", "write", ret);
     }
     return ret;
