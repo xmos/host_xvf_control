@@ -7,7 +7,7 @@ add_library(framework_rtos_sw_services_device_control_host_i2c INTERFACE)
 target_sources(framework_rtos_sw_services_device_control_host_i2c
     INTERFACE
         ${DEVICE_CONTROL_PATH}/host/util.c
-        ${CMAKE_CURRENT_LIST_DIR}/device/device_control_test_only/device_access_i2c_rpi.c
+        ${DEVICE_CONTROL_PATH}/host/device_access_i2c_rpi.c
 )
 target_include_directories(framework_rtos_sw_services_device_control_host_i2c
     INTERFACE
@@ -28,7 +28,7 @@ add_library(framework_rtos_sw_services_device_control_host_spi INTERFACE)
 target_sources(framework_rtos_sw_services_device_control_host_spi
     INTERFACE
         ${DEVICE_CONTROL_PATH}/host/util.c
-        ${CMAKE_CURRENT_LIST_DIR}/device/device_control_test_only/device_access_spi_rpi.c
+        ${DEVICE_CONTROL_PATH}/host/device_access_spi_rpi.c
 )
 target_include_directories(framework_rtos_sw_services_device_control_host_spi
     INTERFACE
