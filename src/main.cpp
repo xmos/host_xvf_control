@@ -13,14 +13,13 @@ int main(int argc, char ** argv)
         << "Or use --list-commands to print the list of commands and their info." << endl;
         return CONTROL_SUCCESS;
     }
-
     int cmd_indx = 1;
-    void * cmd_map_handle = load_command_map_dll();
+    dl_handle_t cmd_map_handle = load_command_map_dll();
     cmd_t * cmd = nullptr;
     opt_t * opt = nullptr;
     string next_cmd = argv[cmd_indx];
-    // Using I2C by default for now as USB is not supported
-    string lib_name = "device_rpi_i2c";
+
+    string lib_name = default_driver_name;
     if(next_cmd[0] != '-')
     {
         cmd = command_lookup(next_cmd);
@@ -38,30 +37,15 @@ int main(int argc, char ** argv)
         }
         else if (opt->long_name == "--use")
         {
-            string protocol_name = argv[cmd_indx + 1];
-            if (to_upper(protocol_name) == "I2C")
-            {
-                lib_name = "device_rpi_i2c";
-            }
-            else if (to_upper(protocol_name) == "SPI")
-            {
-                lib_name = "device_rpi_spi";
-            }
-            else
-            {
-                // Using I2C by default for now as USB is not supported
-                cout << "Could not find " << to_upper(protocol_name) << " in supported protocols"
-                << endl << "Will use I2C by default" << endl;
-            }
-
+            lib_name = get_device_lib_name(argv[cmd_indx + 1]);
             cmd_indx += 2; // fetched --use something
         }
     }
 
-    void * device_handle = get_dynamic_lib(lib_name);
+    dl_handle_t device_handle = get_dynamic_lib(lib_name);
     device_fptr make_dev = get_device_fptr(device_handle);
     auto device = make_dev(cmd_map_handle);
-    Command command(device.get());
+    Command command(device);
 
     int arg_indx = cmd_indx + 1;
     next_cmd = argv[cmd_indx];
@@ -161,6 +145,10 @@ int main(int argc, char ** argv)
         if(opt->long_name == "--test-control-interface")
         {
             return test_control_interface(&command, argv[arg_indx]);
+        }
+        if(opt->long_name == "--test-bytestream")
+        {
+            return test_bytestream(&command, argv[arg_indx]);
         }
     }
     // Program should NEVER get to this point
