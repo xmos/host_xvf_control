@@ -27,7 +27,6 @@ pipeline {
                                     // archive RPI binaries
                                     sh 'mkdir rpi && cp xvf_host libdevice_* rpi/'
                                     archiveArtifacts artifacts: 'rpi/*', fingerprint: true
-                                    archiveArtifacts artifacts: '../fwk_rtos/modules/sw_services/device_control/api/device_control_shared.h', fingerprint: true
                                 }
                             }
                         }
@@ -35,6 +34,7 @@ pipeline {
                             steps {
                                 //sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install -r requirements-dev.txt'
                                 sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install pytest'
+                                archiveArtifacts artifacts: 'fwk_rtos/modules/sw_services/device_control/api/device_control_shared.h', fingerprint: true
                             }
                         }
                         stage ('Test') {
