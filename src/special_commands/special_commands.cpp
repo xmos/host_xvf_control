@@ -330,7 +330,7 @@ control_ret_t test_bytestream(Command * command, const string in_filename)
         rf.read(reinterpret_cast<char *>(&data[i]), sizeof(uint8_t));
     }
 
-    if((size > 2) && (data[1] & 0x80)) // Read command
+    if((size >= 2) && (data[1] & 0x80)) // Read command
     {
         ret = command->command_get_low_level(data, size);
     }
