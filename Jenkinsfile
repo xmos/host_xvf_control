@@ -28,12 +28,15 @@ pipeline {
                                     sh 'mkdir rpi && cp xvf_host libdevice_* rpi/'
                                     archiveArtifacts artifacts: 'rpi/*', fingerprint: true
                                 }
+                                dir('fwk_rtos/modules/sw_services/device_control/api') {
+                                    archiveArtifacts artifacts: 'device_control_shared.h', fingerprint: true
+                                }
                             }
                         }
                         stage ('Create Python enviroment') {
                             steps {
                                 //sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install -r requirements-dev.txt'
-                                sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install pytest'
+                                sh 'python3 -m venv .venv && source .venv/bin/activate && pip install pytest && pip install jinja2'
                             }
                         }
                         stage ('Test') {
@@ -72,7 +75,7 @@ pipeline {
                         stage ('Create Python enviroment') {
                             steps {
                                 //sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install -r requirements-dev.txt'
-                                sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install pytest'
+                                sh 'python3 -m venv .venv && source .venv/bin/activate && pip install pytest && pip install jinja2'
                             }
                         }
                         stage ('Test') {
@@ -110,7 +113,7 @@ pipeline {
                         }
                         stage ('Create Python enviroment') {
                             steps {
-                                bat 'python3 -m venv .venv && .venv\\Scripts\\activate && pip3 install pytest'
+                                bat 'python3 -m venv .venv && .venv\\Scripts\\activate && pip install pytest && pip install jinja2'
                             }
                         }
                         stage ('Test') {
