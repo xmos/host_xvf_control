@@ -60,9 +60,10 @@ class Command
          * returned from the device.
          * 
          * @param data          Byte array containing the read command
+         * @param payload_len   Length of the byte stream to write to the device
          * @note                Only for internal testing.
          */
-        control_ret_t command_get_low_level(uint8_t *data);
+        control_ret_t command_get_low_level(uint8_t *data, size_t payload_len);
 
         /**
          * @brief Low level set command function
@@ -71,9 +72,10 @@ class Command
          * returns the error code returned from the device.
          *
          * @param cmd           Byte array containing the write command and payload
+         * @param payload_len   Length of the byte stream to write to the device
          * @note                Only for internal testing
          */
-        control_ret_t command_set_low_level(uint8_t *data);
+        control_ret_t command_set_low_level(uint8_t *data, size_t payload_len);
 };
 
 #endif
