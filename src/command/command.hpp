@@ -15,6 +15,8 @@ class Command
 
         /** @brief Pointer to the Device class object */
         Device * device;
+
+        print_arg_fptr print_arg;
         
     public:
 
@@ -25,7 +27,7 @@ class Command
          * 
          * @param _dev          Pointer to the Device class object
          */
-        Command(Device * _dev);
+        Command(Device * _dev, print_arg_fptr _print);
 
         /**
          * @brief Takes argv and executes a single command from it

@@ -96,7 +96,7 @@ cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str)
     return val;
 }
 
-void print_arg(const cmd_param_type_t type, const cmd_param_t val)
+/*void print_arg(const cmd_param_type_t type, const cmd_param_t val)
 {
     switch(type)
     {
@@ -122,7 +122,7 @@ void print_arg(const cmd_param_type_t type, const cmd_param_t val)
         cerr << "Unsupported parameter type" << endl;
         exit(CONTROL_BAD_COMMAND);
     }
-}
+}*/
 
 size_t get_num_bytes_from_type(const cmd_param_type_t type)
 {

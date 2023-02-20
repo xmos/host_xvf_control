@@ -95,6 +95,9 @@ using num_cmd_fptr = uint32_t (*)();
 /** Function pointer that takes void * and returns Device */
 using device_fptr = Device * (*)(void *);
 
+
+using print_arg_fptr = void (*)(const cmd_t *, cmd_param_t *);
+
 /**
  * @brief Get the function pointer to get_command_map()
  * 
@@ -116,6 +119,8 @@ num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle);
  */
 device_fptr get_device_fptr(dl_handle_t handle);
 
+print_arg_fptr get_print_arg_fptr(dl_handle_t handle);
+
 /** @brief Get param type name string */
 std::string command_param_type_name(const cmd_param_type_t type);
 
@@ -129,7 +134,7 @@ control_ret_t check_num_args(const cmd_t * cmd, const size_t args_left);
 cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str);
 
 /** @brief Print cmd_param_t value */
-void print_arg(const cmd_param_type_t type, const cmd_param_t val);
+//void print_arg(const cmd_param_type_t type, const cmd_param_t val);
 
 /** @brief Exit on control_ret_t error */
 void check_cmd_error(std::string cmd_name, std::string rw, control_ret_t ret);

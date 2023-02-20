@@ -137,6 +137,11 @@ device_fptr get_device_fptr(dl_handle_t handle)
     return get_function<device_fptr>(handle, "make_Dev");
 }
 
+print_arg_fptr get_print_arg_fptr(dl_handle_t handle)
+{
+    return get_function<print_arg_fptr>(handle, "super_print_arg");
+}
+
 size_t get_term_width()
 {
 #if (defined(__linux__) || defined(__APPLE__))
