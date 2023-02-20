@@ -11,7 +11,7 @@ int main(int argc, char ** argv)
     {
         cout << "Use --help to get the list of options for this application." << endl
         << "Or use --list-commands to print the list of commands and their info." << endl;
-        return CONTROL_SUCCESS;
+        return 0;
     }
     int cmd_indx = 1;
     dl_handle_t cmd_map_handle = load_command_map_dll();
@@ -43,11 +43,11 @@ int main(int argc, char ** argv)
     }
 
     dl_handle_t device_handle = get_dynamic_lib(lib_name);
-    print_arg_fptr print_arg = get_print_arg_fptr(cmd_map_handle);
+    print_args_fptr print_args = get_print_args_fptr(cmd_map_handle);
     device_fptr make_dev = get_device_fptr(device_handle);
     auto device = make_dev(cmd_map_handle);
 
-    Command command(device, print_arg);
+    Command command(device, print_args);
 
     int arg_indx = cmd_indx + 1;
     next_cmd = argv[cmd_indx];
@@ -155,5 +155,5 @@ int main(int argc, char ** argv)
     }
     // Program should NEVER get to this point
     cout << "Host application behaved unexpectedly, please report this issue" << endl;
-    return CONTROL_ERROR;
+    return HOST_APP_ERROR;
 }
