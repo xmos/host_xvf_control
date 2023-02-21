@@ -31,12 +31,10 @@ def test_version():
     assert changelog.is_file(), f"Could not find {changelog}"
 
     with open(changelog, 'rt') as f:
-        line = f.readline()
-        line = f.readline()
-        line = f.readline()
-        # Fourth line of changelog has the most current version
-        line = f.readline()
 
-        print(line)
-        assert str(version[0]) == line.strip()
+        lines = f.readlines()
+        version_line = 3
+
+        print(lines[version_line])
+        assert str(version[0]) == lines[version_line].strip()
 
