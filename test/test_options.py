@@ -32,9 +32,10 @@ def test_version():
 
     with open(changelog, 'rt') as f:
         line = f.readline()
-        # will need to change after 1.0.0
-        while line[0] != '0':
-            line = f.readline()
+        line = f.readline()
+        line = f.readline()
+        # Fourth line of changelog has the most current version
+        line = f.readline()
 
         print(line)
         assert str(version[0]) == line.strip()

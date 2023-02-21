@@ -70,9 +70,9 @@ struct opt_t
 */
 const std::string default_driver_name = "device_i2c";
 
-/**
- * @brief Current version of this application
+/** @brief Current version of this application
  * 
+ * @note This will have to be manually changed after the release
  */
 const std::string current_host_app_version = "0.3.0";
 
