@@ -4,6 +4,7 @@ Host XVF Control change log
 0.3.0
 -----
 
+  * ADDED: ``--version`` option
   * CHANGED: Error messages for the hanging resource
   * CHANGED: Moved ``print_arg`` into the ``command_map`` dynamic library
   * CHANGED: All internal host application errors are now ``-1``
