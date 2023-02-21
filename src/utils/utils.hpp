@@ -144,9 +144,6 @@ control_ret_t check_num_args(const cmd_t * cmd, const size_t args_left);
 /** @brief Convert command line argument from string to cmd_param_t */
 cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str);
 
-/** @brief Print cmd_param_t value */
-//void print_arg(const cmd_param_type_t type, const cmd_param_t val);
-
 /** @brief Exit on control_ret_t error */
 void check_cmd_error(std::string cmd_name, std::string rw, control_ret_t ret);
 
