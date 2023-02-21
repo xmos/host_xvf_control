@@ -13,6 +13,7 @@ using namespace std;
 
 opt_t options[] = {
             {"--help",                    "-h",        "display this information"                                                  },
+            {"--version",                 "-v",        "print the current version of this application",                            },
             {"--list-commands",           "-l",        "print the list of commands"                                                },
             {"--dump-params",             "-d",        "print all the parameters"                                                  },
             {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u *"    },
@@ -120,8 +121,9 @@ control_ret_t print_help_menu()
     // Getting current terminal width here to set the cout line limit
     const size_t hard_stop = get_term_width();
 
-    cout << "usage: xvf_hostapp_rpi [ command | option ]" << endl
-    << setw(68) << "[ -u | --use <protocol>] [ command | option ]" << endl
+    cout << "usage: xvf_host [ command | option ]" << endl
+    << setw(61) << "[ -u | --use <protocol>] [ command | option ]" << endl
+    << endl << "Current application version is " << current_host_app_version << "."
     << endl << "You can use --use option to specify protocol you want to use"
     << endl << "or call the option/command directly using default control protocol."
     << endl << "Default control protocol is I2C." << endl << endl << "Options:" << endl;

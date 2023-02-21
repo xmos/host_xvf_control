@@ -31,6 +31,11 @@ int main(int argc, char ** argv)
         {
             return print_help_menu();
         }
+        else if (opt->long_name == "--version")
+        {
+            cout << current_host_app_version << endl;
+            return 0;
+        }
         else if (opt->long_name == "--list-commands")
         {
             return print_command_list();
@@ -73,6 +78,11 @@ int main(int argc, char ** argv)
         if(opt->long_name == "--help")
         {
             return print_help_menu();
+        }
+        if(opt->long_name == "--version")
+        {
+            cout << current_host_app_version << endl;
+            return 0;
         }
         if(opt->long_name == "--list-commands")
         {
