@@ -71,7 +71,7 @@ opt_t * option_lookup(const string str)
     cerr << "Option " << str << " does not exist." << endl
     << "Maybe you meant " << options[indx].short_name
     << " or " << options[indx].long_name << "." << endl;
-    exit(CONTROL_BAD_COMMAND);
+    exit(HOST_APP_ERROR);
     return nullptr;
 }
 
@@ -101,7 +101,7 @@ cmd_t * command_lookup(const string str)
     }
     cerr << "Command " << str << " does not exist." << endl
     << "Maybe you meant " << commands[indx].cmd_name <<  "." << endl;
-    exit(CONTROL_BAD_COMMAND);
+    exit(HOST_APP_ERROR);
     return nullptr;
 }
 
@@ -320,7 +320,7 @@ control_ret_t test_bytestream(Command * command, const string in_filename)
     if(!rf)
     {
         cerr << "Could not open a file " << in_filename << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     rf.seekg (0, rf.end);
     streamoff size = rf.tellg();
@@ -360,7 +360,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     if(!rf)
     {
         cerr << "Could not open a file " << in_filename << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
 
     rf.seekg (0, rf.end);
@@ -370,7 +370,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     if(size != (num_all_vals * sizeof(uint8_t)))
     {
         cerr << "Test buffer lengths don't match" << endl;
-        exit(CONTROL_DATA_LENGTH_ERROR);
+        exit(HOST_APP_ERROR);
     }
 
     for(size_t i = 0; i < num_all_vals; i++)
@@ -384,7 +384,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     if(!rf.eof() || rf.bad())
     {
         cerr << "Error occured while reading " << in_filename << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
 
     for(int n = 0; n < test_frames; n++)
@@ -400,7 +400,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     if(!wf)
     {
         cerr << "Could not open a file " << out_filename << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
 
     for(size_t i = 0; i < num_all_vals; i++)
@@ -413,7 +413,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     if(wf.bad())
     {
         cerr << "Error occured when writing to " << out_filename << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     return ret;
 }

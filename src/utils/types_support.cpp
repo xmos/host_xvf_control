@@ -40,7 +40,7 @@ string command_param_type_name(const cmd_param_type_t type)
 
     default:
         cerr << "Unsupported parameter type" << endl;
-        exit(CONTROL_BAD_COMMAND);
+        exit(HOST_APP_ERROR);
     }
 
     return tstr;
@@ -54,7 +54,8 @@ cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str)
         {
         case TYPE_CHAR:
             cerr << "TYPE_CHAR commands can only be READ_ONLY" << endl;
-            exit(CONTROL_BAD_COMMAND);
+            exit(HOST_APP_ERROR);
+
         case TYPE_UINT8:
         {
             int32_t tmp = stoi(str, nullptr, 0);
@@ -63,6 +64,7 @@ cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str)
                 throw out_of_range("");
             }
             val.ui8 = static_cast<uint8_t>(tmp);
+            break;
         }
         case TYPE_INT32:
             val.i32 = stoi(str, nullptr, 0);
@@ -76,52 +78,25 @@ cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str)
         case TYPE_RADIANS:
             val.f = stof(str);
             break;
+
         default:
             cerr << "Unsupported parameter type" << endl;
-            exit(CONTROL_BAD_COMMAND);
+            exit(HOST_APP_ERROR);
         }
     }
     catch(const out_of_range & ex)
     {
         static_cast<void>(ex);
         cerr << "Value " << str << " is out of range of " << command_param_type_name(type) << " type"<< endl;
-        exit(CONTROL_BAD_COMMAND);
+        exit(HOST_APP_ERROR);
     }
     catch(const invalid_argument & ex)
     {
         static_cast<void>(ex);
         cerr << "Argument " << str << " is invalid" << endl;
-        exit(CONTROL_BAD_COMMAND);
+        exit(HOST_APP_ERROR);
     }
     return val;
-}
-
-void print_arg(const cmd_param_type_t type, const cmd_param_t val)
-{
-    switch(type)
-    {
-    case TYPE_CHAR:
-        cout << static_cast<char>(val.ui8);
-        break;
-    case TYPE_UINT8:
-        cout << static_cast<int>(val.ui8) << " ";
-        break;
-    case TYPE_FLOAT:
-        cout << setprecision(7) << val.f << " ";
-        break;
-    case TYPE_RADIANS:
-        cout << setprecision(5) << fixed << val.f << setprecision(2) << fixed << " (" << val.f  * 180.0f / PI_VALUE << " deg)" << " ";
-        break;
-    case TYPE_INT32:
-        cout << val.i32 << " ";
-        break;
-    case TYPE_UINT32:
-        cout << val.ui32 << " ";
-        break;
-    default:
-        cerr << "Unsupported parameter type" << endl;
-        exit(CONTROL_BAD_COMMAND);
-    }
 }
 
 size_t get_num_bytes_from_type(const cmd_param_type_t type)
@@ -141,7 +116,7 @@ size_t get_num_bytes_from_type(const cmd_param_type_t type)
         break;
     default:
         cerr << "Unsupported parameter type" << endl;
-        exit(CONTROL_BAD_COMMAND);
+        exit(HOST_APP_ERROR);
     }
     return num_bytes;
 }

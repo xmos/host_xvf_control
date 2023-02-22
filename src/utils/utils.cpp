@@ -74,7 +74,7 @@ string command_rw_type_name(const cmd_rw_t rw)
 
     default:
         cerr << "Unsupported read/write type" << endl;
-        exit(CONTROL_BAD_COMMAND);
+        exit(HOST_APP_ERROR);
     }
 
     return tstr;
@@ -85,14 +85,14 @@ control_ret_t check_num_args(const cmd_t * cmd, const size_t args_left)
     if((cmd->rw == CMD_RO) && (args_left != 0))
     {
         cerr << "Command: " << cmd->cmd_name << " is read-only, so it does not require any arguments." << endl;
-        exit(CONTROL_DATA_LENGTH_ERROR);
+        exit(HOST_APP_ERROR);
     }
     else if ((cmd->rw == CMD_WO) && (args_left != cmd->num_values))
     {
         cerr << "Command: " << cmd->cmd_name << " is write-only and"
         << " expects " << cmd->num_values << " argument(s), " << endl
         << args_left << " are given." << endl;
-        exit(CONTROL_DATA_LENGTH_ERROR);
+        exit(HOST_APP_ERROR);
     }
     else if ((cmd->rw == CMD_RW) && (args_left != 0) && (args_left != cmd->num_values))
     {
@@ -100,7 +100,7 @@ control_ret_t check_num_args(const cmd_t * cmd, const size_t args_left)
         << "If you want to read do not give any arguments to this command." << endl
         << "If you want to write give " << cmd->num_values << " argument(s) to this command, "
         << args_left << " are given." << endl;
-        exit(CONTROL_DATA_LENGTH_ERROR);
+        exit(HOST_APP_ERROR);
     }
     return CONTROL_SUCCESS;
 }
@@ -120,7 +120,7 @@ cmd_param_t command_bytes_to_value(const cmd_param_type_t type, const uint8_t * 
         break;
     default:
         cerr << "Unsupported parameter type" << endl;
-        exit(CONTROL_BAD_COMMAND);
+        exit(HOST_APP_ERROR);
     }
 
     return value;
@@ -139,7 +139,7 @@ void command_bytes_from_value(const cmd_param_type_t type, uint8_t * data, unsig
         break;
     default:
         cerr << "Unsupported parameter type" << endl;
-        exit(CONTROL_BAD_COMMAND);
+        exit(HOST_APP_ERROR);
     }
 }
 

@@ -5,7 +5,7 @@
 
 using namespace std;
 
-Command::Command(Device * _dev) : device(_dev)
+Command::Command(Device * _dev, print_args_fptr _print) : device(_dev), print_args(_print)
 {
     control_ret_t ret = device->device_init();
     if (ret != CONTROL_SUCCESS)
@@ -29,8 +29,9 @@ control_ret_t Command::command_get(const cmd_t * cmd, cmd_param_t * values)
     {
         if(read_attempts == 1000)
         {
-            cerr << "Could not read from the device" << endl;
-            exit(CONTROL_ERROR);
+            cerr << "Resource could not respond to the " << cmd->cmd_name << " read command."
+            << endl << "Check the audio loop is active." << endl;
+            exit(HOST_APP_ERROR);
         }
         if(data[0] == CONTROL_SUCCESS)
         {
@@ -73,8 +74,9 @@ control_ret_t Command::command_set(const cmd_t * cmd, const cmd_param_t * values
     {
         if(write_attempts == 1000)
         {
-            cerr << "Could not write to the device" << endl;
-            exit(CONTROL_ERROR);
+            cerr << "Resource could not respond to the " << cmd->cmd_name << " write command."
+            << endl << "Check the audio loop is active." << endl;
+            exit(HOST_APP_ERROR);
         }
         if(ret == CONTROL_SUCCESS)
         {
@@ -158,12 +160,7 @@ control_ret_t Command::do_command(const cmd_t * cmd, char ** argv, int argc, int
     if(args_left == 0) // READ
     {
         ret = command_get(cmd, cmd_values);
-        cout << cmd->cmd_name << " ";
-        for(unsigned i = 0; i < cmd->num_values; i++)
-        {
-            print_arg(cmd->type, cmd_values[i]);
-        }
-        cout << endl;
+        print_args(cmd, cmd_values);
     }
     else // WRITE
     {
