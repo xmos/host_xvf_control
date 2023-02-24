@@ -44,7 +44,7 @@ void Device::get_device_info(dl_handle_t handle, const string symbol)
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     device_info = func();
 }

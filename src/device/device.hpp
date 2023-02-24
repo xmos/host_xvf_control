@@ -18,6 +18,8 @@ typedef HMODULE dl_handle_t;
 typedef void * dl_handle_t;
 #endif
 
+#define HOST_APP_ERROR -1
+
 /**
  * @brief Class for interfacing device_contol
  */

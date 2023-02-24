@@ -13,6 +13,7 @@ using namespace std;
 
 opt_t options[] = {
             {"--help",                    "-h",        "display this information"                                                  },
+            {"--version",                 "-v",        "print the current version of this application",                            },
             {"--list-commands",           "-l",        "print the list of commands"                                                },
             {"--dump-params",             "-d",        "print all the parameters"                                                  },
             {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u *"    },
@@ -21,7 +22,8 @@ opt_t options[] = {
             {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"           },
             {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"              },
             {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"              },
-            {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                        }
+            {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                        },
+            {"--test-bytestream",         "-tb",       "test device by writing a user defined stream of bytes to it"               }
 };
 size_t num_options = end(options) - begin(options);
 
@@ -69,7 +71,7 @@ opt_t * option_lookup(const string str)
     cerr << "Option " << str << " does not exist." << endl
     << "Maybe you meant " << options[indx].short_name
     << " or " << options[indx].long_name << "." << endl;
-    exit(CONTROL_BAD_COMMAND);
+    exit(HOST_APP_ERROR);
     return nullptr;
 }
 
@@ -99,7 +101,7 @@ cmd_t * command_lookup(const string str)
     }
     cerr << "Command " << str << " does not exist." << endl
     << "Maybe you meant " << commands[indx].cmd_name <<  "." << endl;
-    exit(CONTROL_BAD_COMMAND);
+    exit(HOST_APP_ERROR);
     return nullptr;
 }
 
@@ -119,8 +121,9 @@ control_ret_t print_help_menu()
     // Getting current terminal width here to set the cout line limit
     const size_t hard_stop = get_term_width();
 
-    cout << "usage: xvf_hostapp_rpi [ command | option ]" << endl
-    << setw(68) << "[ -u | --use <protocol>] [ command | option ]" << endl
+    cout << "usage: xvf_host [ command | option ]" << endl
+    << setw(61) << "[ -u | --use <protocol>] [ command | option ]" << endl
+    << endl << "Current application version is " << current_host_app_version << "."
     << endl << "You can use --use option to specify protocol you want to use"
     << endl << "or call the option/command directly using default control protocol."
     << endl << "Default control protocol is I2C." << endl << endl << "Options:" << endl;
@@ -162,8 +165,6 @@ control_ret_t print_help_menu()
 
 control_ret_t print_command_list()
 {
-    string spec_cmd = "SPECIAL_CMD_";
-    string test_cmd = "TEST_";
     size_t longest_command = 0;
     size_t longest_rw = 10; // READ/WRITE
     size_t longest_args = 2; // double digits
@@ -172,8 +173,8 @@ control_ret_t print_command_list()
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t * cmd = &commands[i];
-        // skipping special and test commands
-        if((cmd->cmd_name.find(spec_cmd) != string::npos) || (cmd->cmd_name.find(test_cmd) != string::npos))
+        // skipping hidden commands
+        if(cmd->hidden_cmd)
         {
             continue;
         }
@@ -192,8 +193,8 @@ control_ret_t print_command_list()
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t * cmd = &commands[i];
-        // skipping special and test commands
-        if((cmd->cmd_name.find(spec_cmd) != string::npos) || (cmd->cmd_name.find(test_cmd) != string::npos))
+        // skipping hidden commands
+        if(cmd->hidden_cmd)
         {
             continue;
         }
@@ -241,13 +242,12 @@ control_ret_t print_command_list()
 control_ret_t dump_params(Command * command)
 {
     control_ret_t ret = CONTROL_ERROR;
-    string spec_cmd = "SPECIAL_CMD_";
-    string test_cmd = "TEST_";
+
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t * cmd = &commands[i];
-        // skipping special and test commands
-        if((cmd->cmd_name.find(spec_cmd) != string::npos) || (cmd->cmd_name.find(test_cmd) != string::npos))
+        // skipping hidden commands
+        if(cmd->hidden_cmd)
         {
             continue;
         }
@@ -283,11 +283,17 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
         int num = 0;
         stringstream ss(line);
         string word;
+        // if newline
+        if(ss.peek() == -1)
+        {
+            continue;
+        }
         while(ss >> word)
         {
             memcpy(&buff[i], word.c_str(), word.length());
+            buff[i + word.length()] = '\0';
             line_ch[num] = &buff[i];
-            i += word.length() + 1;
+            i += word.length() + 2;
             if(i > max_line_len)
             {
                 cerr << "Line:" << endl << line
@@ -307,6 +313,39 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
     return ret;
 }
 
+control_ret_t test_bytestream(Command * command, const string in_filename)
+{
+    control_ret_t ret;
+    ifstream rf(in_filename, ios::in | ios::binary);
+    if(!rf)
+    {
+        cerr << "Could not open a file " << in_filename << endl;
+        exit(HOST_APP_ERROR);
+    }
+    rf.seekg (0, rf.end);
+    streamoff size = rf.tellg();
+    rf.seekg (0, rf.beg);
+
+    uint8_t *data = new uint8_t[size]; 
+    for(int i=0; i<size; i++)
+    {
+        rf.read(reinterpret_cast<char *>(&data[i]), sizeof(uint8_t));
+    }
+
+    if((size >= 2) && (data[1] & 0x80)) // Read command
+    {
+        ret = command->command_get_low_level(data, size);
+    }
+    else
+    {
+        ret = command->command_set_low_level(data, size);
+    }
+
+    delete []data;
+
+    return ret;
+}
+
 control_ret_t test_control_interface(Command * command, const string out_filename)
 {
     control_ret_t ret;
@@ -321,7 +360,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     if(!rf)
     {
         cerr << "Could not open a file " << in_filename << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
 
     rf.seekg (0, rf.end);
@@ -331,7 +370,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     if(size != (num_all_vals * sizeof(uint8_t)))
     {
         cerr << "Test buffer lengths don't match" << endl;
-        exit(CONTROL_DATA_LENGTH_ERROR);
+        exit(HOST_APP_ERROR);
     }
 
     for(size_t i = 0; i < num_all_vals; i++)
@@ -345,7 +384,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     if(!rf.eof() || rf.bad())
     {
         cerr << "Error occured while reading " << in_filename << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
 
     for(int n = 0; n < test_frames; n++)
@@ -361,7 +400,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     if(!wf)
     {
         cerr << "Could not open a file " << out_filename << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
 
     for(size_t i = 0; i < num_all_vals; i++)
@@ -374,7 +413,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     if(wf.bad())
     {
         cerr << "Error occured when writing to " << out_filename << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     return ret;
 }

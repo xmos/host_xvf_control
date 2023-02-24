@@ -15,6 +15,9 @@ class Command
 
         /** @brief Pointer to the Device class object */
         Device * device;
+
+        /** @brief Pointer to the super_print_arg() function from the command_map shared object */
+        print_args_fptr print_args;
         
     public:
 
@@ -25,7 +28,7 @@ class Command
          * 
          * @param _dev          Pointer to the Device class object
          */
-        Command(Device * _dev);
+        Command(Device * _dev, print_args_fptr _print);
 
         /**
          * @brief Takes argv and executes a single command from it
@@ -52,6 +55,30 @@ class Command
          * @param values        Pointer to store values to write to the device
          */
         control_ret_t command_set(const cmd_t * cmd, const cmd_param_t * values);
+
+        /**
+         * @brief Low level get command function.
+         *
+         * This function sends a read command to the device and returns the error
+         * returned from the device.
+         * 
+         * @param data          Byte array containing the read command
+         * @param payload_len   Length of the byte stream to write to the device
+         * @note                Only for internal testing.
+         */
+        control_ret_t command_get_low_level(uint8_t *data, size_t payload_len);
+
+        /**
+         * @brief Low level set command function
+         *
+         * This function sends a write command and payload to the device and
+         * returns the error code returned from the device.
+         *
+         * @param cmd           Byte array containing the write command and payload
+         * @param payload_len   Length of the byte stream to write to the device
+         * @note                Only for internal testing
+         */
+        control_ret_t command_set_low_level(uint8_t *data, size_t payload_len);
 };
 
 #endif

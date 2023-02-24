@@ -46,6 +46,8 @@ struct cmd_t
     unsigned num_values;
     /** Command info */
     std::string info;
+    /** Command visibility status */
+    bool hidden_cmd;
 };
 
 /** @brief Option configuration structure
@@ -67,6 +69,12 @@ struct opt_t
  * @note Using I2C by default for now as USB is currently not supported
 */
 const std::string default_driver_name = "device_i2c";
+
+/** @brief Current version of this application
+ * 
+ * @note This will have to be manually changed after the release
+ */
+const std::string current_host_app_version = "0.3.0";
 
 /** @brief Convert string to uper case */
 std::string to_upper(std::string str);
@@ -93,6 +101,9 @@ using num_cmd_fptr = uint32_t (*)();
 /** Function pointer that takes void * and returns Device */
 using device_fptr = Device * (*)(void *);
 
+/** Function pointer that prints different argument types */
+using print_args_fptr = void (*)(const cmd_t *, cmd_param_t *);
+
 /**
  * @brief Get the function pointer to get_command_map()
  * 
@@ -114,6 +125,13 @@ num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle);
  */
 device_fptr get_device_fptr(dl_handle_t handle);
 
+/**
+ * @brief Get the function pointer to super_print_arg()
+ * 
+ * @param handle Pointer to the device shared object
+ */
+print_args_fptr get_print_args_fptr(dl_handle_t handle);
+
 /** @brief Get param type name string */
 std::string command_param_type_name(const cmd_param_type_t type);
 
@@ -125,9 +143,6 @@ control_ret_t check_num_args(const cmd_t * cmd, const size_t args_left);
 
 /** @brief Convert command line argument from string to cmd_param_t */
 cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str);
-
-/** @brief Print cmd_param_t value */
-void print_arg(const cmd_param_type_t type, const cmd_param_t val);
 
 /** @brief Exit on control_ret_t error */
 void check_cmd_error(std::string cmd_name, std::string rw, control_ret_t ret);

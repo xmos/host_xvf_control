@@ -29,5 +29,6 @@ include(src/host_drivers.cmake)
 include(src/host_application.cmake)
 
 if(TESTING)
+    include(src/low_level_test_host_drivers.cmake)
     add_subdirectory(test)
 endif()
