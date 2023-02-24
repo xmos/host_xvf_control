@@ -23,7 +23,7 @@ Requirements:
     sox
 
 Usage:
-    python3 mic_ref_correlate.py <mic_ref_wav_file>
+    python3 mic_ref_correlate.py <rec_mic0_ref.wav>
 
 The input wav file to the script is expected to be a 2 channel wav file where the first channel
 is the recorded mic input and the second channel is the ref input to the device.

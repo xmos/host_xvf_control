@@ -6,8 +6,33 @@ from pathlib import Path
 import argparse
 import subprocess
 import glob
+import scipy.io.wavfile
+import scipy.signal
 
+"""
+This script is used for calculating the coherence between the channels of a wav file.
+It is used for calculating the coherence between the different microhpone inputs to the sw_xvf3800 device.
 
+It expects stereo wavfiles as input, with each input channel being the recorded mic input of one of the microphones to the device.
+It calculates the coherence between the 2 channels of the input file. When more than one input file is provided, the coherence is calculated
+per file and plotted in a single plot.
+
+Requirements:
+    python3
+    numpy
+    matplotlib
+    scipy
+    sox
+
+Usage:
+    python3 coherence.py ~/lenovo_mic0_1.wav ~/lenovo_mic2_3.wav
+
+Before calculating the correlation, if the sampling freq of the wav file is more than 16KHz, it
+is first downsampled to 16KHz using sox. Make sure sox is installed before running this script.
+
+Before calculating the correlation, if the sampling freq of the wav file is more than 16KHz, it
+is first downsampled to 16KHz using sox. Make sure sox is installed before running this script.
+"""
 def calc_coherence_new(file_dict, min_length, num_subplots, plot_name="mic_coherence.png", show_plot=True):
     if(num_subplots == 1):
         num_rows = 1
