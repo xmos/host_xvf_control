@@ -51,7 +51,7 @@ def read_aec_filter(filelist, show_plot):
         plt.show()
     
     plot_name = filelist[0].name.split('.')[0] + ".png" 
-    print(plot_name)
+    print(f"Filter plot saved in {plot_name}")
     figinstance.savefig(plot_name, dpi=200)
 
 
@@ -75,3 +75,4 @@ if __name__ == "__main__":
     
     show_plot = True
     read_aec_filter(filelist, show_plot)
+
