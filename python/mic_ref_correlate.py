@@ -1,10 +1,36 @@
 import numpy as np
 from pathlib import Path
 import scipy
+import scipy.io.wavfile
+import scipy.signal
 import argparse
 import matplotlib.pyplot as plt
 import subprocess
 
+"""
+This scripts calculates and plots the correlation lag between the two channels in a stereo wav file.
+It is used to check the correlation between the one of the microphone and the reference input to the xvf3800.
+It calculates the no. of delay samples for which a peak in the cross correlation between mic and ref is observed.
+A positive value of the ref-mic delay indicates a causal filter such that microphones are delayed wrt the reference.
+A negative value of the ref-mic delay indicates a non-causal filter such that a signal on the mic is seen earlier than it's seen
+on the reference.
+
+Requirements:
+    python3
+    numpy
+    matplotlib
+    scipy
+    sox
+
+Usage:
+    python3 mic_ref_correlate.py <mic_ref_wav_file>
+
+The input wav file to the script is expected to be a 2 channel wav file where the first channel
+is the recorded mic input and the second channel is the ref input to the device.
+
+Before calculating the correlation, if the sampling freq of the wav file is more than 16KHz, it
+is first downsampled to 16KHz using sox. Make sure sox is installed before running this script.
+"""
 def get_args():
     parser = argparse.ArgumentParser("Script to plot correlation between mic and reference channels")
     parser.add_argument("input_file", type=str, help="Input .wav files")
@@ -55,7 +81,7 @@ def calc_correlation(data0, data1, rate, plotname):
     plt.tight_layout()
     figinstance = plt.gcf()
     plt.show()
-    print(plotname)
+    print(f"Correlation plot saved in {plotname}")
     figinstance.savefig(plotname)
     return
 
@@ -64,6 +90,10 @@ if __name__ == "__main__":
 
     assert(Path(args.input_file).is_file()), f"Error: {args.input_file} is not a file."
     rate, wav_data = scipy.io.wavfile.read(args.input_file)
+
+    assert rate >= 16000, f"Atleast 16KHz sampling rate input file required. Invalid sampling freq {rate}"
+    assert wav_data.ndim == 2 and wav_data.shape[1] == 2, "Only stereo input wav files supported"
+
     if rate != 16000:
         downsampled_file = f"{Path(args.input_file).stem}_16khz.wav"
         cmd = f"sox {args.input_file} -r 16000 {downsampled_file}"
@@ -77,7 +107,6 @@ if __name__ == "__main__":
     max_val = np.iinfo(wav_data.dtype).max
     wav_data = wav_data.astype(dtype=np.float64) / max_val
     wav_data = wav_data.T
-    assert(len(wav_data) == 2), f"Error: Only stereo files supported. {len(wav_data)} channels file given."
     data0 = wav_data[0]
     data1 = wav_data[1]
     calc_correlation(data0, data1, rate, plotname)
