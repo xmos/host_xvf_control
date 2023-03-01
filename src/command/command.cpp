@@ -5,7 +5,8 @@
 
 using namespace std;
 
-Command::Command(Device * _dev, print_args_fptr _print) : device(_dev), print_args(_print)
+Command::Command(Device * _dev, print_args_fptr _print, check_range_fptr _range) : 
+    device(_dev), print_args(_print), check_range(_range)
 {
     control_ret_t ret = device->device_init();
     if (ret != CONTROL_SUCCESS)
@@ -59,6 +60,7 @@ control_ret_t Command::command_get(const cmd_t * cmd, cmd_param_t * values)
 
 control_ret_t Command::command_set(const cmd_t * cmd, const cmd_param_t * values)
 {
+    check_range(cmd, values);
     size_t data_len = get_num_bytes_from_type(cmd->type) * cmd->num_values;
     uint8_t * data = new uint8_t[data_len];
 
