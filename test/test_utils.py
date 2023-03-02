@@ -56,7 +56,7 @@ def get_dummy_files():
 
     return test_dir, host_bin_copy, control_protocol
 
-def run_cmd(command, cwd, verbose = False):
+def run_cmd(command, cwd, verbose = False, expect_success = True):
     result = subprocess.run(command, capture_output=True, cwd=cwd, shell=True)
 
     if verbose or result.returncode:
@@ -66,15 +66,19 @@ def run_cmd(command, cwd, verbose = False):
         print("stdout: ", result.stdout)
         print("stderr: ", result.stderr)
     
-    assert not result.returncode
-    return result.stdout
+    if expect_success:
+        assert not result.returncode
+        return result.stdout
+    else:
+        assert result.returncode
+        return result.stderr
 
-def execute_command(host_bin, control_protocol, cwd, cmd_name, cmd_vals = None):
+def execute_command(host_bin, control_protocol, cwd, cmd_name, cmd_vals = None, expect_success = True):
     
     command = str(host_bin) + " -u " + control_protocol + " " + cmd_name
     if cmd_vals != None:
         cmd_write = command + " " + ' '.join(str(val) for val in cmd_vals)
-        run_cmd(cmd_write, cwd, True)
+        run_cmd(cmd_write, cwd, True, expect_success)
 
     stdout = run_cmd(command, cwd, True)
 

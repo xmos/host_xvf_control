@@ -214,7 +214,7 @@ void check_range_one(const val_range_t * range_info, const cmd_param_type_t cmd_
 }
 
 cmd_param_t range0[4] = {0};
-val_range_t val_range0 = {range0, 2};
+val_range_t val_range0[1] = {range0, 2};
 
 cmd_param_t range1_0[2] = {0};
 cmd_param_t range1_1[2] = {0};
@@ -234,7 +234,7 @@ val_range_t val_range2[2] = {
 
 std::map<std::string, val_range_t *> test_map{
     {
-        "RANGE_TEST0", &val_range0
+        "RANGE_TEST0", val_range0
     },
     {
         "RANGE_TEST1", val_range1

@@ -62,3 +62,21 @@ def test_dummy_commands():
         sentence = " ".join(str(word) for word in output)
 
         assert sentence == "my name is Pavel\0\0\0\0"
+
+        vals = gen_rand_array('int', 0, 6, 1)
+        if ((vals[0] >= 0) and (vals[0] <= 3)) or (vals[0] == 5):
+            test_utils.execute_command(host_bin, control_protocol, test_dir, "RANGE_TEST0", vals, True)
+        else:
+            test_utils.execute_command(host_bin, control_protocol, test_dir, "RANGE_TEST0", vals, False)
+
+        vals = gen_rand_array('float', 0.0, 1.1, 3)
+        if((vals[0] >= 0.0) and (vals[0] <= 1.0)) and ((vals[1] >= 0.5) and (vals[1] <= 1.0)) and ((vals[2] >= 0.0) and (vals[2] <= 0.5)):
+            test_utils.execute_command(host_bin, control_protocol, test_dir, "RANGE_TEST1", vals, True)
+        else:
+            test_utils.execute_command(host_bin, control_protocol, test_dir, "RANGE_TEST1", vals, False)
+
+        vals = gen_rand_array('int', 0, 15, 2)
+        if((vals[0] >= 0) and (vals[0] <= 3)) and (((vals[1] >= 0) and (vals[1] <= 6)) or ((vals[1] >= 10) and (vals[1] <= 14))):
+            test_utils.execute_command(host_bin, control_protocol, test_dir, "RANGE_TEST2", vals, True)
+        else:
+            test_utils.execute_command(host_bin, control_protocol, test_dir, "RANGE_TEST2", vals, False)
