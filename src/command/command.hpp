@@ -16,6 +16,9 @@ class Command
         /** @brief Pointer to the Device class object */
         Device * device;
 
+        /** @brief Bypass range check state */
+        bool bypass_range_check;
+
         /** @brief Pointer to the super_print_arg() function from the command_map shared object */
         print_args_fptr print_args;
         
@@ -27,8 +30,10 @@ class Command
          * Will initialise a host (master) interface.
          * 
          * @param _dev          Pointer to the Device class object
+         * @param _bypass_range Bypass range check state
+         * @param _print        Pointer to the super_print_arg() function 
          */
-        Command(Device * _dev, print_args_fptr _print);
+        Command(Device * _dev, bool _bypass_range, print_args_fptr _print);
 
         /**
          * @brief Takes argv and executes a single command from it
