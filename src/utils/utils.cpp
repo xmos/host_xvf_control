@@ -25,24 +25,32 @@ string to_lower(string str)
     return str;
 }
 
-string get_device_lib_name(string protocol_name)
+size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup)
 {
-    string lib_name = default_driver_name;
-    if (to_upper(protocol_name) == "I2C")
+    for(size_t i = 1; i < argc; i++)
     {
-        lib_name = "device_i2c";
+        string cmd_arg = to_lower(argv[i]);
+        if((cmd_arg == opt_lookup->long_name) || (cmd_arg == opt_lookup->short_name))
+        {
+            return i;
+        }
     }
-    else if (to_upper(protocol_name) == "SPI")
+    return 0;
+}
+
+void remove_opt(int * argc, char ** argv, size_t ind, size_t num)
+{
+    for(size_t i = 0; i < * argc - ind - num; i++)
     {
-        lib_name = "device_spi";
+        argv[ind + i] = argv[ind + num + i];
     }
-    else
+    * argc -= num;
+    if(* argc == 1)
     {
-        // Using I2C by default for now as USB is currently not supported
-        cout << "Could not find " << to_upper(protocol_name) << " in supported protocols"
-        << endl << "Will use I2C by default" << endl;
+        cout << "Use --help to get the list of options for this application." << endl
+        << "Or use --list-commands to print the list of commands and their info." << endl;
+        exit(0);
     }
-    return lib_name;
 }
 
 void check_cmd_error(string cmd_name, string rw, control_ret_t ret)
