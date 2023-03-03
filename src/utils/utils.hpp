@@ -108,7 +108,7 @@ using device_fptr = Device * (*)(void *);
 using print_args_fptr = void (*)(const cmd_t *, cmd_param_t *);
 
 /** Function pointer to get the range check info */
-using check_range_fptr = void * (*)(const cmd_t *, const cmd_param_t *);
+using check_range_fptr = void (*)(const cmd_t *, const cmd_param_t *);
 
 /**
  * @brief Get the function pointer to get_command_map()

@@ -46,26 +46,33 @@ struct cmd_t
     bool hidden_cmd;
 };
 
+/** 
+ * @brief Structure that keeps information needed to range check a single value
+ * 
+ * @note All values are inclusive
+ */
 struct val_range_t 
 {
+    /** Pointer to the array of intervals */
     cmd_param_t * ranges;
+    /** Number of interval to range check */
     size_t num_intervals;
 };
 
 #define PI_VALUE  3.14159265358979323846f
 
 static cmd_t commands[] = {
-                        {0, "CMD_FLOAT",  TYPE_FLOAT,   0, CMD_RW, 20, "This is a test command for testing multiple float reads and writes. Need to keep command descriprion large to test -l option.",   false  },
-                        {0, "CMD_INT32",  TYPE_INT32,   1, CMD_RW, 20, "This is a test command for testing multiple int32 reads and writes. Need to keep command descriprion large to test -l option.",   false  },
-                        {0, "CMD_UINT32", TYPE_UINT32,  2, CMD_RW, 20, "This is a test command for testing multiple uint32 reads and writes. Need to keep command descriprion large to test -l option.",  false  },
-                        {0, "CMD_RADS",   TYPE_RADIANS, 3, CMD_RW, 20, "This is a test command for testing multiple radians reads and writes. Need to keep command descriprion large to test -l option.", false  },
-                        {0, "CMD_UINT8",  TYPE_UINT8,   4, CMD_RW, 20, "This is a test command for testing multiple uint8 reads and writes. Need to keep command descriprion large to test -l option.",   false  },
-                        {0, "CMD_CHAR",   TYPE_CHAR,    5, CMD_RO, 20, "This is a test command for testing multiple char reads and writes. Need to keep command descriprion large to test -l option.",    false  },
-                        {0, "CMD_HIDDEN", TYPE_UINT8,   6, CMD_RW, 20, "This command is suppossed to be hidden and not show up wehn using -l or -d",                                                      true   },
-                        {0, "CMD_SMALL",  TYPE_INT32,   7, CMD_RW, 3,  "This is a small command for testing -e option",                                                                                   false  },
-                        {0, "RANGE_TEST0", TYPE_INT32, 8, CMD_RW, 1, "This command is used for the range check test", false},
-                        {0, "RANGE_TEST1", TYPE_FLOAT, 9, CMD_RW, 3, "This command is used for the range check test", false},
-                        {0, "RANGE_TEST2", TYPE_UINT8, 10, CMD_RW, 2, "this commands is used for the range check test", false}
+                        {0, "CMD_FLOAT",   TYPE_FLOAT,   0,  CMD_RW, 20, "This is a test command for testing multiple float reads and writes. Need to keep command descriprion large to test -l option.",   false  },
+                        {0, "CMD_INT32",   TYPE_INT32,   1,  CMD_RW, 20, "This is a test command for testing multiple int32 reads and writes. Need to keep command descriprion large to test -l option.",   false  },
+                        {0, "CMD_UINT32",  TYPE_UINT32,  2,  CMD_RW, 20, "This is a test command for testing multiple uint32 reads and writes. Need to keep command descriprion large to test -l option.",  false  },
+                        {0, "CMD_RADS",    TYPE_RADIANS, 3,  CMD_RW, 20, "This is a test command for testing multiple radians reads and writes. Need to keep command descriprion large to test -l option.", false  },
+                        {0, "CMD_UINT8",   TYPE_UINT8,   4,  CMD_RW, 20, "This is a test command for testing multiple uint8 reads and writes. Need to keep command descriprion large to test -l option.",   false  },
+                        {0, "CMD_CHAR",    TYPE_CHAR,    5,  CMD_RO, 20, "This is a test command for testing multiple char reads and writes. Need to keep command descriprion large to test -l option.",    false  },
+                        {0, "CMD_HIDDEN",  TYPE_UINT8,   6,  CMD_RW, 20, "This command is suppossed to be hidden and not show up wehn using -l or -d",                                                      true   },
+                        {0, "CMD_SMALL",   TYPE_INT32,   7,  CMD_RW, 3,  "This is a small command for testing -e option",                                                                                   false  },
+                        {0, "RANGE_TEST0", TYPE_INT32,   8,  CMD_RW, 1,  "This command is used for the range check test",                                                                                   false  },
+                        {0, "RANGE_TEST1", TYPE_FLOAT,   9,  CMD_RW, 3,  "This command is used for the range check test",                                                                                   false  },
+                        {0, "RANGE_TEST2", TYPE_UINT8,   10, CMD_RW, 2,  "this commands is used for the range check test",                                                                                  false  }
 };
 static size_t num_commands = std::end(commands) - std::begin(commands);
 
