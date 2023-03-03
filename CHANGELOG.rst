@@ -5,6 +5,7 @@ Host XVF Control change log
 -----
 
   * ADDED: ``--version`` option
+  * ADDED: call to the ``range_check`` function from the ``command_map`` dynamic library
   * ADDED: ``--bypass-range-check`` option
   * CHANGED: Error messages for the hanging resource
   * CHANGED: Moved ``print_arg`` into the ``command_map`` dynamic library
