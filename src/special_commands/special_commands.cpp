@@ -290,8 +290,6 @@ control_ret_t print_command_list()
 
 control_ret_t dump_params(Command * command)
 {
-    control_ret_t ret = CONTROL_ERROR;
-
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t * cmd = &commands[i];
@@ -302,16 +300,14 @@ control_ret_t dump_params(Command * command)
         }
         if(cmd->rw != CMD_WO)
         {
-            ret = command->do_command(&commands[i], nullptr, 0, 0);
+            command->do_command(&commands[i], nullptr, 0, 0);
         }
     }
-    return ret;
+    return CONTROL_SUCCESS;
 }
 
 control_ret_t execute_cmd_list(Command * command, const string filename)
 {
-    control_ret_t 
-     = CONTROL_ERROR;
     size_t largest_command = 0;
     for(size_t i = 0; i < num_commands; i++)
     {
@@ -320,7 +316,12 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
         largest_command = (num_args > largest_command) ? num_args : largest_command;
     }
     largest_command++; // +1 for the command name
-    ifstream file(filename);
+    ifstream file(filename, ios::in);
+    if(!file)
+    {
+        cerr << "Could not open a file " << filename << endl;
+        exit(HOST_APP_ERROR);
+    }
     string line;
     while(getline(file, line))
     {
@@ -356,11 +357,11 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
         int cmd_indx = 0;
         int arg_indx =  cmd_indx + 1; // 0 is the command
         cmd_t * cmd = command_lookup(line_ch[cmd_indx]);
-        ret = command->do_command(cmd, line_ch, num, arg_indx);
+        command->do_command(cmd, line_ch, num, arg_indx);
         delete []line_ch;
     }
     file.close();
-    return ret;
+    return CONTROL_SUCCESS;
 }
 
 control_ret_t test_bytestream(Command * command, const string in_filename)

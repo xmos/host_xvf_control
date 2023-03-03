@@ -71,7 +71,7 @@ int main(int argc, char ** argv)
         }
         if(opt->long_name == "--execute-command-list")
         {
-            if(argv[arg_indx] == NULL)
+            if(arg_indx >= argc)
             {
                 return execute_cmd_list(&command);
             }
@@ -82,7 +82,7 @@ int main(int argc, char ** argv)
         }
         if(opt->long_name == "--get-aec-filter")
         {
-            if(argv[arg_indx] == NULL)
+            if(arg_indx >= argc)
             {
                 return special_cmd_aec_filter(&command, true);
             }
@@ -93,7 +93,7 @@ int main(int argc, char ** argv)
         }
         if(opt->long_name == "--set-aec-filter")
         {
-            if(argv[arg_indx] == NULL)
+            if(arg_indx >= argc)
             {
                 return special_cmd_aec_filter(&command, false);
             }
@@ -104,7 +104,7 @@ int main(int argc, char ** argv)
         }        
         if(opt->long_name == "--get-nlmodel-buffer")
         {
-            if(argv[arg_indx] == NULL)
+            if(arg_indx >= argc)
             {
                 return special_cmd_nlmodel_buffer(&command, true);
             }
@@ -115,7 +115,7 @@ int main(int argc, char ** argv)
         }
         if(opt->long_name == "--set-nlmodel-buffer")
         {
-            if(argv[arg_indx] == NULL)
+            if(arg_indx >= argc)
             {
                 return special_cmd_nlmodel_buffer(&command, false);
             }
