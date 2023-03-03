@@ -61,7 +61,7 @@ control_ret_t Command::command_set(const cmd_t * cmd, const cmd_param_t * values
 {
     if(!bypass_range_check)
     {
-        // using this while we don't have range check impelemnted
+        // using this while we don't have range check implemented
         static_cast<void>(bypass_range_check);
     }
     size_t data_len = get_num_bytes_from_type(cmd->type) * cmd->num_values;

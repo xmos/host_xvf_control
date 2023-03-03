@@ -144,7 +144,7 @@ bool get_bypass_range_check(int * argc, char ** argv)
     size_t index = argv_option_lookup(*argc, argv, bp_opt);
     if(index == 0)
     {
-        // in option is not preset bypass is false
+        // if option is not preset bypass is false
         return false;
     }
     else

@@ -12,7 +12,8 @@ int main(int argc, char ** argv)
         cout << "Use --help to get the list of options for this application." << endl
         << "Or use --list-commands to print the list of commands and their info." << endl;
         return 0;
-    }    
+    }
+    
     int cmd_indx = 1;
     dl_handle_t cmd_map_handle = load_command_map_dll();
     string lib_name = get_device_lib_name(&argc, argv);

@@ -82,11 +82,10 @@ std::string to_upper(std::string str);
 /** @brief Convert string to lower case */
 std::string to_lower(std::string str);
 
-/** @brief Gets device driver name to load */
-//std::string get_device_lib_name(std::string protocol_name);
-
+/** @brief Lookup option in argv */
 size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup);
 
+/** @brief Remove wirds from argv, decrement argc */
 void remove_opt(int * argc, char ** argv, size_t ind, size_t num);
 
 /**

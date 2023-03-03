@@ -29,8 +29,18 @@ cmd_t * command_lookup(const std::string str);
  */
 opt_t * option_lookup(const std::string str);
 
+/** 
+ * @brief Gets device driver name to load by looking for --use
+ * 
+ * @note Will decrement argc, if option is present
+ */
 std::string get_device_lib_name(int * argc, char ** argv);
 
+/** 
+ * @brief Gets bypass range check state by looking for --bypass-range-check in argv
+ * 
+ * @note Will decrement argc, if option is present
+ */
 bool get_bypass_range_check(int * argc, char ** argv);
 
 /** @brief Print application help menu */
