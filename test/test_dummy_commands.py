@@ -1,7 +1,6 @@
 # Copyright 2023 XMOS LIMITED.
 # This Software is subject to the terms of the XCORE VocalFusion Licence.
 
-from random import randint, random
 import test_utils
 
 num_vals = 20
@@ -13,17 +12,6 @@ rads_cmd = "CMD_RADS"
 uint8_cmd = "CMD_UINT8"
 char_cmd = "CMD_CHAR"
 small_cmd = "CMD_SMALL"
-
-def gen_rand_array(type, min, max, size=num_vals):
-    vals = []
-    vals = [0 for i in range (size)]
-    if type == "float":
-        vals = [random() * (max - min) + min for i in range(size)]
-    elif type == "int":
-        vals = [randint(min, max) for i in range(size)]
-    else:
-        print('Unknown type: ', type)
-    return vals
 
 def single_command_test(host_bin, control_protocol, cwd, cmd_name, cmd_vals):
     # Set and get values within the command range and test closeness
@@ -46,37 +34,19 @@ def test_dummy_commands():
         pass
     
     for i in range(num_frames):
-        vals = gen_rand_array('float', -2147483648, 2147483647)
+        vals = test_utils.gen_rand_array('float', -2147483648, 2147483647)
         single_command_test(host_bin, control_protocol, test_dir, float_cmd, vals)
 
-        vals = gen_rand_array('int', -2147483648, 2147483647)
+        vals = test_utils.gen_rand_array('int', -2147483648, 2147483647)
         single_command_test(host_bin, control_protocol, test_dir, int32_cmd, vals)
 
-        vals = gen_rand_array('int', 0, 4294967295)
+        vals = test_utils.gen_rand_array('int', 0, 4294967295)
         single_command_test(host_bin, control_protocol, test_dir, uint32_cmd, vals)
 
-        vals = gen_rand_array('int', 0, 255)
+        vals = test_utils.gen_rand_array('int', 0, 255)
         single_command_test(host_bin, control_protocol, test_dir, uint8_cmd, vals)
 
         output = test_utils.execute_command(host_bin, control_protocol, test_dir, char_cmd)
         sentence = " ".join(str(word) for word in output)
 
         assert sentence == "my name is Pavel\0\0\0\0"
-
-        vals = gen_rand_array('int', 0, 6, 1)
-        if ((vals[0] >= 0) and (vals[0] <= 3)) or (vals[0] == 5):
-            test_utils.execute_command(host_bin, control_protocol, test_dir, "RANGE_TEST0", vals, True)
-        else:
-            test_utils.execute_command(host_bin, control_protocol, test_dir, "RANGE_TEST0", vals, False)
-
-        vals = gen_rand_array('float', 0.0, 1.1, 3)
-        if((vals[0] >= 0.0) and (vals[0] <= 1.0)) and ((vals[1] >= 0.5) and (vals[1] <= 1.0)) and ((vals[2] >= 0.0) and (vals[2] <= 0.5)):
-            test_utils.execute_command(host_bin, control_protocol, test_dir, "RANGE_TEST1", vals, True)
-        else:
-            test_utils.execute_command(host_bin, control_protocol, test_dir, "RANGE_TEST1", vals, False)
-
-        vals = gen_rand_array('int', 0, 15, 2)
-        if((vals[0] >= 0) and (vals[0] <= 3)) and (((vals[1] >= 0) and (vals[1] <= 6)) or ((vals[1] >= 10) and (vals[1] <= 14))):
-            test_utils.execute_command(host_bin, control_protocol, test_dir, "RANGE_TEST2", vals, True)
-        else:
-            test_utils.execute_command(host_bin, control_protocol, test_dir, "RANGE_TEST2", vals, False)

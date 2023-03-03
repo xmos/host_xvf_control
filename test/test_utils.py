@@ -6,6 +6,7 @@ from platform import system
 import os
 import shutil
 import subprocess
+from random import randint, random
 
 def get_dummy_files():
     control_protocol = "i2c"
@@ -95,3 +96,14 @@ def execute_command(host_bin, control_protocol, cwd, cmd_name, cmd_vals = None, 
             return words[1:]
     else:
         return words
+
+def gen_rand_array(type, min, max, size=20):
+    vals = []
+    vals = [0 for i in range (size)]
+    if type == "float":
+        vals = [random() * (max - min) + min for i in range(size)]
+    elif type == "int":
+        vals = [randint(min, max) for i in range(size)]
+    else:
+        print('Unknown type: ', type)
+    return vals
