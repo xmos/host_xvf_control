@@ -29,6 +29,10 @@ cmd_t * command_lookup(const std::string str);
  */
 opt_t * option_lookup(const std::string str);
 
+std::string get_device_lib_name(int * argc, char ** argv);
+
+bool get_bypass_range_check(int * argc, char ** argv);
+
 /** @brief Print application help menu */
 control_ret_t print_help_menu();
 

@@ -74,7 +74,7 @@ const std::string default_driver_name = "device_i2c";
  * 
  * @note This will have to be manually changed after the release
  */
-const std::string current_host_app_version = "0.3.0";
+const std::string current_host_app_version = "1.0.0";
 
 /** @brief Convert string to uper case */
 std::string to_upper(std::string str);
@@ -83,7 +83,11 @@ std::string to_upper(std::string str);
 std::string to_lower(std::string str);
 
 /** @brief Gets device driver name to load */
-std::string get_device_lib_name(std::string protocol_name);
+//std::string get_device_lib_name(std::string protocol_name);
+
+size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup);
+
+void remove_opt(int * argc, char ** argv, size_t ind, size_t num);
 
 /**
  * @brief Open the dynamic library

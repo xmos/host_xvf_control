@@ -15,9 +15,10 @@ opt_t options[] = {
             {"--help",                    "-h",        "display this information"                                                  },
             {"--version",                 "-v",        "print the current version of this application",                            },
             {"--list-commands",           "-l",        "print the list of commands"                                                },
+            {"--use",                     "-u",        "use specific harware protocol, I2C and SPI are available to use"           },
+            {"--bypass-range-check",      "-br",       "bypass parameter range check",                                             },
             {"--dump-params",             "-d",        "print all the parameters"                                                  },
             {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u *"    },
-            {"--use",                     "-u",        "use specific harware protocol, I2C and SPI are available to use"           },
             {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files, default is aec_filter.bin.fx.mx"           },
             {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"           },
             {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"              },
@@ -103,6 +104,54 @@ cmd_t * command_lookup(const string str)
     << "Maybe you meant " << commands[indx].cmd_name <<  "." << endl;
     exit(HOST_APP_ERROR);
     return nullptr;
+}
+
+string get_device_lib_name(int * argc, char ** argv)
+{
+    string lib_name = default_driver_name;
+    opt_t * use_opt = option_lookup("--use");
+    size_t index = argv_option_lookup(*argc, argv, use_opt);
+    if(index == 0)
+    {
+        // could not find --use, using default driver name
+        return lib_name;
+    }
+    else
+    {
+        string protocol_name = argv[index + 1];
+        if (to_upper(protocol_name) == "I2C")
+        {
+            lib_name = "device_i2c";
+        }
+        else if (to_upper(protocol_name) == "SPI")
+        {
+            lib_name = "device_spi";
+        }
+        else
+        {
+            // Using I2C by default for now as USB is currently not supported
+            cout << "Could not find " << to_upper(protocol_name) << " in supported protocols"
+            << endl << "Will use I2C by default" << endl;
+        }
+        remove_opt(argc, argv, index, 2);
+        return lib_name;
+    }
+}
+
+bool get_bypass_range_check(int * argc, char ** argv)
+{
+    opt_t * bp_opt = option_lookup("--bypass-range-check");
+    size_t index = argv_option_lookup(*argc, argv, bp_opt);
+    if(index == 0)
+    {
+        // in option is not preset bypass is false
+        return false;
+    }
+    else
+    {
+        remove_opt(argc, argv, index, 1);
+        return true;
+    }
 }
 
 control_ret_t print_help_menu()
@@ -261,7 +310,8 @@ control_ret_t dump_params(Command * command)
 
 control_ret_t execute_cmd_list(Command * command, const string filename)
 {
-    control_ret_t ret = CONTROL_ERROR;
+    control_ret_t 
+     = CONTROL_ERROR;
     size_t largest_command = 0;
     for(size_t i = 0; i < num_commands; i++)
     {
