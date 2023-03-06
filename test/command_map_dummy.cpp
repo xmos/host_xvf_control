@@ -72,7 +72,8 @@ static cmd_t commands[] = {
                         {0, "CMD_SMALL",   TYPE_INT32,   7,  CMD_RW, 3,  "This is a small command for testing -e option",                                                                                   false  },
                         {0, "RANGE_TEST0", TYPE_INT32,   8,  CMD_RW, 1,  "This command is used for the range check test",                                                                                   false  },
                         {0, "RANGE_TEST1", TYPE_FLOAT,   9,  CMD_RW, 3,  "This command is used for the range check test",                                                                                   false  },
-                        {0, "RANGE_TEST2", TYPE_UINT8,   10, CMD_RW, 2,  "this commands is used for the range check test",                                                                                  false  }
+                        {0, "RANGE_TEST2", TYPE_UINT8,   10, CMD_RW, 2,  "This command is used for the range check test",                                                                                   false  },
+                        {0, "RANGE_TEST3", TYPE_UINT32,  11, CMD_RW, 3,  "This command is used for the range check test",                                                                                   false  }
 };
 static size_t num_commands = std::end(commands) - std::begin(commands);
 
@@ -179,6 +180,7 @@ int compare_lim(const cmd_param_type_t type, const cmd_param_t val, const cmd_pa
     }
     case TYPE_UINT32:
     {
+        std::cerr << "min " << range[0].ui32 << " max " << range[1].ui32 << " val " << val.ui32 << std::endl;
         return ((val.ui32 >= range[0].ui32) && (val.ui32 <= range[1].ui32)) ? 1 : 0;
     }
     case TYPE_FLOAT:
@@ -198,6 +200,7 @@ void check_range_one(const val_range_t * range_info, const cmd_param_type_t cmd_
     int ret = 0;
     for(size_t num_int = 0; num_int < range_info->num_intervals; num_int++)
     {
+
         ret = compare_lim(cmd_type, param, &range_info->ranges[num_int * 2]);
         if(ret == 1){break;}
     }
@@ -229,14 +232,22 @@ cmd_param_t range1_2[2] = {0};
 val_range_t val_range1[3] = {
                                 {range1_0, 1},
                                 {range1_1, 1},
-                                {range1_2, 1}
+                                {range1_2, 1},
 };
 
 cmd_param_t range2_0[2] = {0};
 cmd_param_t range2_1[4] = {0};
 val_range_t val_range2[2] = {
                                 {range2_0, 1},
-                                {range2_1, 2}
+                                {range2_1, 2},
+};
+
+cmd_param_t range3_0[2] = {0};
+cmd_param_t range3_2[2] = {0};
+val_range_t val_range3[3] = {
+                                {range3_0, 1},
+                                {nullptr,  0},
+                                {range3_2, 1},
 };
 
 std::map<std::string, val_range_t *> test_map{
@@ -248,7 +259,10 @@ std::map<std::string, val_range_t *> test_map{
     },
     {
         "RANGE_TEST2", val_range2
-    }
+    },
+    {
+        "RANGE_TEST3", val_range3
+    },
 };
 
 extern "C"
@@ -279,12 +293,20 @@ void check_range(const cmd_t * cmd, const cmd_param_t * vals)
         range2_1[2].ui8 = 10;
         range2_1[3].ui8 = 14;
     }
+    if(cmd->cmd_name == "RANGE_TEST3")
+    {
+        range3_0[0].ui32 = 0;
+        range3_0[1].ui32 = 255;
+        range3_2[0].ui32 = 0;
+        range3_2[1].ui32 = 255;
+    }
     if(test_map.find(cmd->cmd_name) != test_map.end())
     {
         val_range_t * val_range_ptr;
         val_range_ptr = test_map.find(cmd->cmd_name)->second;
         for(size_t i = 0; i < cmd->num_values; i++)
         {
+            if(val_range_ptr[i].num_intervals == 0){continue;}
             check_range_one(&val_range_ptr[i], cmd->type, vals[i]);
         }
     }

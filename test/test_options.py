@@ -60,6 +60,12 @@ def test_range_check():
         else:
             test_utils.execute_command(host_bin, control_protocol, test_dir, "RANGE_TEST2", vals, False)
 
+        vals = test_utils.gen_rand_array('int', 0, 400, 3)
+        if((vals[0] >= 0) and (vals[0] <= 255)) and ((vals[2] >= 0) and (vals[2] <= 255)):
+            test_utils.execute_command(host_bin, control_protocol, test_dir, "RANGE_TEST3", vals, True)
+        else:
+            test_utils.execute_command(host_bin, control_protocol, test_dir, "RANGE_TEST3", vals, False)
+
         # here we check that bypass works
         vals = test_utils.gen_rand_array('int', -2147483648, 2147483647, 1)
         test_utils.execute_command(host_bin, control_protocol, test_dir, "-br RANGE_TEST0", vals, True)
@@ -69,3 +75,6 @@ def test_range_check():
 
         vals = test_utils.gen_rand_array('int', 0, 256, 2)
         test_utils.execute_command(host_bin, control_protocol, test_dir, "-br RANGE_TEST2", vals, True)
+
+        vals = test_utils.gen_rand_array('int', 0, 4294967295, 3)
+        test_utils.execute_command(host_bin, control_protocol, test_dir, "-br RANGE_TEST3", vals, True)
