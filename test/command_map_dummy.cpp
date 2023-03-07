@@ -55,7 +55,7 @@ struct val_range_t
 {
     /** Pointer to the array of intervals */
     cmd_param_t * ranges;
-    /** Number of interval to range check */
+    /** Number of intervals to range check */
     size_t num_intervals;
 };
 
