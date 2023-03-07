@@ -73,7 +73,7 @@ def test_range_check():
         vals = test_utils.gen_rand_array('float', -2147483648, 2147483647, 3)
         test_utils.execute_command(host_bin, control_protocol, test_dir, "-br RANGE_TEST1", vals, True)
 
-        vals = test_utils.gen_rand_array('int', 0, 256, 2)
+        vals = test_utils.gen_rand_array('int', 0, 255, 2)
         test_utils.execute_command(host_bin, control_protocol, test_dir, "-br RANGE_TEST2", vals, True)
 
         vals = test_utils.gen_rand_array('int', 0, 4294967295, 3)
