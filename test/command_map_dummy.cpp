@@ -121,7 +121,7 @@ void print_arg_local(const cmd_param_type_t type, const cmd_param_t val)
         break;
     default:
         std::cerr << "Unsupported parameter type" << std::endl;
-        exit(CONTROL_BAD_COMMAND);
+        exit(-1);
     }
 }
 

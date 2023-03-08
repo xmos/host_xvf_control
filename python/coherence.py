@@ -25,10 +25,7 @@ Requirements:
     sox
 
 Usage:
-    python3 coherence.py ~/lenovo_mic0_1.wav ~/lenovo_mic2_3.wav
-
-Before calculating the correlation, if the sampling freq of the wav file is more than 16KHz, it
-is first downsampled to 16KHz using sox. Make sure sox is installed before running this script.
+    python3 coherence.py ~/mic0_1.wav ~/mic2_3.wav
 
 Before calculating the correlation, if the sampling freq of the wav file is more than 16KHz, it
 is first downsampled to 16KHz using sox. Make sure sox is installed before running this script.

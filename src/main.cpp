@@ -14,13 +14,12 @@ int main(int argc, char ** argv)
         return 0;
     }
     
-    int cmd_indx = 1;
-    dl_handle_t cmd_map_handle = load_command_map_dll();
     string lib_name = get_device_lib_name(&argc, argv);
     bool bypass_range_check = get_bypass_range_check(&argc, argv);
 
     cmd_t * cmd = nullptr;
     opt_t * opt = nullptr;
+    int cmd_indx = 1;
     string next_cmd = argv[cmd_indx];
 
     if(next_cmd[0] == '-')
@@ -35,7 +34,15 @@ int main(int argc, char ** argv)
             cout << current_host_app_version << endl;
             return 0;
         }
-        else if (opt->long_name == "--list-commands")
+    }
+
+    dl_handle_t cmd_map_handle = load_command_map_dll();
+
+    if(next_cmd[0] == '-')
+    {
+        // This assumes that the next_cmd has not been reassigned
+        // Hence opt holds the same option pointer
+        if (opt->long_name == "--list-commands")
         {
             return print_command_list();
         }
@@ -52,21 +59,15 @@ int main(int argc, char ** argv)
     int arg_indx = cmd_indx + 1;
     next_cmd = argv[cmd_indx];
 
-    if(next_cmd[0] == '-')
-    {
-        opt = option_lookup(next_cmd);
-    }
-    else
+    if (next_cmd[0] != '-')
     {
         cmd = command_lookup(next_cmd);
-    }
-
-    if (cmd != nullptr)
-    {
         return command.do_command(cmd, argv, argc, arg_indx);
     }
     else
     {
+        // This assumes that the next_cmd has not been reassigned
+        // Hence opt holds the same option pointer
         if(opt->long_name == "--dump-params")
         {
             return dump_params(&command);
@@ -137,5 +138,5 @@ int main(int argc, char ** argv)
     }
     // Program should NEVER get to this point
     cout << "Host application behaved unexpectedly, please report this issue" << endl;
-    return HOST_APP_ERROR;
+    return -1;
 }
