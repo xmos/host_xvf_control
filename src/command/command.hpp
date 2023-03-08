@@ -22,6 +22,9 @@ class Command
         /** @brief Pointer to the super_print_arg() function from the command_map shared object */
         print_args_fptr print_args;
         
+        /** @brief Pointer to the check_range() function from the command_map shared object */
+        check_range_fptr check_range;
+
     public:
 
         /**
@@ -31,9 +34,10 @@ class Command
          * 
          * @param _dev          Pointer to the Device class object
          * @param _bypass_range Bypass range check state
-         * @param _print        Pointer to the super_print_arg() function 
+         * @param _print        Pointer to the super_print_arg()
+         * @param _range        Pointer to the get_range_info()
          */
-        Command(Device * _dev, bool _bypass_range, print_args_fptr _print);
+        Command(Device * _dev, bool _bypass_range, print_args_fptr _print, check_range_fptr _range);
 
         /**
          * @brief Takes argv and executes a single command from it

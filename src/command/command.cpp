@@ -5,7 +5,8 @@
 
 using namespace std;
 
-Command::Command(Device * _dev, bool _bypass_range, print_args_fptr _print) : device(_dev), bypass_range_check(_bypass_range), print_args(_print)
+Command::Command(Device * _dev, bool _bypass_range, print_args_fptr _print, check_range_fptr _range) : 
+    device(_dev), bypass_range_check(_bypass_range), print_args(_print), check_range(_range)
 {
     control_ret_t ret = device->device_init();
     if (ret != CONTROL_SUCCESS)
@@ -61,9 +62,9 @@ control_ret_t Command::command_set(const cmd_t * cmd, const cmd_param_t * values
 {
     if(!bypass_range_check)
     {
-        // using this while we don't have range check implemented
-        static_cast<void>(bypass_range_check);
+        check_range(cmd, values);
     }
+    
     size_t data_len = get_num_bytes_from_type(cmd->type) * cmd->num_values;
     uint8_t * data = new uint8_t[data_len];
 

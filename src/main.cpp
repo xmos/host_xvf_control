@@ -50,10 +50,11 @@ int main(int argc, char ** argv)
 
     dl_handle_t device_handle = get_dynamic_lib(lib_name);
     print_args_fptr print_args = get_print_args_fptr(cmd_map_handle);
+    check_range_fptr check_range = get_check_range_fptr(cmd_map_handle);
     device_fptr make_dev = get_device_fptr(device_handle);
     auto device = make_dev(cmd_map_handle);
 
-    Command command(device, bypass_range_check, print_args);
+    Command command(device, bypass_range_check, print_args, check_range);
 
     int arg_indx = cmd_indx + 1;
     next_cmd = argv[cmd_indx];

@@ -107,6 +107,9 @@ using device_fptr = Device * (*)(void *);
 /** Function pointer that prints different argument types */
 using print_args_fptr = void (*)(const cmd_t *, cmd_param_t *);
 
+/** Function pointer to get the range check info */
+using check_range_fptr = void (*)(const cmd_t *, const cmd_param_t *);
+
 /**
  * @brief Get the function pointer to get_command_map()
  * 
@@ -134,6 +137,13 @@ device_fptr get_device_fptr(dl_handle_t handle);
  * @param handle Pointer to the device shared object
  */
 print_args_fptr get_print_args_fptr(dl_handle_t handle);
+
+/**
+ * @brief Get the function pointer to get_range_info()
+ * 
+ * @param handle Pointer to the device shared object
+ */
+check_range_fptr get_check_range_fptr(dl_handle_t handle);
 
 /** @brief Get param type name string */
 std::string command_param_type_name(const cmd_param_type_t type);

@@ -142,6 +142,11 @@ print_args_fptr get_print_args_fptr(dl_handle_t handle)
     return get_function<print_args_fptr>(handle, "super_print_arg");
 }
 
+check_range_fptr get_check_range_fptr(dl_handle_t handle)
+{
+    return get_function<check_range_fptr>(handle, "check_range");
+}
+
 size_t get_term_width()
 {
 #if (defined(__linux__) || defined(__APPLE__))
