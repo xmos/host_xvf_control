@@ -70,14 +70,23 @@ struct opt_t
 */
 const std::string default_driver_name = "device_i2c";
 
+/** @brief Current version of this application
+ * 
+ * @note This will have to be manually changed after the release
+ */
+const std::string current_host_app_version = "1.0.0";
+
 /** @brief Convert string to uper case */
 std::string to_upper(std::string str);
 
 /** @brief Convert string to lower case */
 std::string to_lower(std::string str);
 
-/** @brief Gets device driver name to load */
-std::string get_device_lib_name(std::string protocol_name);
+/** @brief Lookup option in argv */
+size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup);
+
+/** @brief Remove wirds from argv, decrement argc */
+void remove_opt(int * argc, char ** argv, size_t ind, size_t num);
 
 /**
  * @brief Open the dynamic library
@@ -94,6 +103,12 @@ using num_cmd_fptr = uint32_t (*)();
 
 /** Function pointer that takes void * and returns Device */
 using device_fptr = Device * (*)(void *);
+
+/** Function pointer that prints different argument types */
+using print_args_fptr = void (*)(const cmd_t *, cmd_param_t *);
+
+/** Function pointer to get the range check info */
+using check_range_fptr = void (*)(const cmd_t *, const cmd_param_t *);
 
 /**
  * @brief Get the function pointer to get_command_map()
@@ -116,6 +131,20 @@ num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle);
  */
 device_fptr get_device_fptr(dl_handle_t handle);
 
+/**
+ * @brief Get the function pointer to super_print_arg()
+ * 
+ * @param handle Pointer to the device shared object
+ */
+print_args_fptr get_print_args_fptr(dl_handle_t handle);
+
+/**
+ * @brief Get the function pointer to get_range_info()
+ * 
+ * @param handle Pointer to the device shared object
+ */
+check_range_fptr get_check_range_fptr(dl_handle_t handle);
+
 /** @brief Get param type name string */
 std::string command_param_type_name(const cmd_param_type_t type);
 
@@ -127,9 +156,6 @@ control_ret_t check_num_args(const cmd_t * cmd, const size_t args_left);
 
 /** @brief Convert command line argument from string to cmd_param_t */
 cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str);
-
-/** @brief Print cmd_param_t value */
-void print_arg(const cmd_param_type_t type, const cmd_param_t val);
 
 /** @brief Exit on control_ret_t error */
 void check_cmd_error(std::string cmd_name, std::string rw, control_ret_t ret);

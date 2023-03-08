@@ -13,10 +13,12 @@ using namespace std;
 
 opt_t options[] = {
             {"--help",                    "-h",        "display this information"                                                  },
+            {"--version",                 "-v",        "print the current version of this application",                            },
             {"--list-commands",           "-l",        "print the list of commands"                                                },
+            {"--use",                     "-u",        "use specific harware protocol, I2C and SPI are available to use"           },
+            {"--bypass-range-check",      "-br",       "bypass parameter range check",                                             },
             {"--dump-params",             "-d",        "print all the parameters"                                                  },
             {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u *"    },
-            {"--use",                     "-u",        "use specific harware protocol, I2C and SPI are available to use"           },
             {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files, default is aec_filter.bin.fx.mx"           },
             {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"           },
             {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"              },
@@ -70,7 +72,7 @@ opt_t * option_lookup(const string str)
     cerr << "Option " << str << " does not exist." << endl
     << "Maybe you meant " << options[indx].short_name
     << " or " << options[indx].long_name << "." << endl;
-    exit(CONTROL_BAD_COMMAND);
+    exit(HOST_APP_ERROR);
     return nullptr;
 }
 
@@ -100,8 +102,56 @@ cmd_t * command_lookup(const string str)
     }
     cerr << "Command " << str << " does not exist." << endl
     << "Maybe you meant " << commands[indx].cmd_name <<  "." << endl;
-    exit(CONTROL_BAD_COMMAND);
+    exit(HOST_APP_ERROR);
     return nullptr;
+}
+
+string get_device_lib_name(int * argc, char ** argv)
+{
+    string lib_name = default_driver_name;
+    opt_t * use_opt = option_lookup("--use");
+    size_t index = argv_option_lookup(*argc, argv, use_opt);
+    if(index == 0)
+    {
+        // could not find --use, using default driver name
+        return lib_name;
+    }
+    else
+    {
+        string protocol_name = argv[index + 1];
+        if (to_upper(protocol_name) == "I2C")
+        {
+            lib_name = "device_i2c";
+        }
+        else if (to_upper(protocol_name) == "SPI")
+        {
+            lib_name = "device_spi";
+        }
+        else
+        {
+            // Using I2C by default for now as USB is currently not supported
+            cout << "Could not find " << to_upper(protocol_name) << " in supported protocols"
+            << endl << "Will use I2C by default" << endl;
+        }
+        remove_opt(argc, argv, index, 2);
+        return lib_name;
+    }
+}
+
+bool get_bypass_range_check(int * argc, char ** argv)
+{
+    opt_t * bp_opt = option_lookup("--bypass-range-check");
+    size_t index = argv_option_lookup(*argc, argv, bp_opt);
+    if(index == 0)
+    {
+        // if option is not preset bypass is false
+        return false;
+    }
+    else
+    {
+        remove_opt(argc, argv, index, 1);
+        return true;
+    }
 }
 
 control_ret_t print_help_menu()
@@ -120,11 +170,14 @@ control_ret_t print_help_menu()
     // Getting current terminal width here to set the cout line limit
     const size_t hard_stop = get_term_width();
 
-    cout << "usage: xvf_hostapp_rpi [ command | option ]" << endl
-    << setw(68) << "[ -u | --use <protocol>] [ command | option ]" << endl
+    cout << "usage: xvf_host [ command | option ]" << endl
+    << setw(62) << "[ -u <protocol> ] [ -br ] [ command | option ]" << endl
+    << endl << "Current application version is " << current_host_app_version << "."
     << endl << "You can use --use option to specify protocol you want to use"
     << endl << "or call the option/command directly using default control protocol."
-    << endl << "Default control protocol is I2C." << endl << endl << "Options:" << endl;
+    << endl << "Default control protocol is I2C."
+    << endl << "You can use --bypass-range-check or -br to bypass parameter range checking."
+    << endl << "Range check is True unless -br is specified." << endl << endl << "Options:" << endl;
     for(opt_t opt : options)
     {
         size_t short_len = opt.short_name.length();
@@ -239,8 +292,6 @@ control_ret_t print_command_list()
 
 control_ret_t dump_params(Command * command)
 {
-    control_ret_t ret = CONTROL_ERROR;
-
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t * cmd = &commands[i];
@@ -251,15 +302,14 @@ control_ret_t dump_params(Command * command)
         }
         if(cmd->rw != CMD_WO)
         {
-            ret = command->do_command(&commands[i], nullptr, 0, 0);
+            command->do_command(&commands[i], nullptr, 0, 0);
         }
     }
-    return ret;
+    return CONTROL_SUCCESS;
 }
 
 control_ret_t execute_cmd_list(Command * command, const string filename)
 {
-    control_ret_t ret = CONTROL_ERROR;
     size_t largest_command = 0;
     for(size_t i = 0; i < num_commands; i++)
     {
@@ -268,7 +318,12 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
         largest_command = (num_args > largest_command) ? num_args : largest_command;
     }
     largest_command++; // +1 for the command name
-    ifstream file(filename);
+    ifstream file(filename, ios::in);
+    if(!file)
+    {
+        cerr << "Could not open a file " << filename << endl;
+        exit(HOST_APP_ERROR);
+    }
     string line;
     while(getline(file, line))
     {
@@ -304,11 +359,11 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
         int cmd_indx = 0;
         int arg_indx =  cmd_indx + 1; // 0 is the command
         cmd_t * cmd = command_lookup(line_ch[cmd_indx]);
-        ret = command->do_command(cmd, line_ch, num, arg_indx);
+        command->do_command(cmd, line_ch, num, arg_indx);
         delete []line_ch;
     }
     file.close();
-    return ret;
+    return CONTROL_SUCCESS;
 }
 
 control_ret_t test_bytestream(Command * command, const string in_filename)
@@ -318,40 +373,25 @@ control_ret_t test_bytestream(Command * command, const string in_filename)
     if(!rf)
     {
         cerr << "Could not open a file " << in_filename << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     rf.seekg (0, rf.end);
     streamoff size = rf.tellg();
     rf.seekg (0, rf.beg);
-    // We need atleast the cmd_id, res_id and payload_len to be able to send to the device.
-    // Testing sending of fewer than 3 bytes will need changes in the device_control host code.
-    if(size < 3)
-    {
-        cerr << "test_bytestream expects atleast a 3 bytes long stream" << endl;
-        exit(CONTROL_DATA_LENGTH_ERROR);
-    }
+
     uint8_t *data = new uint8_t[size]; 
     for(int i=0; i<size; i++)
     {
         rf.read(reinterpret_cast<char *>(&data[i]), sizeof(uint8_t));
     }
 
-    if(size > 3) // Everything starting from data[3] would be write payload.
+    if((size >= 2) && (data[1] & 0x80)) // Read command
     {
-        if(size != data[2]+3)
-        {
-            cerr << "Write payload size error" << endl;
-            exit(CONTROL_DATA_LENGTH_ERROR);
-        }
-    }
-
-    if(data[1] & 0x80) // Read command
-    {
-        ret = command->command_get_low_level(data);
+        ret = command->command_get_low_level(data, size);
     }
     else
     {
-        ret = command->command_set_low_level(data);
+        ret = command->command_set_low_level(data, size);
     }
 
     delete []data;
@@ -373,7 +413,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     if(!rf)
     {
         cerr << "Could not open a file " << in_filename << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
 
     rf.seekg (0, rf.end);
@@ -383,7 +423,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     if(size != (num_all_vals * sizeof(uint8_t)))
     {
         cerr << "Test buffer lengths don't match" << endl;
-        exit(CONTROL_DATA_LENGTH_ERROR);
+        exit(HOST_APP_ERROR);
     }
 
     for(size_t i = 0; i < num_all_vals; i++)
@@ -397,7 +437,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     if(!rf.eof() || rf.bad())
     {
         cerr << "Error occured while reading " << in_filename << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
 
     for(int n = 0; n < test_frames; n++)
@@ -413,7 +453,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     if(!wf)
     {
         cerr << "Could not open a file " << out_filename << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
 
     for(size_t i = 0; i < num_all_vals; i++)
@@ -426,7 +466,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
     if(wf.bad())
     {
         cerr << "Error occured when writing to " << out_filename << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     return ret;
 }

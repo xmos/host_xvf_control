@@ -11,85 +11,70 @@ int main(int argc, char ** argv)
     {
         cout << "Use --help to get the list of options for this application." << endl
         << "Or use --list-commands to print the list of commands and their info." << endl;
-        return CONTROL_SUCCESS;
+        return 0;
     }
-    int cmd_indx = 1;
-    dl_handle_t cmd_map_handle = load_command_map_dll();
+    
+    string lib_name = get_device_lib_name(&argc, argv);
+    bool bypass_range_check = get_bypass_range_check(&argc, argv);
+
     cmd_t * cmd = nullptr;
     opt_t * opt = nullptr;
+    int cmd_indx = 1;
     string next_cmd = argv[cmd_indx];
 
-    string lib_name = default_driver_name;
-    if(next_cmd[0] != '-')
-    {
-        cmd = command_lookup(next_cmd);
-    }
-    else
+    if(next_cmd[0] == '-')
     {
         opt = option_lookup(next_cmd);
         if (opt->long_name == "--help")
         {
             return print_help_menu();
         }
-        else if (opt->long_name == "--list-commands")
+        else if (opt->long_name == "--version")
+        {
+            cout << current_host_app_version << endl;
+            return 0;
+        }
+    }
+
+    dl_handle_t cmd_map_handle = load_command_map_dll();
+
+    if(next_cmd[0] == '-')
+    {
+        // This assumes that the next_cmd has not been reassigned
+        // Hence opt holds the same option pointer
+        if (opt->long_name == "--list-commands")
         {
             return print_command_list();
-        }
-        else if (opt->long_name == "--use")
-        {
-            lib_name = get_device_lib_name(argv[cmd_indx + 1]);
-            cmd_indx += 2; // fetched --use something
         }
     }
 
     dl_handle_t device_handle = get_dynamic_lib(lib_name);
+    print_args_fptr print_args = get_print_args_fptr(cmd_map_handle);
+    check_range_fptr check_range = get_check_range_fptr(cmd_map_handle);
     device_fptr make_dev = get_device_fptr(device_handle);
     auto device = make_dev(cmd_map_handle);
-    Command command(device);
+
+    Command command(device, bypass_range_check, print_args, check_range);
 
     int arg_indx = cmd_indx + 1;
     next_cmd = argv[cmd_indx];
 
-    if (cmd != nullptr)
-    {
-        return command.do_command(cmd, argv, argc, arg_indx);
-    }
-
-    if(next_cmd[0] == '-')
-    {
-        opt = option_lookup(next_cmd);
-    }
-    else
+    if (next_cmd[0] != '-')
     {
         cmd = command_lookup(next_cmd);
-    }
-
-    if (cmd != nullptr)
-    {
         return command.do_command(cmd, argv, argc, arg_indx);
     }
     else
     {
-        if(opt->long_name == "--help")
-        {
-            return print_help_menu();
-        }
-        if(opt->long_name == "--list-commands")
-        {
-            return print_command_list();
-        }
-        if(opt->long_name == "--use")
-        {
-            cerr << "Incorrect use of the host application. Use --help to see the use cases.";
-            return CONTROL_ERROR;
-        }
+        // This assumes that the next_cmd has not been reassigned
+        // Hence opt holds the same option pointer
         if(opt->long_name == "--dump-params")
         {
             return dump_params(&command);
         }
         if(opt->long_name == "--execute-command-list")
         {
-            if(argv[arg_indx] == NULL)
+            if(arg_indx >= argc)
             {
                 return execute_cmd_list(&command);
             }
@@ -100,7 +85,7 @@ int main(int argc, char ** argv)
         }
         if(opt->long_name == "--get-aec-filter")
         {
-            if(argv[arg_indx] == NULL)
+            if(arg_indx >= argc)
             {
                 return special_cmd_aec_filter(&command, true);
             }
@@ -111,7 +96,7 @@ int main(int argc, char ** argv)
         }
         if(opt->long_name == "--set-aec-filter")
         {
-            if(argv[arg_indx] == NULL)
+            if(arg_indx >= argc)
             {
                 return special_cmd_aec_filter(&command, false);
             }
@@ -122,7 +107,7 @@ int main(int argc, char ** argv)
         }        
         if(opt->long_name == "--get-nlmodel-buffer")
         {
-            if(argv[arg_indx] == NULL)
+            if(arg_indx >= argc)
             {
                 return special_cmd_nlmodel_buffer(&command, true);
             }
@@ -133,7 +118,7 @@ int main(int argc, char ** argv)
         }
         if(opt->long_name == "--set-nlmodel-buffer")
         {
-            if(argv[arg_indx] == NULL)
+            if(arg_indx >= argc)
             {
                 return special_cmd_nlmodel_buffer(&command, false);
             }
@@ -153,5 +138,5 @@ int main(int argc, char ** argv)
     }
     // Program should NEVER get to this point
     cout << "Host application behaved unexpectedly, please report this issue" << endl;
-    return CONTROL_ERROR;
+    return -1;
 }

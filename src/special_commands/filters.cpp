@@ -61,7 +61,7 @@ control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_i
         if(!wf)
         {
             cerr << "Could not open a file " << filename << endl;
-            exit(CONTROL_ERROR);
+            exit(HOST_APP_ERROR);
         }
 
         for(uint32_t i = 0; i < buffer_length; i++)
@@ -73,7 +73,7 @@ control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_i
         if(wf.bad())
         {
             cerr << "Error occured when writting to " << filename << endl;
-            exit(CONTROL_ERROR);
+            exit(HOST_APP_ERROR);
         }
     }
     else
@@ -82,7 +82,7 @@ control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_i
         if(!rf)
         {
             cerr << "Could not open a file " << filename << endl;
-            exit(CONTROL_ERROR);
+            exit(HOST_APP_ERROR);
         }
 
         rf.seekg (0, rf.end);
@@ -92,7 +92,7 @@ control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_i
         if(size != (buffer_length * sizeof(float)))
         {
             cerr << "AEC buffer lengths don't match" << endl;
-            exit(CONTROL_DATA_LENGTH_ERROR);
+            exit(HOST_APP_ERROR);
         }
 
         // Read from file into aec buffer. Will need to be done byte by byte since aec_filter is of type cmd_param_t
@@ -107,7 +107,7 @@ control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_i
         if(!rf.eof() || rf.bad())
         {
             cerr << "Error occured while reading " << filename << endl;
-            exit(CONTROL_ERROR);
+            exit(HOST_APP_ERROR);
         }
 
         ret = get_or_set_full_buffer(command, aec_filter, buffer_length, start_coeff_index_cmd, filter_cmd, flag_buffer_get);
@@ -200,7 +200,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
         if(!rf)
         {
             cerr << "Could not open a file " << filter_name << endl;
-            exit(CONTROL_ERROR);
+            exit(HOST_APP_ERROR);
         }
 
         rf.seekg (0, rf.end);
@@ -210,7 +210,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
         if(size != (NLM_buffer_length * sizeof(float)))
         {
             cerr << "NLM buffer lengths don't match" << endl;
-            exit(CONTROL_DATA_LENGTH_ERROR);
+            exit(HOST_APP_ERROR);
         }
 
         // Read from file intp the nlm_buffer buffer. Will need to be done byte by byte since nlm_buffer is of type cmd_param_t
@@ -225,7 +225,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
         if(!rf.eof() || rf.bad())
         {
             cerr << "Error occured while reading " << filter_name << endl;
-            exit(CONTROL_ERROR);
+            exit(HOST_APP_ERROR);
         }
 
         // Write the full buffer to the device
@@ -241,7 +241,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
         if(!wf)
         {
             cerr << "Could not open a file " << filter_name << endl;
-            exit(CONTROL_ERROR);
+            exit(HOST_APP_ERROR);
         }
 
         for(int i = 0; i < NLM_buffer_length; i++)
@@ -253,7 +253,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
         if(wf.bad())
         {
             cerr << "Error occured when writting to " << filter_name << endl;
-            exit(CONTROL_ERROR);
+            exit(HOST_APP_ERROR);
         }  
     }
     delete []nlm_buffer;

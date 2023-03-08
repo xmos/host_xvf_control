@@ -15,7 +15,16 @@ class Command
 
         /** @brief Pointer to the Device class object */
         Device * device;
+
+        /** @brief Bypass range check state */
+        bool bypass_range_check;
+
+        /** @brief Pointer to the super_print_arg() function from the command_map shared object */
+        print_args_fptr print_args;
         
+        /** @brief Pointer to the check_range() function from the command_map shared object */
+        check_range_fptr check_range;
+
     public:
 
         /**
@@ -24,8 +33,11 @@ class Command
          * Will initialise a host (master) interface.
          * 
          * @param _dev          Pointer to the Device class object
+         * @param _bypass_range Bypass range check state
+         * @param _print        Pointer to the super_print_arg()
+         * @param _range        Pointer to the get_range_info()
          */
-        Command(Device * _dev);
+        Command(Device * _dev, bool _bypass_range, print_args_fptr _print, check_range_fptr _range);
 
         /**
          * @brief Takes argv and executes a single command from it
@@ -60,9 +72,10 @@ class Command
          * returned from the device.
          * 
          * @param data          Byte array containing the read command
+         * @param payload_len   Length of the byte stream to write to the device
          * @note                Only for internal testing.
          */
-        control_ret_t command_get_low_level(uint8_t *data);
+        control_ret_t command_get_low_level(uint8_t *data, size_t payload_len);
 
         /**
          * @brief Low level set command function
@@ -71,9 +84,10 @@ class Command
          * returns the error code returned from the device.
          *
          * @param cmd           Byte array containing the write command and payload
+         * @param payload_len   Length of the byte stream to write to the device
          * @note                Only for internal testing
          */
-        control_ret_t command_set_low_level(uint8_t *data);
+        control_ret_t command_set_low_level(uint8_t *data, size_t payload_len);
 };
 
 #endif

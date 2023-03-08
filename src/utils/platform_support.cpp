@@ -37,7 +37,7 @@ string get_dynamic_lib_path(const string lib_name)
     if (count == -1)
     {
         cerr << "Could not read /proc/self/exe into " << PATH_MAX << " string" << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     full_lib_name += ".so";
     path[count] = '\0'; // readlink doesn't always add NULL for some reason
@@ -50,7 +50,7 @@ string get_dynamic_lib_path(const string lib_name)
     if (_NSGetExecutablePath(path, &size) != 0)
     {
         cerr << "Could not get binary path into " << PATH_MAX << " string" << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     full_lib_name += ".dylib";
 #elif defined(_WIN32)
@@ -60,7 +60,7 @@ string get_dynamic_lib_path(const string lib_name)
     if(0 == GetModuleFileNameA(GetModuleHandle(NULL), path, MAX_PATH))
     {
         cerr << "Could not get binary path into " << MAX_PATH << " string" << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     full_lib_name += ".dll";
 #endif // linux vs apple vs windows
@@ -92,7 +92,7 @@ dl_handle_t get_dynamic_lib(const string lib_name)
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows        
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     return handle;
 }
@@ -117,7 +117,7 @@ T get_function(dl_handle_t handle, const string symbol)
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     return func;
 }
@@ -135,6 +135,16 @@ num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle)
 device_fptr get_device_fptr(dl_handle_t handle)
 {
     return get_function<device_fptr>(handle, "make_Dev");
+}
+
+print_args_fptr get_print_args_fptr(dl_handle_t handle)
+{
+    return get_function<print_args_fptr>(handle, "super_print_arg");
+}
+
+check_range_fptr get_check_range_fptr(dl_handle_t handle)
+{
+    return get_function<check_range_fptr>(handle, "check_range");
 }
 
 size_t get_term_width()
