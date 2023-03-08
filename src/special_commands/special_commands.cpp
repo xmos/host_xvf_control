@@ -176,7 +176,7 @@ control_ret_t print_help_menu()
     << endl << "You can use --use option to specify protocol you want to use"
     << endl << "or call the option/command directly using default control protocol."
     << endl << "Default control protocol is I2C."
-    << endl << "You can use --bypass-range check or -br to bypass parameter range checking."
+    << endl << "You can use --bypass-range-check or -br to bypass parameter range checking."
     << endl << "Range check is True unless -br is specified." << endl << endl << "Options:" << endl;
     for(opt_t opt : options)
     {
