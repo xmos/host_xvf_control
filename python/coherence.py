@@ -29,9 +29,6 @@ Usage:
 
 Before calculating the correlation, if the sampling freq of the wav file is more than 16KHz, it
 is first downsampled to 16KHz using sox. Make sure sox is installed before running this script.
-
-Before calculating the correlation, if the sampling freq of the wav file is more than 16KHz, it
-is first downsampled to 16KHz using sox. Make sure sox is installed before running this script.
 """
 def calc_coherence_new(file_dict, min_length, num_subplots, plot_name="mic_coherence.png", show_plot=True):
     if(num_subplots == 1):
