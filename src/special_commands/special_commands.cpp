@@ -127,6 +127,10 @@ string get_device_lib_name(int * argc, char ** argv)
         {
             lib_name = "device_spi";
         }
+        else if (to_upper(protocol_name) == "USB")
+        {
+            lib_name = "device_usb";
+        }
         else
         {
             // Using I2C by default for now as USB is currently not supported
