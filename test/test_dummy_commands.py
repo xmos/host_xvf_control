@@ -13,7 +13,7 @@ uint8_cmd = "CMD_UINT8"
 char_cmd = "CMD_CHAR"
 small_cmd = "CMD_SMALL"
 
-def single_command_test(host_bin, control_protocol, cwd, cmd_name, cmd_vals=cmd_vals):
+def single_command_test(host_bin, control_protocol, cwd, cmd_name, cmd_vals):
     # Set and get values within the command range and test closeness
     out_list = test_utils.execute_command(host_bin, control_protocol, cwd, cmd_name, cmd_vals=cmd_vals)
 
@@ -35,16 +35,16 @@ def test_dummy_commands():
     
     for i in range(num_frames):
         vals = test_utils.gen_rand_array('float', -2147483648, 2147483647)
-        single_command_test(host_bin, control_protocol, test_dir, float_cmd, cmd_vals=vals)
+        single_command_test(host_bin, control_protocol, test_dir, float_cmd, vals)
 
         vals = test_utils.gen_rand_array('int', -2147483648, 2147483647)
-        single_command_test(host_bin, control_protocol, test_dir, int32_cmd, cmd_vals=vals)
+        single_command_test(host_bin, control_protocol, test_dir, int32_cmd, vals)
 
         vals = test_utils.gen_rand_array('int', 0, 4294967295)
-        single_command_test(host_bin, control_protocol, test_dir, uint32_cmd, cmd_vals=vals)
+        single_command_test(host_bin, control_protocol, test_dir, uint32_cmd, vals)
 
         vals = test_utils.gen_rand_array('int', 0, 255)
-        single_command_test(host_bin, control_protocol, test_dir, uint8_cmd, cmd_vals=vals)
+        single_command_test(host_bin, control_protocol, test_dir, uint8_cmd, vals)
 
         output = test_utils.execute_command(host_bin, control_protocol, test_dir, char_cmd)
         sentence = " ".join(str(word) for word in output)
