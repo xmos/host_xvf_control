@@ -38,10 +38,9 @@ string get_command_map_path(const string command_map_file)
     dir_path_str += "/";
     cout << command_map_file << endl;
 #elif defined(__APPLE__)
-    string full_command_map_name = lib_name;
-    if (!from_cwd) {
-        full_lib_name = "lib" + full_lib_name;
-    }
+    string full_lib_name = command_map_file;
+    full_lib_name = "lib" + full_lib_name;
+
     char * dir_path;
     char path[PATH_MAX];
     full_lib_name = '/' + full_lib_name;
@@ -53,7 +52,7 @@ string get_command_map_path(const string command_map_file)
     }
     full_lib_name += ".dylib";
 #elif defined(_WIN32)
-    string full_lib_name = lib_name;
+    string full_lib_name = command_map_file;
     full_lib_name = '\\' + full_lib_name;
     char path[MAX_PATH];
     if(0 == GetModuleFileNameA(GetModuleHandle(NULL), path, MAX_PATH))
@@ -87,9 +86,7 @@ string get_driver_path(const string lib_name)
     cout << full_lib_name << endl;
 #elif defined(__APPLE__)
     string full_lib_name = lib_name;
-    if (!from_cwd) {
-        full_lib_name = "lib" + full_lib_name;
-    }
+    full_lib_name = "lib" + full_lib_name;
     char * dir_path;
     char path[PATH_MAX];
     full_lib_name = '/' + full_lib_name;

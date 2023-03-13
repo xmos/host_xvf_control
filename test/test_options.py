@@ -22,7 +22,7 @@ def test_execute_cmd_list():
     out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e")
     print(out)
     
-    out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path=cmd_map_path)
+    out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path=str(cmd_map_path))
     print(out)
 
 
