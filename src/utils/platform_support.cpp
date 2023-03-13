@@ -19,6 +19,7 @@
 #include <Windows.h>        // GetModuleFileNameA
 #include <errhandlingapi.h> // GetLastError
 
+#define getcwd _getcwd
 #else
 #error "Unknown Operating System"
 #endif
@@ -35,33 +36,12 @@ string get_command_map_path(const string command_map_file)
         cerr << "Could not find current working directory path " << endl;
     }
     dir_path_str = path;
+#if defined(_WIN32)
+    dir_path_str = '\\';
+#else
     dir_path_str += "/";
+#endif
     cout << command_map_file << endl;
-#elif defined(__APPLE__)
-    string full_lib_name = command_map_file;
-    full_lib_name = "lib" + full_lib_name;
-
-    char * dir_path;
-    char path[PATH_MAX];
-    full_lib_name = '/' + full_lib_name;
-    uint32_t size = PATH_MAX;
-    if (_NSGetExecutablePath(path, &size) != 0)
-    {
-        cerr << "Could not get binary path into " << PATH_MAX << " string" << endl;
-        exit(HOST_APP_ERROR);
-    }
-    full_lib_name += ".dylib";
-#elif defined(_WIN32)
-    string full_lib_name = command_map_file;
-    full_lib_name = '\\' + full_lib_name;
-    char path[MAX_PATH];
-    if(0 == GetModuleFileNameA(GetModuleHandle(NULL), path, MAX_PATH))
-    {
-        cerr << "Could not get binary path into " << MAX_PATH << " string" << endl;
-        exit(HOST_APP_ERROR);
-    }
-    full_lib_name += ".dll";
-#endif // linux vs apple vs windows
     string file_path_str = path + command_map_file;
 
     return file_path_str;
