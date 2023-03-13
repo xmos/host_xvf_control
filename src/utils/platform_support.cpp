@@ -29,7 +29,6 @@ using namespace std;
 string get_command_map_path(const string command_map_file)
 {
 
-#if defined(__linux__)
     string dir_path_str;
     char path[PATH_MAX];
     if (getcwd(path, sizeof(path)) == NULL) {
