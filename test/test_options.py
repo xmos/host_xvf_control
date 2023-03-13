@@ -21,6 +21,9 @@ def test_execute_cmd_list():
     # check that it does not fail
     out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e")
     print(out)
+    out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path=)
+    print(out)
+
 
 def test_version():
     test_dir, host_bin, control_protocol = test_utils.get_dummy_files()

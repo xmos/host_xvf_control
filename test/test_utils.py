@@ -74,9 +74,11 @@ def run_cmd(command, cwd, verbose = False, expect_success = True):
         assert result.returncode
         return result.stderr
 
-def execute_command(host_bin, control_protocol, cwd, cmd_name, cmd_vals = None, expect_success = True):
+def execute_command(host_bin, control_protocol, cwd, cmd_name, cmd_map_path = None, cmd_vals = None, expect_success = True):
     
     command = str(host_bin) + " -u " + control_protocol + " " + cmd_name
+    if cmd_map_path:
+        command = str(host_bin) + " -u " + control_protocol + " -cmp "+ cmd_map_path + " " + cmd_name
     if cmd_vals != None:
         cmd_write = command + " " + ' '.join(str(val) for val in cmd_vals)
         run_cmd(cmd_write, cwd, True, expect_success)

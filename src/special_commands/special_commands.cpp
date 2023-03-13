@@ -34,17 +34,24 @@ size_t num_commands;
 
 dl_handle_t load_command_map_dll(int * argc, char ** argv)
 {
-    string command_map_path = get_dynamic_lib_path(default_command_map_name);
+    string command_map_rel_path = default_command_map_name;
+    string command_map_abs_path = "";
     opt_t * cmp_opt = option_lookup("--command-map-path");
     size_t index = argv_option_lookup(*argc, argv, cmp_opt);
     if(index != 0)
     {
         // Use path given via CLI
-        command_map_path = argv[index + 1];
+        cout << "Overwrite lib" << endl;
+        command_map_rel_path = argv[index + 1];
         remove_opt(argc, argv, index, 2);
+        command_map_abs_path = get_command_map_path(command_map_rel_path);
     }
+    else
+    {
+        command_map_abs_path = get_driver_path(command_map_rel_path);
 
-    dl_handle_t handle = get_dynamic_lib(command_map_path);
+    }
+    dl_handle_t handle = get_dynamic_lib(command_map_abs_path);
 
     cmd_map_fptr get_command_map = get_cmd_map_fptr(handle);
     num_cmd_fptr get_num_commands = get_num_cmd_fptr(handle);
