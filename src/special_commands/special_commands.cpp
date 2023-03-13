@@ -34,7 +34,7 @@ size_t num_commands;
 
 dl_handle_t load_command_map_dll(int * argc, char ** argv)
 {
-    string command_map_path = default_command_map_path;
+    string command_map_path = get_dynamic_lib_path(default_command_map_name);
     opt_t * cmp_opt = option_lookup("--command-map-path");
     size_t index = argv_option_lookup(*argc, argv, cmp_opt);
     if(index != 0)
