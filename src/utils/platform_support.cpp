@@ -139,7 +139,8 @@ device_fptr get_device_fptr(dl_handle_t handle)
 
 print_args_fptr get_print_args_fptr(dl_handle_t handle)
 {
-    return get_function<print_args_fptr>(handle, "super_print_arg");}
+    return get_function<print_args_fptr>(handle, "super_print_arg");
+}
 
 check_range_fptr get_check_range_fptr(dl_handle_t handle)
 {

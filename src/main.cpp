@@ -47,7 +47,8 @@ int main(int argc, char ** argv)
             return print_command_list();
         }
     }
-    dl_handle_t device_handle = get_dynamic_lib(lib_name);
+    string lib_path = get_dynamic_lib_path(lib_name);
+    dl_handle_t device_handle = get_dynamic_lib(lib_path);
     print_args_fptr print_args = get_print_args_fptr(cmd_map_handle);
     check_range_fptr check_range = get_check_range_fptr(cmd_map_handle);
     device_fptr make_dev = get_device_fptr(device_handle);
