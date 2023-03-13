@@ -18,8 +18,9 @@
 #elif defined(_WIN32)
 #include <Windows.h>        // GetModuleFileNameA
 #include <errhandlingapi.h> // GetLastError
-
+#include <direct.h>         // _getcwd
 #define getcwd _getcwd
+#define PATH_MAX 1000 
 #else
 #error "Unknown Operating System"
 #endif
