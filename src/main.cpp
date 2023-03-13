@@ -13,7 +13,7 @@ int main(int argc, char ** argv)
         << "Or use --list-commands to print the list of commands and their info." << endl;
         return 0;
     }
-    
+
     string lib_name = get_device_lib_name(&argc, argv);
     bool bypass_range_check = get_bypass_range_check(&argc, argv);
 
@@ -36,7 +36,7 @@ int main(int argc, char ** argv)
         }
     }
 
-    dl_handle_t cmd_map_handle = load_command_map_dll();
+    dl_handle_t cmd_map_handle = load_command_map_dll(&argc, argv);
 
     if(next_cmd[0] == '-')
     {

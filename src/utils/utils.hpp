@@ -68,6 +68,12 @@ struct opt_t
  * 
  * @note Using I2C by default for now as USB is currently not supported
 */
+const std::string default_command_map_path = "device_i2c";
+
+/** @brief Default driver name to use
+ * 
+ * @note Using I2C by default for now as USB is currently not supported
+*/
 const std::string default_driver_name = "device_i2c";
 
 /** @brief Current version of this application

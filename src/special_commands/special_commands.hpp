@@ -6,8 +6,11 @@
 
 #include "command.hpp"
 
-/** @brief Load the command_map shared object and get the cmd_t array from it */
-dl_handle_t load_command_map_dll();
+/** @brief Load the command_map shared object and get the cmd_t array from it
+ * 
+ * @note Will decrement argc, if option is present
+ */
+dl_handle_t load_command_map_dll(int * argc, char ** argv);
 
 /**
  * @brief Look up the string in the command list.

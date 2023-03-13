@@ -40,6 +40,7 @@ string get_dynamic_lib_path(const string lib_name)
         exit(HOST_APP_ERROR);
     }
     full_lib_name += ".so";
+    cout << full_lib_name << endl;
     path[count] = '\0'; // readlink doesn't always add NULL for some reason
 #elif defined(__APPLE__)
     string full_lib_name = "lib" + lib_name;
@@ -72,14 +73,13 @@ string get_dynamic_lib_path(const string lib_name)
     return lib_path_str;
 }
 
-dl_handle_t get_dynamic_lib(const string lib_name)
+dl_handle_t get_dynamic_lib(const string lib_path)
 {
-    string dyn_lib_path = get_dynamic_lib_path(lib_name);
 #if (defined(__linux__) || defined(__APPLE__))
     static_cast<void>(dlerror()); // clear errors
-    dl_handle_t handle = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
+    dl_handle_t handle = dlopen(lib_path.c_str(), RTLD_NOW);
 #elif defined(_WIN32)
-    dl_handle_t handle = LoadLibrary(dyn_lib_path.c_str());
+    dl_handle_t handle = LoadLibrary(lib_path.c_str());
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows
@@ -139,8 +139,7 @@ device_fptr get_device_fptr(dl_handle_t handle)
 
 print_args_fptr get_print_args_fptr(dl_handle_t handle)
 {
-    return get_function<print_args_fptr>(handle, "super_print_arg");
-}
+    return get_function<print_args_fptr>(handle, "super_print_arg");}
 
 check_range_fptr get_check_range_fptr(dl_handle_t handle)
 {
