@@ -7,8 +7,6 @@ using namespace std;
 
 int main(int argc, char ** argv)
 {
-        cout << argv[0] << endl;
-
     if(argc == 1)
     {
         cout << "Use --help to get the list of options for this application." << endl

@@ -41,7 +41,6 @@ string get_command_map_path(const string command_map_file)
 #else
     dir_path_str += "/";
 #endif
-    cout << command_map_file << endl;
     string file_path_str = path + command_map_file;
 
     return file_path_str;
@@ -63,7 +62,6 @@ string get_driver_path(const string lib_name)
         }
         path[count] = '\0'; // readlink doesn't always add NULL for some reason
     }
-    cout << full_lib_name << endl;
 #elif defined(__APPLE__)
     string full_lib_name = lib_name;
     full_lib_name = "lib" + full_lib_name;

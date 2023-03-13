@@ -41,7 +41,6 @@ dl_handle_t load_command_map_dll(int * argc, char ** argv)
     if(index != 0)
     {
         // Use path given via CLI
-        cout << "Overwrite lib" << endl;
         command_map_rel_path = argv[index + 1];
         remove_opt(argc, argv, index, 2);
         command_map_abs_path = get_command_map_path(command_map_rel_path);
