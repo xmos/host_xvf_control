@@ -68,11 +68,11 @@ string get_command_map_path(const string command_map_file)
     return file_path_str;
 }
 
-string get_driver_path(const string driver_name)
+string get_driver_path(const string lib_name)
 {
 
 #if defined(__linux__)
-    string full_lib_name = "/lib" + driver_name + ".so";
+    string full_lib_name = "/lib" + lib_name + ".so";
     char * dir_path;
     char path[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);

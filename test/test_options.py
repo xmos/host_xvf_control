@@ -8,7 +8,7 @@ from pathlib import Path
 small_cmd = "CMD_SMALL"
 
 def test_execute_cmd_list():
-    test_dir, host_bin, control_protocol = test_utils.get_dummy_files()
+    test_dir, host_bin, control_protocol, cmd_map_path = test_utils.get_dummy_files()
     print("\n")
 
     cmd_list_path = test_dir / "commands.txt"
@@ -21,12 +21,13 @@ def test_execute_cmd_list():
     # check that it does not fail
     out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e")
     print(out)
-    out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path=)
+    
+    out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path=cmd_map_path)
     print(out)
 
 
 def test_version():
-    test_dir, host_bin, control_protocol = test_utils.get_dummy_files()
+    test_dir, host_bin, control_protocol, _ = test_utils.get_dummy_files()
     print("\n")
 
     version = test_utils.execute_command(host_bin, control_protocol, test_dir, "-v")
@@ -42,7 +43,7 @@ def test_version():
         assert str(version[0]) == lines[version_line].strip()
 
 def test_range_check():
-    test_dir, host_bin, control_protocol = test_utils.get_dummy_files()
+    test_dir, host_bin, control_protocol, _ = test_utils.get_dummy_files()
     for i in range(10):
         # this part of the test will check if the range check works as expected
         vals = test_utils.gen_rand_array('int', 0, 6, 1)

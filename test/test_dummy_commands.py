@@ -27,7 +27,7 @@ def single_command_test(host_bin, control_protocol, cwd, cmd_name, cmd_vals):
         assert rel_error < rtol
 
 def test_dummy_commands():
-    test_dir, host_bin, control_protocol = test_utils.get_dummy_files()
+    test_dir, host_bin, control_protocol, _ = test_utils.get_dummy_files()
     print("\n")
 
     with open(test_dir / 'test_buf.bin', 'w'):
