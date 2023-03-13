@@ -88,7 +88,7 @@ dl_handle_t get_dynamic_lib(const string lib_path)
 #if (defined(__linux__) || defined(__APPLE__))
         cerr << dlerror() << endl;
 #elif defined(_WIN32)
-        cerr << "Could not load " << lib_name << ", got " << GetLastError() << " error code" << endl;
+        cerr << "Could not load " << lib_path << ", got " << GetLastError() << " error code" << endl;
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows        
