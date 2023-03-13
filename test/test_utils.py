@@ -85,7 +85,7 @@ def execute_command(host_bin, control_protocol, cwd, cmd_name, cmd_map_path = No
         run_cmd(cmd_write, cwd, True, expect_success)
 
     stdout = run_cmd(command, cwd, True)
-
+    print(f"stdout in execure_command() is {stdout}")
     words = str(stdout, 'utf-8').strip().split(' ')
 
     # This will check that the right command is returned
