@@ -96,6 +96,7 @@ find_package(PkgConfig)
 pkg_check_modules(libusb-1.0 REQUIRED libusb-1.0)
 set(LINK_LIBS usb-1.0)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+add_compile_definitions(nologo W4 WX- O2 EHa _CRT_SECURE_NO_WARNINGS)
 target_link_directories(framework_rtos_sw_services_device_control_host_usb INTERFACE "${DEVICE_CONTROL_PATH}/host/libusb/Win32")
 set(libusb-1.0_INCLUDE_DIRS "${DEVICE_CONTROL_PATH}/host/libusb/Win32")
 set(LINK_LIBS libusb)
@@ -134,7 +135,21 @@ target_include_directories(device_usb
         ${DEVICE_CONTROL_PATH}/host
 )
 target_link_libraries(device_usb
-    PUBLIC  
+    PUBLIC
         rtos::sw_services::device_control_host_usb
 )
+
 target_link_libraries(device_usb PRIVATE -fPIC)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    add_custom_command(TARGET device_usb
+        POST_BUILD COMMAND
+        ${CMAKE_INSTALL_NAME_TOOL} -change "/usr/local/lib/libusb-1.0.0.dylib" "@executable_path/libusb-1.0.0.dylib" ${CMAKE_BINARY_DIR}/"libdevice_usb.dylib"
+        )
+add_custom_command(
+    TARGET device_usb POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        ${DEVICE_CONTROL_PATH}/host/libusb/OSX64/libusb-1.0.0.dylib
+        ${CMAKE_BINARY_DIR}
+                )
+endif()
