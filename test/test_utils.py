@@ -54,7 +54,7 @@ def get_dummy_files():
         if device_path.is_file():
             os.remove(device_path)
         os.rename(device_dummy_path, device_path)
-    print(f"cmd_map_path in get_dummy_files is {cmd_map_path}")
+    print(f"cmd_map_path in get_dummy_files() is {cmd_map_path}")
     return test_dir, host_bin_copy, control_protocol, cmd_map_path
 
 def run_cmd(command, cwd, verbose = False, expect_success = True):
@@ -78,7 +78,7 @@ def execute_command(host_bin, control_protocol, cwd, cmd_name, cmd_map_path = No
     
     command = str(host_bin) + " -u " + control_protocol + " " + cmd_name
     if cmd_map_path:
-        print(cmd_map_path)
+        print(f"cmd_map_path in execute_command() is {cmd_map_path}")
         command = str(host_bin) + " -u " + control_protocol + " -cmp " + cmd_map_path + " " + cmd_name
     if cmd_vals != None:
         cmd_write = command + " " + ' '.join(str(val) for val in cmd_vals)
