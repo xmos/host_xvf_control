@@ -80,7 +80,6 @@ pipeline {
                         }
                         stage ('Test') {
                             steps {
-                                sh 'tree'
                                 dir('test') {
                                     sh 'ls -la'
                                     sh 'ls -la build'
