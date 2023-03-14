@@ -52,7 +52,7 @@ pipeline {
                             cleanWs()
                         }
                     }
-                } // RPI Build & Test
+                } // Mac Build & Test
                 stage ('Mac Build & Test') {
                     agent {
                         label 'macos&&x86_64'
@@ -80,7 +80,9 @@ pipeline {
                         }
                         stage ('Test') {
                             steps {
+                                sh 'tree'
                                 dir('test') {
+                                    sh 'tree'
                                     sh 'source ../.venv/bin/activate && pytest -s'
                                 }
                             }
