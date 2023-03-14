@@ -8,7 +8,7 @@ from pathlib import Path
 small_cmd = "CMD_SMALL"
 
 def test_execute_cmd_list():
-    test_dir, host_bin, control_protocol, cmd_map_path = test_utils.get_dummy_files()
+    test_dir, host_bin, control_protocol, cmd_map_name = test_utils.get_dummy_files()
     print("\n")
 
     cmd_list_path = test_dir / "commands.txt"
@@ -22,8 +22,8 @@ def test_execute_cmd_list():
     out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e")
     print(out)
     print(f"cmd_map_path in test_execute_cmd_list() is {cmd_map_path}")
-
-    out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path=str(cmd_map_path))
+    os.system("tree")
+    out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path= Path("build"/"test") / cmd_map_path))
     print(out)
 
 

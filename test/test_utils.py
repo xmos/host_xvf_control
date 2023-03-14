@@ -55,7 +55,7 @@ def get_dummy_files():
             os.remove(device_path)
         os.rename(device_dummy_path, device_path)
     print(f"cmd_map_path in get_dummy_files() is {cmd_map_path}")
-    return test_dir, host_bin_copy, control_protocol, cmd_map_path
+    return test_dir, host_bin_copy, control_protocol, cmd_map_so + dl_suffix_name
 
 def run_cmd(command, cwd, verbose = False, expect_success = True):
     result = subprocess.run(command, capture_output=True, cwd=cwd, shell=True)
