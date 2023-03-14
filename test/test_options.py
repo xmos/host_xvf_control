@@ -23,7 +23,7 @@ def test_execute_cmd_list():
     print(out)
     print(f"cmd_map_name in test_execute_cmd_list() is {cmd_map_name}")
     os.system("tree")
-    out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path= str(Path("build/test") / cmd_map_name) )
+    out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path= str(Path("../build/test") / cmd_map_name) )
     print(out)
 
 
