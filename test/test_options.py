@@ -28,6 +28,8 @@ def test_execute_cmd_list():
     out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path = cmd_map_name)
     print(out)
     # test command-map-path option from a second location
+    print(os.getcwd())
+    print(os.dir())
     copy_path = str(Path("..") / cmd_map_name.replace('command', 'cmd'))
     shutil.copyfile(cmd_map_name, copy_path)
     out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path = copy_path)
