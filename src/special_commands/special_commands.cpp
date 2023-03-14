@@ -28,17 +28,14 @@ opt_t options[] = {
 };
 size_t num_options = end(options) - begin(options);
 
-cmd_t * commands;
-size_t num_commands;
+size_t num_commands = 0;
 
 dl_handle_t load_command_map_dll()
 {
     dl_handle_t handle = get_dynamic_lib("command_map");
 
-    //cmd_map_fptr get_command_map = get_cmd_map_fptr(handle);
     num_cmd_fptr get_num_commands = get_num_cmd_fptr(handle);
 
-    //commands = get_command_map();
     num_commands = get_num_commands();
     return handle;
 }
@@ -72,36 +69,6 @@ opt_t * option_lookup(const string str)
     cerr << "Option " << str << " does not exist." << endl
     << "Maybe you meant " << options[indx].short_name
     << " or " << options[indx].long_name << "." << endl;
-    exit(HOST_APP_ERROR);
-    return nullptr;
-}
-
-cmd_t * command_lookup(const string str)
-{
-    string up_str = to_upper(str);
-    for(size_t i = 0; i < num_commands; i++)
-    {
-        cmd_t * cmd = &commands[i];
-        if (up_str == cmd->cmd_name)
-        {
-            return cmd;
-        }
-    }
-
-    int shortest_dist = 100;
-    size_t indx  = 0;
-    for(size_t i = 0; i < num_commands; i++)
-    {
-        cmd_t * cmd = &commands[i];
-        int dist = Levenshtein_distance(up_str, cmd->cmd_name);
-        if(dist < shortest_dist)
-        {
-            shortest_dist = dist;
-            indx = i;
-        }
-    }
-    cerr << "Command " << str << " does not exist." << endl
-    << "Maybe you meant " << commands[indx].cmd_name <<  "." << endl;
     exit(HOST_APP_ERROR);
     return nullptr;
 }
@@ -223,9 +190,8 @@ control_ret_t print_command_list()
     size_t longest_info = 0;
     for(size_t i = 0; i < num_commands; i ++)
     {
-        //cmd_t * cmd = &commands[i];
         cmd_t cmd = {0};
-        init_cmd(&cmd, "_______", i);
+        init_cmd(&cmd, nullptr, i);
         // skipping hidden commands
         if(cmd.hidden_cmd)
         {
@@ -246,8 +212,7 @@ control_ret_t print_command_list()
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t cmd = {0};
-        init_cmd(&cmd, "_______", i);
-        //cmd_t * cmd = &commands[i];
+        init_cmd(&cmd, nullptr, i);
         // skipping hidden commands
         if(cmd.hidden_cmd)
         {
@@ -298,9 +263,8 @@ control_ret_t dump_params(Command * command)
 {
     for(size_t i = 0; i < num_commands; i ++)
     {
-        //cmd_t * cmd = &commands[i];
         cmd_t cmd = {0};
-        init_cmd(&cmd, "_______", i);
+        init_cmd(&cmd, nullptr, i);
         // skipping hidden commands
         if(cmd.hidden_cmd)
         {
@@ -410,8 +374,7 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
 {
     control_ret_t  ret = CONTROL_ERROR;
     int test_frames = 50;
-    //command->init_cmd_info("TEST_CONTROL");
-    //unsigned test_cmd_num_vals = command->get_cmd_num_vals();
+
     const string test_cmd_name = "TEST_CONTROL";
     cmd_t test_cmd = {0};
     init_cmd(&test_cmd, test_cmd_name);

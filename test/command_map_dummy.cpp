@@ -122,12 +122,6 @@ uint32_t get_num_commands()
     return num_commands;
 }
 
-extern "C"
-cmd_t * get_command_map()
-{
-    return commands;
-}
-
 static const int dummy_info = 0x74736574;    // 'test' in ascii
 
 extern "C"
@@ -165,8 +159,9 @@ void print_arg_local(const cmd_param_type_t type, const cmd_param_t val)
 }
 
 extern "C"
-void super_print_arg(const cmd_t *cmd, cmd_param_t *values)
+void super_print_arg(const std::string cmd_name, cmd_param_t *values)
 {
+    cmd_t * cmd = &commands[get_cmd_index(cmd_name)];
     std::cout << cmd->cmd_name << " ";
     for(unsigned i = 0; i < cmd->num_values; i++)
     {
@@ -305,8 +300,10 @@ std::map<std::string, val_range_t *> test_map{
 };
 
 extern "C"
-void check_range(const cmd_t * cmd, const cmd_param_t * vals)
+void check_range(const std::string cmd_name, const cmd_param_t * vals)
 {
+    cmd_t * cmd = &commands[get_cmd_index(cmd_name)];
+
     if(cmd->cmd_name == "RANGE_TEST0")
     {
         range0[0].i32 = 0;

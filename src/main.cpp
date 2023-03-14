@@ -17,7 +17,6 @@ int main(int argc, char ** argv)
     string lib_name = get_device_lib_name(&argc, argv);
     bool bypass_range_check = get_bypass_range_check(&argc, argv);
 
-    //cmd_t * cmd = nullptr;
     opt_t * opt = nullptr;
     int cmd_indx = 1;
     string next_cmd = argv[cmd_indx];

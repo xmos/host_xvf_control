@@ -70,7 +70,7 @@ control_ret_t Command::command_set(const cmd_param_t * values)
 {
     if(!bypass_range_check)
     {
-        check_range(&cmd, values);
+        check_range(cmd.cmd_name, values);
     }
     
     size_t data_len = get_num_bytes_from_type(cmd.type) * cmd.num_values;
@@ -176,7 +176,7 @@ control_ret_t Command::do_command(const string cmd_name, char ** argv, int argc,
     if(args_left == 0) // READ
     {
         ret = command_get(cmd_values);
-        print_args(&cmd, cmd_values);
+        print_args(cmd.cmd_name, cmd_values);
     }
     else // WRITE
     {

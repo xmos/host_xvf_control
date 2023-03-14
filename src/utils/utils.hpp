@@ -117,10 +117,10 @@ using cmd_info_fptr = void (*)(std::string *, bool *, size_t);
 using device_fptr = Device * (*)(void *);
 
 /** Function pointer that prints different argument types */
-using print_args_fptr = void (*)(const cmd_t *, cmd_param_t *);
+using print_args_fptr = void (*)(const std::string, cmd_param_t *);
 
 /** Function pointer to get the range check info */
-using check_range_fptr = void (*)(const cmd_t *, const cmd_param_t *);
+using check_range_fptr = void (*)(const std::string, const cmd_param_t *);
 
 /**
  * @brief Get the function pointer to get_command_map()
