@@ -82,7 +82,10 @@ pipeline {
                             steps {
                                 sh 'tree'
                                 dir('test') {
-                                    sh 'tree'
+                                    sh 'ls -la'
+                                    sh 'ls -la build'
+                                    sh 'ls -la build/test'
+
                                     sh 'source ../.venv/bin/activate && pytest -s'
                                 }
                             }
