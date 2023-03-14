@@ -122,11 +122,6 @@ T get_function(dl_handle_t handle, const string symbol)
     return func;
 }
 
-cmd_map_fptr get_cmd_map_fptr(dl_handle_t handle)
-{
-    return get_function<cmd_map_fptr>(handle, "get_command_map");
-}
-
 num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle)
 {
     return get_function<num_cmd_fptr>(handle, "get_num_commands");
@@ -135,6 +130,11 @@ num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle)
 cmd_index_fptr get_cmd_index_fptr(dl_handle_t handle)
 {
     return get_function<cmd_index_fptr>(handle, "get_cmd_index");
+}
+
+cmd_name_fptr get_cmd_name_fptr(dl_handle_t handle)
+{
+    return get_function<cmd_name_fptr>(handle, "get_cmd_name");
 }
 
 cmd_id_info_fptr get_cmd_id_info_fptr(dl_handle_t handle)
@@ -150,6 +150,11 @@ cmd_val_info_fptr get_cmd_val_info_fptr(dl_handle_t handle)
 cmd_info_fptr get_cmd_info_fptr(dl_handle_t handle)
 {
     return get_function<cmd_info_fptr>(handle, "get_cmd_info");
+}
+
+cmd_hidden_fptr get_cmd_hidden_fptr(dl_handle_t handle)
+{
+    return get_function<cmd_hidden_fptr>(handle, "get_cmd_hidden");
 }
 
 device_fptr get_device_fptr(dl_handle_t handle)

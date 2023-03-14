@@ -8,9 +8,13 @@
 using namespace std;
 
 cmd_index_fptr get_cmd_index = nullptr;
+cmd_name_fptr get_cmd_name = nullptr;
 cmd_id_info_fptr get_cmd_id_info = nullptr;
 cmd_val_info_fptr get_cmd_val_info = nullptr;
 cmd_info_fptr get_cmd_info = nullptr;
+cmd_hidden_fptr get_cmd_hidden = nullptr;
+
+size_t num_commands = 0;
 
 string to_upper(string str)
 {
@@ -30,28 +34,64 @@ string to_lower(string str)
     return str;
 }
 
-void init_cmd_utils(dl_handle_t handle)
+dl_handle_t load_command_map_dll()
 {
+    dl_handle_t handle = get_dynamic_lib("command_map");
+    
+    num_cmd_fptr get_num_commands = get_num_cmd_fptr(handle);
+    num_commands = get_num_commands();
+
     get_cmd_index = get_cmd_index_fptr(handle);
+    get_cmd_name = get_cmd_name_fptr(handle);
     get_cmd_id_info = get_cmd_id_info_fptr(handle);
     get_cmd_val_info = get_cmd_val_info_fptr(handle);
     get_cmd_info = get_cmd_info_fptr(handle);
+    get_cmd_hidden = get_cmd_hidden_fptr(handle);
+
+    return handle;
+}
+
+void calc_Levenshtein_and_error(const string str)
+{
+    int shortest_dist = 100;
+    size_t indx  = 0;
+    for(size_t i = 0; i < num_commands; i++)
+    {
+        string comp_name = get_cmd_name(i);
+        int dist = Levenshtein_distance(str, comp_name);
+        if(dist < shortest_dist)
+        {
+            shortest_dist = dist;
+            indx = i;
+        }
+    }
+    cerr << "Command " << str << " does not exist." << endl
+    << "Maybe you meant " << get_cmd_name(indx) <<  "." << endl;
+    exit(HOST_APP_ERROR);
 }
 
 void init_cmd(cmd_t * cmd, const string cmd_name, size_t index)
 {
     const string up_str = to_upper(cmd_name);
     
-    index = (index == UINT32_MAX) ? get_cmd_index(up_str) : index;
     if(index == UINT32_MAX)
     {
-        cerr << "Command " << up_str << " does not exist." << endl;
-        exit(HOST_APP_ERROR);
+        index = get_cmd_index(up_str);
+        if(index == UINT32_MAX)
+        {
+            calc_Levenshtein_and_error(up_str);
+        }
+        cmd->cmd_name = up_str;
     }
+    else
+    {
+        cmd->cmd_name = get_cmd_name(index);
+    }
+
     get_cmd_id_info(&cmd->res_id, &cmd->cmd_id, index);
     get_cmd_val_info(&cmd->type, &cmd->rw, &cmd->num_values, index);
-    get_cmd_info(&cmd->info, &cmd->hidden_cmd, index);
-    cmd->cmd_name = up_str;
+    cmd->info = get_cmd_info(index);
+    cmd->hidden_cmd = get_cmd_hidden(index);
 }
 
 size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup)

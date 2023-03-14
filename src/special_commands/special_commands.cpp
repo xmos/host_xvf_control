@@ -28,17 +28,7 @@ opt_t options[] = {
 };
 size_t num_options = end(options) - begin(options);
 
-size_t num_commands = 0;
-
-dl_handle_t load_command_map_dll()
-{
-    dl_handle_t handle = get_dynamic_lib("command_map");
-
-    num_cmd_fptr get_num_commands = get_num_cmd_fptr(handle);
-
-    num_commands = get_num_commands();
-    return handle;
-}
+extern size_t num_commands;
 
 opt_t * option_lookup(const string str)
 {
@@ -191,7 +181,7 @@ control_ret_t print_command_list()
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t cmd = {0};
-        init_cmd(&cmd, nullptr, i);
+        init_cmd(&cmd, "_", i);
         // skipping hidden commands
         if(cmd.hidden_cmd)
         {
@@ -212,7 +202,7 @@ control_ret_t print_command_list()
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t cmd = {0};
-        init_cmd(&cmd, nullptr, i);
+        init_cmd(&cmd, "_", i);
         // skipping hidden commands
         if(cmd.hidden_cmd)
         {
@@ -264,7 +254,7 @@ control_ret_t dump_params(Command * command)
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t cmd = {0};
-        init_cmd(&cmd, nullptr, i);
+        init_cmd(&cmd, "_", i);
         // skipping hidden commands
         if(cmd.hidden_cmd)
         {
@@ -283,9 +273,8 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
     size_t largest_command = 0;
     for(size_t i = 0; i < num_commands; i++)
     {
-        //cmd_t * cmd = &commands[i];
         cmd_t cmd = {0};
-        init_cmd(&cmd, "_______", i);
+        init_cmd(&cmd, "_", i);
         size_t num_args = cmd.num_values;
         largest_command = (num_args > largest_command) ? num_args : largest_command;
     }

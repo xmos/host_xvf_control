@@ -40,9 +40,9 @@ control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_i
 {
     cout << "Filename = " << filename << endl;
     
-    const string start_coeff_cmd_name = "SPECIAL_CMD_AEC_FILTER_COEFF_START_OFFSET";
+    const string start_coeff_cmd_name = "SPECIAL_CMD_AEC_FILTER_COEFF_START_OFFSET"; // Set start offset
 
-    const string filter_cmd_name = "SPECIAL_CMD_AEC_FILTER_COEFFS";
+    const string filter_cmd_name = "SPECIAL_CMD_AEC_FILTER_COEFFS"; // Get buffer cmd
 
     // Set start of special command sequence
     cmd_param_t far_mic_index[2];
@@ -171,7 +171,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
 {    
     const string start_coeff_cmd_name = "SPECIAL_CMD_NLMODEL_COEFF_START_OFFSET";
 
-    const string filter_cmd_name = "SPECIAL_CMD_PP_NLMODEL";
+    const string filter_cmd_name = "SPECIAL_CMD_PP_NLMODEL"; // buffer cmd
 
     // Get buffer length
     int32_t NLM_buffer_length;

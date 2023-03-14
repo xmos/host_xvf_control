@@ -94,26 +94,37 @@ size_t get_cmd_index(const std::string cmd_name)
 }
 
 extern "C"
-void get_cmd_id_info(control_resid_t * res_id, control_cmd_t * cmd_id, size_t ind)
+std::string get_cmd_name(const size_t index)
 {
-    *res_id = commands[ind].res_id;
-    *cmd_id = commands[ind].cmd_id;
+    return commands[index].cmd_name;
 }
 
 extern "C"
-void get_cmd_val_info(cmd_param_type_t * type, cmd_rw_t * rw, unsigned * num_vals, size_t ind)
+void get_cmd_id_info(control_resid_t * res_id, control_cmd_t * cmd_id, const size_t index)
 {
-
-    *type = commands[ind].type;
-    *rw = commands[ind].rw;
-    *num_vals = commands[ind].num_values;
+    *res_id = commands[index].res_id;
+    *cmd_id = commands[index].cmd_id;
 }
 
 extern "C"
-void get_cmd_info(std::string * info, bool * hidden, size_t ind)
+void get_cmd_val_info(cmd_param_type_t * type, cmd_rw_t * rw, unsigned * num_vals, const size_t index)
 {
-    *info = commands[ind].info;
-    *hidden = commands[ind].hidden_cmd;
+
+    *type = commands[index].type;
+    *rw = commands[index].rw;
+    *num_vals = commands[index].num_values;
+}
+
+extern "C"
+std::string get_cmd_info(const size_t index)
+{
+    return commands[index].info;
+}
+
+extern "C"
+bool get_cmd_hidden(const size_t index)
+{
+    return commands[index].hidden_cmd;
 }
 
 extern "C"

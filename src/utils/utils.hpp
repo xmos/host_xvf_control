@@ -82,8 +82,10 @@ std::string to_upper(std::string str);
 /** @brief Convert string to lower case */
 std::string to_lower(std::string str);
 
-void init_cmd_utils(dl_handle_t handle);
+/** @brief Load the command_map shared object and get the cmd tools from it */
+dl_handle_t load_command_map_dll();
 
+/** @brief Initialise cmd_t structure with ether command name or it's index */
 void init_cmd(cmd_t * cmd, const std::string cmd_name, size_t index = UINT32_MAX);
 
 /** @brief Lookup option in argv */
@@ -99,19 +101,26 @@ void remove_opt(int * argc, char ** argv, size_t ind, size_t num);
  */
 dl_handle_t get_dynamic_lib(const std::string lib_name);
 
-/** cmd_t * function pointer type */
-using cmd_map_fptr = cmd_t * (*)();
-
 /** uint32_t function pointer type */
 using num_cmd_fptr = uint32_t (*)();
 
+/** Fintion poiter for getting index if the command */
 using cmd_index_fptr = size_t (*)(const std::string);
 
-using cmd_id_info_fptr = void (*)(control_resid_t *, control_cmd_t *, size_t);
+/** Function poiter for getting command name form index */
+using cmd_name_fptr = std::string (*)(const size_t);
 
-using cmd_val_info_fptr = void (*)(cmd_param_type_t *, cmd_rw_t *, unsigned *, size_t);
+/** Function poiter for getting cmd id related info */
+using cmd_id_info_fptr = void (*)(control_resid_t *, control_cmd_t *, const size_t);
 
-using cmd_info_fptr = void (*)(std::string *, bool *, size_t);
+/** Function poiter for getting cmd val related info */
+using cmd_val_info_fptr = void (*)(cmd_param_type_t *, cmd_rw_t *, unsigned *, const size_t);
+
+/** Function poiter for getting cmd info */
+using cmd_info_fptr = std::string (*)(const size_t);
+
+/** Function poiter for getting cmd hidden status */
+using cmd_hidden_fptr = bool (*)(const size_t);
 
 /** Function pointer that takes void * and returns Device */
 using device_fptr = Device * (*)(void *);
@@ -123,26 +132,53 @@ using print_args_fptr = void (*)(const std::string, cmd_param_t *);
 using check_range_fptr = void (*)(const std::string, const cmd_param_t *);
 
 /**
- * @brief Get the function pointer to get_command_map()
- * 
- * @param handle Pointer to the command_map shared object
- */
-cmd_map_fptr get_cmd_map_fptr(dl_handle_t handle);
-
-/**
  * @brief Get the function pointer to get_num_commands()
  * 
  * @param handle Pointer to the command_map shared object
  */
 num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle);
 
+/**
+ * @brief Get the function pointer to get_cmd_name()
+ * 
+ * @param handle Pointer to the command_map shared object
+ */
+cmd_name_fptr get_cmd_name_fptr(dl_handle_t handle);
+
+/**
+ * @brief Get the function pointer to get_cmd_index()
+ * 
+ * @param handle Pointer to the command_map shared object
+ */
 cmd_index_fptr get_cmd_index_fptr(dl_handle_t handle);
 
+/**
+ * @brief Get the function pointer to get_cmd_id_info()
+ * 
+ * @param handle Pointer to the command_map shared object
+ */
 cmd_id_info_fptr get_cmd_id_info_fptr(dl_handle_t handle);
 
+/**
+ * @brief Get the function pointer to get_cmd_val_info()
+ * 
+ * @param handle Pointer to the command_map shared object
+ */
 cmd_val_info_fptr get_cmd_val_info_fptr(dl_handle_t handle);
 
+/**
+ * @brief Get the function pointer to get_cmd_info()
+ * 
+ * @param handle Pointer to the command_map shared object
+ */
 cmd_info_fptr get_cmd_info_fptr(dl_handle_t handle);
+
+/**
+ * @brief Get the function pointer to get_cmd_hidden()
+ * 
+ * @param handle Pointer to the command_map shared object
+ */
+cmd_hidden_fptr get_cmd_hidden_fptr(dl_handle_t handle);
 
 /**
  * @brief Get the function pointer to make_Dev()
