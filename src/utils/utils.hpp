@@ -82,6 +82,10 @@ std::string to_upper(std::string str);
 /** @brief Convert string to lower case */
 std::string to_lower(std::string str);
 
+void init_cmd_utils(dl_handle_t handle);
+
+void init_cmd(cmd_t * cmd, const std::string cmd_name, size_t index = UINT32_MAX);
+
 /** @brief Lookup option in argv */
 size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup);
 
@@ -100,6 +104,14 @@ using cmd_map_fptr = cmd_t * (*)();
 
 /** uint32_t function pointer type */
 using num_cmd_fptr = uint32_t (*)();
+
+using cmd_index_fptr = size_t (*)(const std::string);
+
+using cmd_id_info_fptr = void (*)(control_resid_t *, control_cmd_t *, size_t);
+
+using cmd_val_info_fptr = void (*)(cmd_param_type_t *, cmd_rw_t *, unsigned *, size_t);
+
+using cmd_info_fptr = void (*)(std::string *, bool *, size_t);
 
 /** Function pointer that takes void * and returns Device */
 using device_fptr = Device * (*)(void *);
@@ -123,6 +135,14 @@ cmd_map_fptr get_cmd_map_fptr(dl_handle_t handle);
  * @param handle Pointer to the command_map shared object
  */
 num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle);
+
+cmd_index_fptr get_cmd_index_fptr(dl_handle_t handle);
+
+cmd_id_info_fptr get_cmd_id_info_fptr(dl_handle_t handle);
+
+cmd_val_info_fptr get_cmd_val_info_fptr(dl_handle_t handle);
+
+cmd_info_fptr get_cmd_info_fptr(dl_handle_t handle);
 
 /**
  * @brief Get the function pointer to make_Dev()

@@ -132,6 +132,26 @@ num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle)
     return get_function<num_cmd_fptr>(handle, "get_num_commands");
 }
 
+cmd_index_fptr get_cmd_index_fptr(dl_handle_t handle)
+{
+    return get_function<cmd_index_fptr>(handle, "get_cmd_index");
+}
+
+cmd_id_info_fptr get_cmd_id_info_fptr(dl_handle_t handle)
+{
+    return get_function<cmd_id_info_fptr>(handle, "get_cmd_id_info");
+}
+
+cmd_val_info_fptr get_cmd_val_info_fptr(dl_handle_t handle)
+{
+    return get_function<cmd_val_info_fptr>(handle, "get_cmd_val_info");
+}
+
+cmd_info_fptr get_cmd_info_fptr(dl_handle_t handle)
+{
+    return get_function<cmd_info_fptr>(handle, "get_cmd_info");
+}
+
 device_fptr get_device_fptr(dl_handle_t handle)
 {
     return get_function<device_fptr>(handle, "make_Dev");

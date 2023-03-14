@@ -78,6 +78,45 @@ static cmd_t commands[] = {
 static size_t num_commands = std::end(commands) - std::begin(commands);
 
 extern "C"
+size_t get_cmd_index(const std::string cmd_name)
+{
+    size_t index = UINT32_MAX;
+    for(size_t i = 0; i < num_commands; i++)
+    {
+        cmd_t * cmd = &commands[i];
+        if (cmd_name == cmd->cmd_name)
+        {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+
+extern "C"
+void get_cmd_id_info(control_resid_t * res_id, control_cmd_t * cmd_id, size_t ind)
+{
+    *res_id = commands[ind].res_id;
+    *cmd_id = commands[ind].cmd_id;
+}
+
+extern "C"
+void get_cmd_val_info(cmd_param_type_t * type, cmd_rw_t * rw, unsigned * num_vals, size_t ind)
+{
+
+    *type = commands[ind].type;
+    *rw = commands[ind].rw;
+    *num_vals = commands[ind].num_values;
+}
+
+extern "C"
+void get_cmd_info(std::string * info, bool * hidden, size_t ind)
+{
+    *info = commands[ind].info;
+    *hidden = commands[ind].hidden_cmd;
+}
+
+extern "C"
 uint32_t get_num_commands()
 {
     return num_commands;

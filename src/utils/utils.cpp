@@ -7,6 +7,11 @@
 
 using namespace std;
 
+cmd_index_fptr get_cmd_index = nullptr;
+cmd_id_info_fptr get_cmd_id_info = nullptr;
+cmd_val_info_fptr get_cmd_val_info = nullptr;
+cmd_info_fptr get_cmd_info = nullptr;
+
 string to_upper(string str)
 {
     for(unsigned i = 0; i < str.length(); i++)
@@ -23,6 +28,30 @@ string to_lower(string str)
         str[i] = tolower(str[i]);
     }
     return str;
+}
+
+void init_cmd_utils(dl_handle_t handle)
+{
+    get_cmd_index = get_cmd_index_fptr(handle);
+    get_cmd_id_info = get_cmd_id_info_fptr(handle);
+    get_cmd_val_info = get_cmd_val_info_fptr(handle);
+    get_cmd_info = get_cmd_info_fptr(handle);
+}
+
+void init_cmd(cmd_t * cmd, const string cmd_name, size_t index)
+{
+    const string up_str = to_upper(cmd_name);
+    
+    index = (index == UINT32_MAX) ? get_cmd_index(up_str) : index;
+    if(index == UINT32_MAX)
+    {
+        cerr << "Command " << up_str << " does not exist." << endl;
+        exit(HOST_APP_ERROR);
+    }
+    get_cmd_id_info(&cmd->res_id, &cmd->cmd_id, index);
+    get_cmd_val_info(&cmd->type, &cmd->rw, &cmd->num_values, index);
+    get_cmd_info(&cmd->info, &cmd->hidden_cmd, index);
+    cmd->cmd_name = up_str;
 }
 
 size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup)

@@ -5,9 +5,12 @@
 
 using namespace std;
 
-Command::Command(Device * _dev, bool _bypass_range, print_args_fptr _print, check_range_fptr _range) : 
-    device(_dev), bypass_range_check(_bypass_range), print_args(_print), check_range(_range)
+Command::Command(Device * _dev, bool _bypass_range, dl_handle_t _handle) ://print_args_fptr _print, check_range_fptr _range) : 
+    device(_dev), bypass_range_check(_bypass_range),// print_args(_print), check_range(_range)
+    cmd_map_handle(_handle)
 {
+    print_args = get_print_args_fptr(cmd_map_handle);
+    check_range = get_check_range_fptr(cmd_map_handle);
     control_ret_t ret = device->device_init();
     if (ret != CONTROL_SUCCESS)
     {
@@ -16,71 +19,76 @@ Command::Command(Device * _dev, bool _bypass_range, print_args_fptr _print, chec
     }
 }
 
-control_ret_t Command::command_get(const cmd_t * cmd, cmd_param_t * values)
+void Command::init_cmd_info(const string cmd_name)
 {
-    control_cmd_t cmd_id = cmd->cmd_id | 0x80; // setting 8th bit for read commands
+    init_cmd(&cmd, cmd_name);
+}
 
-    size_t data_len = get_num_bytes_from_type(cmd->type) * cmd->num_values + 1; // one extra for the status
+control_ret_t Command::command_get(cmd_param_t * values)
+{
+    control_cmd_t cmd_id = cmd.cmd_id | 0x80; // setting 8th bit for read commands
+
+    size_t data_len = get_num_bytes_from_type(cmd.type) * cmd.num_values + 1; // one extra for the status
     uint8_t * data = new uint8_t[data_len];
 
-    control_ret_t ret = device->device_get(cmd->res_id, cmd_id, data, data_len);
+    control_ret_t ret = device->device_get(cmd.res_id, cmd_id, data, data_len);
     int read_attempts = 1;
 
     while(1)
     {
         if(read_attempts == 1000)
         {
-            cerr << "Resource could not respond to the " << cmd->cmd_name << " read command."
+            cerr << "Resource could not respond to the " << cmd.cmd_name << " read command."
             << endl << "Check the audio loop is active." << endl;
             exit(HOST_APP_ERROR);
         }
         if(data[0] == CONTROL_SUCCESS)
         {
-            for (unsigned i = 0; i < cmd->num_values; i++)
+            for (unsigned i = 0; i < cmd.num_values; i++)
             {
-                values[i] = command_bytes_to_value(cmd->type, &data[1], i);
+                values[i] = command_bytes_to_value(cmd.type, &data[1], i);
             }
             break;
         }
         else if(data[0] == SERVICER_COMMAND_RETRY)
         {
-            ret = device->device_get(cmd->res_id, cmd_id, data, data_len);
+            ret = device->device_get(cmd.res_id, cmd_id, data, data_len);
             read_attempts++;
         }
         else
         {
-            check_cmd_error(cmd->cmd_name, "read", static_cast<control_ret_t>(data[0]));
+            check_cmd_error(cmd.cmd_name, "read", static_cast<control_ret_t>(data[0]));
         }
     }
 
     delete []data;
-    check_cmd_error(cmd->cmd_name, "read", ret);
+    check_cmd_error(cmd.cmd_name, "read", ret);
     return ret;
 }
 
-control_ret_t Command::command_set(const cmd_t * cmd, const cmd_param_t * values)
+control_ret_t Command::command_set(const cmd_param_t * values)
 {
     if(!bypass_range_check)
     {
-        check_range(cmd, values);
+        check_range(&cmd, values);
     }
     
-    size_t data_len = get_num_bytes_from_type(cmd->type) * cmd->num_values;
+    size_t data_len = get_num_bytes_from_type(cmd.type) * cmd.num_values;
     uint8_t * data = new uint8_t[data_len];
 
-    for (unsigned i = 0; i < cmd->num_values; i++)
+    for (unsigned i = 0; i < cmd.num_values; i++)
     {
-        command_bytes_from_value(cmd->type, data, i, values[i]);
+        command_bytes_from_value(cmd.type, data, i, values[i]);
     }
 
-    control_ret_t ret = device->device_set(cmd->res_id, cmd->cmd_id, data, data_len);
+    control_ret_t ret = device->device_set(cmd.res_id, cmd.cmd_id, data, data_len);
     int write_attempts = 1;
 
     while(1)
     {
         if(write_attempts == 1000)
         {
-            cerr << "Resource could not respond to the " << cmd->cmd_name << " write command."
+            cerr << "Resource could not respond to the " << cmd.cmd_name << " write command."
             << endl << "Check the audio loop is active." << endl;
             exit(HOST_APP_ERROR);
         }
@@ -90,17 +98,17 @@ control_ret_t Command::command_set(const cmd_t * cmd, const cmd_param_t * values
         }
         else if(ret == SERVICER_COMMAND_RETRY)
         {
-            ret = device->device_set(cmd->res_id, cmd->cmd_id, data, data_len);
+            ret = device->device_set(cmd.res_id, cmd.cmd_id, data, data_len);
             write_attempts++;
         }
         else
         {
-            check_cmd_error(cmd->cmd_name, "write", ret);
+            check_cmd_error(cmd.cmd_name, "write", ret);
         }
     }
 
     delete []data;
-    check_cmd_error(cmd->cmd_name, "write", ret);
+    check_cmd_error(cmd.cmd_name, "write", ret);
     return ret;
 }
 
@@ -152,29 +160,31 @@ control_ret_t Command::command_set_low_level(uint8_t *data, size_t data_len)
     return ret;
 }
 
-control_ret_t Command::do_command(const cmd_t * cmd, char ** argv, int argc, int arg_indx)
+control_ret_t Command::do_command(const string cmd_name, char ** argv, int argc, int arg_indx)
 {
     const size_t args_left = argc - arg_indx;
-    control_ret_t ret = check_num_args(cmd, args_left);
+    init_cmd_info(cmd_name);
+
+    control_ret_t ret = check_num_args(&cmd, args_left);
     if (ret != CONTROL_SUCCESS)
     {
         return ret;
     }
 
-    cmd_param_t * cmd_values = new cmd_param_t[cmd->num_values];
+    cmd_param_t * cmd_values = new cmd_param_t[cmd.num_values];
 
     if(args_left == 0) // READ
     {
-        ret = command_get(cmd, cmd_values);
-        print_args(cmd, cmd_values);
+        ret = command_get(cmd_values);
+        print_args(&cmd, cmd_values);
     }
     else // WRITE
     {
         for(size_t i = arg_indx; i < arg_indx + args_left; i++)
         {
-            cmd_values[i - arg_indx] = cmd_arg_str_to_val(cmd->type, argv[i]);
+            cmd_values[i - arg_indx] = cmd_arg_str_to_val(cmd.type, argv[i]);
         }
-        ret = command_set(cmd, cmd_values);
+        ret = command_set(cmd_values);
     }
 
     delete []cmd_values;

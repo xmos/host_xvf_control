@@ -35,10 +35,10 @@ dl_handle_t load_command_map_dll()
 {
     dl_handle_t handle = get_dynamic_lib("command_map");
 
-    cmd_map_fptr get_command_map = get_cmd_map_fptr(handle);
+    //cmd_map_fptr get_command_map = get_cmd_map_fptr(handle);
     num_cmd_fptr get_num_commands = get_num_cmd_fptr(handle);
 
-    commands = get_command_map();
+    //commands = get_command_map();
     num_commands = get_num_commands();
     return handle;
 }
@@ -223,14 +223,16 @@ control_ret_t print_command_list()
     size_t longest_info = 0;
     for(size_t i = 0; i < num_commands; i ++)
     {
-        cmd_t * cmd = &commands[i];
+        //cmd_t * cmd = &commands[i];
+        cmd_t cmd = {0};
+        init_cmd(&cmd, "_______", i);
         // skipping hidden commands
-        if(cmd->hidden_cmd)
+        if(cmd.hidden_cmd)
         {
             continue;
         }
-        size_t name_len = cmd->cmd_name.length();
-        size_t info_len = cmd->info.length();
+        size_t name_len = cmd.cmd_name.length();
+        size_t info_len = cmd.info.length();
         longest_command = (longest_command < name_len) ? name_len : longest_command;
         longest_info = (longest_info < info_len) ? info_len : longest_info;
     }
@@ -243,31 +245,33 @@ control_ret_t print_command_list()
 
     for(size_t i = 0; i < num_commands; i ++)
     {
-        cmd_t * cmd = &commands[i];
+        cmd_t cmd = {0};
+        init_cmd(&cmd, "_______", i);
+        //cmd_t * cmd = &commands[i];
         // skipping hidden commands
-        if(cmd->hidden_cmd)
+        if(cmd.hidden_cmd)
         {
             continue;
         }
         // name   rw   args   type   info
-        size_t name_len = cmd->cmd_name.length();
-        string rw = command_rw_type_name(cmd->rw);
+        size_t name_len = cmd.cmd_name.length();
+        string rw = command_rw_type_name(cmd.rw);
         size_t rw_len = rw.length();
-        size_t args_len = to_string(cmd->num_values).length();
-        string type = command_param_type_name(cmd->type);
+        size_t args_len = to_string(cmd.num_values).length();
+        string type = command_param_type_name(cmd.type);
         size_t type_len = type.length();
-        size_t first_word_len = cmd->info.find_first_of(' ');
+        size_t first_word_len = cmd.info.find_first_of(' ');
 
         int first_space = rw_offset - name_len + rw_len;
         int second_space = args_offset - rw_len - rw_offset + args_len;
         int third_space = type_offset - args_len - args_offset + type_len;
         int fourth_space = info_offset - type_len - type_offset + first_word_len;
 
-        cout << cmd->cmd_name << setw(first_space) << rw
-        << setw(second_space) << cmd->num_values << setw(third_space)
+        cout << cmd.cmd_name << setw(first_space) << rw
+        << setw(second_space) << cmd.num_values << setw(third_space)
         << type << setw(fourth_space);
 
-        stringstream ss(cmd->info);
+        stringstream ss(cmd.info);
         string word;
         size_t curr_pos = info_offset;
         while(ss >> word)
@@ -294,15 +298,17 @@ control_ret_t dump_params(Command * command)
 {
     for(size_t i = 0; i < num_commands; i ++)
     {
-        cmd_t * cmd = &commands[i];
+        //cmd_t * cmd = &commands[i];
+        cmd_t cmd = {0};
+        init_cmd(&cmd, "_______", i);
         // skipping hidden commands
-        if(cmd->hidden_cmd)
+        if(cmd.hidden_cmd)
         {
             continue;
         }
-        if(cmd->rw != CMD_WO)
+        if(cmd.rw != CMD_WO)
         {
-            command->do_command(&commands[i], nullptr, 0, 0);
+            command->do_command(cmd.cmd_name, nullptr, 0, 0);
         }
     }
     return CONTROL_SUCCESS;
@@ -313,8 +319,10 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
     size_t largest_command = 0;
     for(size_t i = 0; i < num_commands; i++)
     {
-        cmd_t * cmd = &commands[i];
-        size_t num_args = cmd->num_values;
+        //cmd_t * cmd = &commands[i];
+        cmd_t cmd = {0};
+        init_cmd(&cmd, "_______", i);
+        size_t num_args = cmd.num_values;
         largest_command = (num_args > largest_command) ? num_args : largest_command;
     }
     largest_command++; // +1 for the command name
@@ -358,8 +366,7 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
         }
         int cmd_indx = 0;
         int arg_indx =  cmd_indx + 1; // 0 is the command
-        cmd_t * cmd = command_lookup(line_ch[cmd_indx]);
-        command->do_command(cmd, line_ch, num, arg_indx);
+        command->do_command(line_ch[cmd_indx], line_ch, num, arg_indx);
         delete []line_ch;
     }
     file.close();
@@ -401,12 +408,16 @@ control_ret_t test_bytestream(Command * command, const string in_filename)
 
 control_ret_t test_control_interface(Command * command, const string out_filename)
 {
-    control_ret_t ret;
-    cmd_t * test_cmd = command_lookup("TEST_CONTROL");
+    control_ret_t  ret = CONTROL_ERROR;
     int test_frames = 50;
-    cmd_param_t * test_in_buffer = new cmd_param_t[test_cmd->num_values * test_frames];
-    cmd_param_t * test_out_buffer = new cmd_param_t[test_cmd->num_values * test_frames];
-    size_t num_all_vals = test_frames * test_cmd->num_values;
+    //command->init_cmd_info("TEST_CONTROL");
+    //unsigned test_cmd_num_vals = command->get_cmd_num_vals();
+    const string test_cmd_name = "TEST_CONTROL";
+    cmd_t test_cmd = {0};
+    init_cmd(&test_cmd, test_cmd_name);
+    cmd_param_t * test_in_buffer = new cmd_param_t[test_cmd.num_values * test_frames];
+    cmd_param_t * test_out_buffer = new cmd_param_t[test_cmd.num_values * test_frames];
+    size_t num_all_vals = test_frames * test_cmd.num_values;
 
     string in_filename = "test_input_buf.bin";
     ifstream rf(in_filename, ios::out | ios::binary);
@@ -439,12 +450,12 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
         cerr << "Error occured while reading " << in_filename << endl;
         exit(HOST_APP_ERROR);
     }
-
+    command->init_cmd_info(test_cmd_name);
     for(int n = 0; n < test_frames; n++)
     {
-        ret = command->command_set(test_cmd, &test_in_buffer[n * test_cmd->num_values]);
+        ret = command->command_set(&test_in_buffer[n * test_cmd.num_values]);
 
-        ret = command->command_get(test_cmd, &test_out_buffer[n * test_cmd->num_values]);
+        ret = command->command_get(&test_out_buffer[n * test_cmd.num_values]);
     }
     delete []test_in_buffer;
 

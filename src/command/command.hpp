@@ -16,6 +16,10 @@ class Command
         /** @brief Pointer to the Device class object */
         Device * device;
 
+        cmd_t cmd;
+        bool cmd_initialised = false;
+        dl_handle_t cmd_map_handle;
+
         /** @brief Bypass range check state */
         bool bypass_range_check;
 
@@ -37,8 +41,10 @@ class Command
          * @param _print        Pointer to the super_print_arg()
          * @param _range        Pointer to the get_range_info()
          */
-        Command(Device * _dev, bool _bypass_range, print_args_fptr _print, check_range_fptr _range);
-
+        Command(Device * _dev, bool _bypass_range,// print_args_fptr _print, check_range_fptr _range);
+                                dl_handle_t cmd_map_handle);
+        
+        void init_cmd_info(const std::string cmd_name);
         /**
          * @brief Takes argv and executes a single command from it
          * 
@@ -47,7 +53,9 @@ class Command
          * @param argc          Number of arguments in command line
          * @param arg_indx      Index of argv to look at
          */
-        control_ret_t do_command(const cmd_t * cmd, char ** argv, int argc, int arg_indx);
+        control_ret_t do_command(//const cmd_t * cmd, 
+        const std::string cmd_name,
+        char ** argv, int argc, int arg_indx);
 
         /**
          * @brief Executes a single get comamnd
@@ -55,7 +63,7 @@ class Command
          * @param cmd           Pointer to the command instance to be executed
          * @param values        Pointer to store values read from the device
          */
-        control_ret_t command_get(const cmd_t * cmd, cmd_param_t * values);
+        control_ret_t command_get(cmd_param_t * values);
 
         /**
          * @brief Executes a single set command
@@ -63,7 +71,7 @@ class Command
          * @param cmd           Pointer to the command instance to be executed
          * @param values        Pointer to store values to write to the device
          */
-        control_ret_t command_set(const cmd_t * cmd, const cmd_param_t * values);
+        control_ret_t command_set(const cmd_param_t * values);
 
         /**
          * @brief Low level get command function.
