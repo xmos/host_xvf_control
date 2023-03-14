@@ -5,12 +5,11 @@
 
 using namespace std;
 
-Command::Command(Device * _dev, bool _bypass_range, dl_handle_t _handle) ://print_args_fptr _print, check_range_fptr _range) : 
-    device(_dev), bypass_range_check(_bypass_range),// print_args(_print), check_range(_range)
-    cmd_map_handle(_handle)
+Command::Command(Device * _dev, bool _bypass_range, dl_handle_t _handle) :
+    device(_dev), bypass_range_check(_bypass_range)
 {
-    print_args = get_print_args_fptr(cmd_map_handle);
-    check_range = get_check_range_fptr(cmd_map_handle);
+    print_args = get_print_args_fptr(_handle);
+    check_range = get_check_range_fptr(_handle);
     control_ret_t ret = device->device_init();
     if (ret != CONTROL_SUCCESS)
     {

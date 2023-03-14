@@ -17,8 +17,6 @@ class Command
         Device * device;
 
         cmd_t cmd;
-        bool cmd_initialised = false;
-        dl_handle_t cmd_map_handle;
 
         /** @brief Bypass range check state */
         bool bypass_range_check;
@@ -41,8 +39,7 @@ class Command
          * @param _print        Pointer to the super_print_arg()
          * @param _range        Pointer to the get_range_info()
          */
-        Command(Device * _dev, bool _bypass_range,// print_args_fptr _print, check_range_fptr _range);
-                                dl_handle_t cmd_map_handle);
+        Command(Device * _dev, bool _bypass_range, dl_handle_t cmd_map_handle);
         
         void init_cmd_info(const std::string cmd_name);
         /**
@@ -53,9 +50,7 @@ class Command
          * @param argc          Number of arguments in command line
          * @param arg_indx      Index of argv to look at
          */
-        control_ret_t do_command(//const cmd_t * cmd, 
-        const std::string cmd_name,
-        char ** argv, int argc, int arg_indx);
+        control_ret_t do_command(const std::string cmd_name, char ** argv, int argc, int arg_indx);
 
         /**
          * @brief Executes a single get comamnd
