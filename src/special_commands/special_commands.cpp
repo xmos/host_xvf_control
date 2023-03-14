@@ -47,7 +47,7 @@ dl_handle_t load_command_map_dll(int * argc, char ** argv)
     }
     else
     {
-        command_map_abs_path = get_driver_path(command_map_rel_path);
+        command_map_abs_path = get_dynamic_lib_path(command_map_rel_path);
 
     }
     dl_handle_t handle = get_dynamic_lib(command_map_abs_path);

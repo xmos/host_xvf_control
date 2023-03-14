@@ -101,7 +101,7 @@ void remove_opt(int * argc, char ** argv, size_t ind, size_t num);
  * 
  * @param lib_name Name of the library to load (without lib prefix)
  */
-string get_driver_path(const string lib_name);
+string get_dynamic_lib_path(const string lib_name);
 
 /**
  * @brief Convert lib name into th path to the library

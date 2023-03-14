@@ -46,25 +46,24 @@ string get_command_map_path(const string command_map_file)
     return file_path_str;
 }
 
-string get_driver_path(const string lib_name)
+string get_dynamic_lib_path(const string lib_name)
 {
 
 #if defined(__linux__)
-    string full_lib_name = "/lib" + lib_name + ".so";
+    string full_lib_name = "lib" + lib_name;
     char * dir_path;
     char path[PATH_MAX];
+    full_lib_name = '/' + full_lib_name;
     ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
     if (count == -1)
     {
-        {
-            cerr << "Could not read /proc/self/exe into " << PATH_MAX << " string" << endl;
-            exit(HOST_APP_ERROR);
-        }
-        path[count] = '\0'; // readlink doesn't always add NULL for some reason
+        cerr << "Could not read /proc/self/exe into " << PATH_MAX << " string" << endl;
+        exit(HOST_APP_ERROR);
     }
+    full_lib_name += ".so";
+    path[count] = '\0'; // readlink doesn't always add NULL for some reason
 #elif defined(__APPLE__)
-    string full_lib_name = lib_name;
-    full_lib_name = "lib" + full_lib_name;
+    string full_lib_name = "lib" + lib_name;
     char * dir_path;
     char path[PATH_MAX];
     full_lib_name = '/' + full_lib_name;
@@ -86,11 +85,9 @@ string get_driver_path(const string lib_name)
     }
     full_lib_name += ".dll";
 #endif // linux vs apple vs windows
-    string dir_path_str = path;
     string full_path = path;
     size_t found = full_path.find_last_of("/\\"); // works for both unix and windows
-    dir_path_str = full_path.substr(0, found);
-
+    string dir_path_str = full_path.substr(0, found);
     string lib_path_str = dir_path_str + full_lib_name;
 
     return lib_path_str;
