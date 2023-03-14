@@ -37,11 +37,11 @@ string get_command_map_path(const string command_map_file)
     }
     dir_path_str = path;
 #if defined(_WIN32)
-    dir_path_str = '\\';
+    dir_path_str += '\\';
 #else
     dir_path_str += "/";
 #endif
-    string file_path_str = path + command_map_file;
+    string file_path_str = dir_path_str + command_map_file;
 
     return file_path_str;
 }
