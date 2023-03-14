@@ -3,6 +3,7 @@
 
 import test_utils
 import os
+import shutil
 from pathlib import Path
 
 small_cmd = "CMD_SMALL"
@@ -23,7 +24,13 @@ def test_execute_cmd_list():
     print(out)
     print(f"cmd_map_name in test_execute_cmd_list() is {cmd_map_name}")
     os.system("tree")
+    # test command-map-path option from one location
     out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path = cmd_map_name)
+    print(out)
+    # test command-map-path option from a second location
+    copy_path = str(Path(".." / cmd_map_name.replace('command', 'cmd')))
+    shutil.copyfile(cmd_map_name, copy_path)
+    out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path = copy_path)
     print(out)
 
 
