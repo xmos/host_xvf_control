@@ -27,7 +27,7 @@
 
 using namespace std;
 
-string get_cmd_map_abs_path(const string cmd_map_rel_path)
+string convert_to_abs_path(const string rel_path)
 {
 
     string dir_path_str;
@@ -41,7 +41,7 @@ string get_cmd_map_abs_path(const string cmd_map_rel_path)
 #else
     dir_path_str += "/";
 #endif
-    string file_path_str = dir_path_str + cmd_map_rel_path;
+    string file_path_str = dir_path_str + rel_path;
 
     return file_path_str;
 }

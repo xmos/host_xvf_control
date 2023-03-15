@@ -6,11 +6,21 @@
 
 #include "command.hpp"
 
-/** @brief Load the command_map shared object and get the cmd_t array from it
+/**
+ * @brief Return the absolute path to the command map file
+ * 
+ * If no command map path is given in the CLI argument lists,
+ * the default location will be used. 
  * 
  * @note Will decrement argc, if option is present
  */
-dl_handle_t load_command_map_dll(int * argc, char ** argv);
+string get_cmd_map_abs_path(int * argc, char ** argv);
+
+/** @brief Load the command_map shared object and get the cmd_t array from it
+ * 
+ * @param str   String containing the absolute path to the command map file
+ */
+dl_handle_t load_command_map_dll(const std::string cmd_map_abs_path);
 
 /**
  * @brief Look up the string in the command list.

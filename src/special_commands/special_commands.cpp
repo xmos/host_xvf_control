@@ -32,7 +32,7 @@ size_t num_options = end(options) - begin(options);
 cmd_t * commands;
 size_t num_commands;
 
-dl_handle_t load_command_map_dll(int * argc, char ** argv)
+string get_cmd_map_abs_path(int * argc, char ** argv)
 {
     string cmd_map_rel_path = default_command_map_name;
     string cmd_map_abs_path = "";
@@ -43,13 +43,19 @@ dl_handle_t load_command_map_dll(int * argc, char ** argv)
         // Use path given via CLI
         cmd_map_rel_path = argv[index + 1];
         remove_opt(argc, argv, index, 2);
-        cmd_map_abs_path = get_cmd_map_abs_path(cmd_map_rel_path);
+        cmd_map_abs_path = convert_to_abs_path(cmd_map_rel_path);
     }
     else
     {
         cmd_map_abs_path = get_dynamic_lib_path(cmd_map_rel_path);
 
     }
+    return cmd_map_abs_path;
+}
+
+dl_handle_t load_command_map_dll(const std::string cmd_map_abs_path)
+{
+
     dl_handle_t handle = get_dynamic_lib(cmd_map_abs_path);
 
     cmd_map_fptr get_command_map = get_cmd_map_fptr(handle);

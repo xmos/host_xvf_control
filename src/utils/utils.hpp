@@ -97,18 +97,19 @@ size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup);
 void remove_opt(int * argc, char ** argv, size_t ind, size_t num);
 
 /**
+ * @brief Convert relative path to working directory to absolute path
+ * 
+ * @param rel_path Path of the file relative to the current working directory 
+ */
+string convert_to_abs_path(const string rel_path);
+
+
+/**
  * @brief Convert lib name into th path to the library
  * 
  * @param lib_name Name of the library to load (without lib prefix)
  */
 string get_dynamic_lib_path(const string lib_name);
-
-/**
- * @brief Convert command map relative path into the absolute path
- * 
- * @param cmd_map_rel_path Path of the command map file to load relative to the current directory
- */
-string get_cmd_map_abs_path(const string cmd_map_rel_path);
 
 /**
  * @brief Open the dynamic library
