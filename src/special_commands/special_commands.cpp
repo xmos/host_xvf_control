@@ -78,11 +78,11 @@ string get_device_lib_name(int * argc, char ** argv)
         string protocol_name = argv[index + 1];
         if (to_upper(protocol_name) == "I2C")
         {
-            lib_name = "device_i2c";
+            lib_name = device_i2c_dl_name;
         }
         else if (to_upper(protocol_name) == "SPI")
         {
-            lib_name = "device_spi";
+            lib_name = device_spi_dl_name;
         }
         else
         {

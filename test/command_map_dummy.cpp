@@ -136,7 +136,7 @@ uint32_t get_num_commands()
 static const int dummy_info = 0x74736574;    // 'test' in ascii
 
 extern "C"
-const int * get_info()
+const int * get_info_i2c()
 {
     return &dummy_info;
 }

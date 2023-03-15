@@ -48,8 +48,9 @@ int main(int argc, char ** argv)
     }
 
     dl_handle_t device_handle = get_dynamic_lib(lib_name);
+    int * device_init_info = get_device_init_info(cmd_map_handle, lib_name);
     device_fptr make_dev = get_device_fptr(device_handle);
-    Device * device = make_dev(cmd_map_handle);
+    Device * device = make_dev(device_init_info);
 
     Command command(device, bypass_range_check, cmd_map_handle);
 

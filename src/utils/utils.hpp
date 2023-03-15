@@ -10,7 +10,15 @@
 
 #if defined(_WIN32)
 #include <string>
+#include <windows.h>
+/** @brief Typedef for storing dynamically opened library  */
+typedef HMODULE dl_handle_t;
+#elif (defined(__APPLE__) || defined(__linux__))
+/** @brief Typedef for storing dynamically opened library  */
+typedef void * dl_handle_t;
 #endif
+
+#define HOST_APP_ERROR -1
 
 /** @brief Enum for read/write command types */
 enum cmd_rw_t {CMD_RO, CMD_WO, CMD_RW};
@@ -63,12 +71,17 @@ struct opt_t
     /** Option info */
     std::string info;
 };
+/** @brief I2C device driver name */
+const std::string device_i2c_dl_name = "device_i2c";
+
+/** @brief SPI device driver name */
+const std::string device_spi_dl_name = "device_spi";
 
 /** @brief Default driver name to use
  * 
  * @note Using I2C by default for now as USB is currently not supported
 */
-const std::string default_driver_name = "device_i2c";
+const std::string default_driver_name = device_i2c_dl_name;
 
 /** @brief Current version of this application
  * 
@@ -81,6 +94,14 @@ std::string to_upper(std::string str);
 
 /** @brief Convert string to lower case */
 std::string to_lower(std::string str);
+
+/** 
+ * @brief Get informantion to initialise a device
+ * 
+ * @param handle    Poiter to the comamnd_map dl
+ * @param lib_name  Device dl name
+ */
+int * get_device_init_info(dl_handle_t handle, std::string lib_name);
 
 /** @brief Load the command_map shared object and get the cmd tools from it */
 dl_handle_t load_command_map_dll();
@@ -123,7 +144,10 @@ using cmd_info_fptr = std::string (*)(const size_t);
 using cmd_hidden_fptr = bool (*)(const size_t);
 
 /** Function pointer that takes void * and returns Device */
-using device_fptr = Device * (*)(void *);
+using device_fptr = Device * (*)(int *);
+
+/** Function pointer for getting the information to initialise a device */
+using device_info_fptr = int * (*)();
 
 /** Function pointer that prints different argument types */
 using print_args_fptr = void (*)(const std::string, cmd_param_t *);
@@ -186,6 +210,14 @@ cmd_hidden_fptr get_cmd_hidden_fptr(dl_handle_t handle);
  * @param handle Pointer to the device shared object
  */
 device_fptr get_device_fptr(dl_handle_t handle);
+
+/**
+ * @brief Get the function pointer to get_info_***()
+ * 
+ * @param handle Pointer to the command_map shared object
+ * @param symbol Name of the function to lookup
+ */
+device_info_fptr get_device_info_fptr(dl_handle_t handle, const std::string symbol);
 
 /**
  * @brief Get the function pointer to super_print_arg()

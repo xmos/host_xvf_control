@@ -34,6 +34,27 @@ string to_lower(string str)
     return str;
 }
 
+int * get_device_init_info(dl_handle_t handle, string lib_name)
+{
+    string symbol;
+    if(lib_name == device_i2c_dl_name)
+    {
+        symbol = "get_info_i2c";
+    }
+    else if(lib_name == device_spi_dl_name)
+    {
+        symbol = "get_info_spi";
+    }
+    else
+    {
+        cerr << "Not a valid device dl name " << lib_name << endl;
+        exit(HOST_APP_ERROR);
+    }
+    device_info_fptr get_device_info = get_device_info_fptr(handle, symbol);
+
+    return get_device_info();
+}
+
 dl_handle_t load_command_map_dll()
 {
     dl_handle_t handle = get_dynamic_lib("command_map");

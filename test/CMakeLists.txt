@@ -7,7 +7,6 @@ add_library(device_dummy SHARED)
 target_sources(device_dummy
     PRIVATE
         device_dummy.cpp
-        ${CMAKE_SOURCE_DIR}/src/device/device_utils.cpp
 )
 target_link_options(device_dummy PRIVATE -fPIC)
 target_include_directories(device_dummy 

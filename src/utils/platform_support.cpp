@@ -162,6 +162,11 @@ device_fptr get_device_fptr(dl_handle_t handle)
     return get_function<device_fptr>(handle, "make_Dev");
 }
 
+device_info_fptr get_device_info_fptr(dl_handle_t handle, const string symbol)
+{
+    return get_function<device_info_fptr>(handle, symbol);
+}
+
 print_args_fptr get_print_args_fptr(dl_handle_t handle)
 {
     return get_function<print_args_fptr>(handle, "super_print_arg");
