@@ -142,7 +142,7 @@ dl_handle_t get_dynamic_lib(const std::string lib_path);
 /** uint32_t function pointer type */
 using num_cmd_fptr = uint32_t (*)();
 
-/** Funtion pointer for getting index if the command */
+/** Function pointer for getting index if the command */
 using cmd_index_fptr = size_t (*)(const std::string);
 
 /** Function pointer for getting command name form index */
