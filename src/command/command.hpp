@@ -45,7 +45,7 @@ class Command
          * @brief Initialise command information
          * 
          * @param cmd_name      The command name to be executed
-         * @note This have to be used if using command_get() or command_set()
+         * @note This has to be used if using command_get() or command_set()
          */
         void init_cmd_info(const std::string cmd_name);
 

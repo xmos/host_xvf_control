@@ -109,7 +109,7 @@ int * get_device_init_info(dl_handle_t handle, std::string lib_name);
 /** @brief Load the command_map shared object and get the cmd tools from it */
 dl_handle_t load_command_map_dll(const std::string cmd_map_abs_path);
 
-/** @brief Initialise cmd_t structure with ether command name or it's index */
+/** @brief Initialise cmd_t structure with either command name or it's index */
 void init_cmd(cmd_t * cmd, const std::string cmd_name, size_t index = UINT32_MAX);
 
 /** @brief Lookup option in argv */
@@ -142,22 +142,22 @@ dl_handle_t get_dynamic_lib(const std::string lib_path);
 /** uint32_t function pointer type */
 using num_cmd_fptr = uint32_t (*)();
 
-/** Fintion poiter for getting index if the command */
+/** Funtion pointer for getting index if the command */
 using cmd_index_fptr = size_t (*)(const std::string);
 
-/** Function poiter for getting command name form index */
+/** Function pointer for getting command name form index */
 using cmd_name_fptr = std::string (*)(const size_t);
 
-/** Function poiter for getting cmd id related info */
+/** Function pointer for getting cmd id related info */
 using cmd_id_info_fptr = void (*)(control_resid_t *, control_cmd_t *, const size_t);
 
-/** Function poiter for getting cmd val related info */
+/** Function pointer for getting cmd val related info */
 using cmd_val_info_fptr = void (*)(cmd_param_type_t *, cmd_rw_t *, unsigned *, const size_t);
 
-/** Function poiter for getting cmd info */
+/** Function pointer for getting cmd info */
 using cmd_info_fptr = std::string (*)(const size_t);
 
-/** Function poiter for getting cmd hidden status */
+/** Function pointer for getting cmd hidden status */
 using cmd_hidden_fptr = bool (*)(const size_t);
 
 /** Function pointer that takes void * and returns Device */

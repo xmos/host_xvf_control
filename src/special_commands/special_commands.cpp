@@ -47,23 +47,9 @@ string get_cmd_map_abs_path(int * argc, char ** argv)
     else
     {
         cmd_map_abs_path = get_dynamic_lib_path(cmd_map_rel_path);
-
     }
     return cmd_map_abs_path;
 }
-
-/*dl_handle_t load_command_map_dll(const std::string cmd_map_abs_path)
-{
-
-    dl_handle_t handle = get_dynamic_lib(cmd_map_abs_path);
-
-    cmd_map_fptr get_command_map = get_cmd_map_fptr(handle);
-    num_cmd_fptr get_num_commands = get_num_cmd_fptr(handle);
-
-    commands = get_command_map();
-    num_commands = get_num_commands();
-    return handle;
-}*/
 
 opt_t * option_lookup(const string str)
 {

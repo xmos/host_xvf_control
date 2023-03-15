@@ -48,8 +48,8 @@ int main(int argc, char ** argv)
         }
     }
 
-    string device_dl_lib_path = get_dynamic_lib_path(device_dl_name);
-    dl_handle_t device_handle = get_dynamic_lib(device_dl_lib_path);
+    string device_dl_path = get_dynamic_lib_path(device_dl_name);
+    dl_handle_t device_handle = get_dynamic_lib(device_dl_path);
     int * device_init_info = get_device_init_info(cmd_map_handle, device_dl_name);
 
     print_args_fptr print_args = get_print_args_fptr(cmd_map_handle);
