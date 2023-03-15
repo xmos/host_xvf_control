@@ -99,7 +99,7 @@ std::string to_upper(std::string str);
 std::string to_lower(std::string str);
 
 /** 
- * @brief Get informantion to initialise a device
+ * @brief Get information to initialise a device
  * 
  * @param handle    Pointer to the comamnd_map dl
  * @param lib_name  Device dl name
