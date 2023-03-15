@@ -129,7 +129,7 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
     command->init_cmd_info("AEC_NUM_MICS");
     control_ret_t ret = command->command_get(&num_mics);
 
-    command->init_cmd_info("AEC_NUM_FAREND");
+    command->init_cmd_info("AEC_NUM_FARENDS");
     ret = command->command_get(&num_farends);
 
     // Get AEC filter length
