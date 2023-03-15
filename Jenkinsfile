@@ -52,7 +52,8 @@ pipeline {
                             cleanWs()
                         }
                     }
-                } // Mac Build & Test
+                } // RPI Build & Test
+
                 stage ('Mac Build & Test') {
                     agent {
                         label 'macos&&x86_64'
@@ -92,6 +93,7 @@ pipeline {
                         }
                     }
                 } // Mac Build & Test
+
                 stage ('Windows Build & Test') {
                     agent {
                         label 'sw-bld-win0'

@@ -14,7 +14,7 @@
  * 
  * @note Will decrement argc, if option is present
  */
-string get_cmd_map_abs_path(int * argc, char ** argv);
+std::string get_cmd_map_abs_path(int * argc, char ** argv);
 
 /** @brief Load the command_map shared object and get the cmd_t array from it
  * 

@@ -12,8 +12,6 @@
 #include <string>
 #endif
 
-using namespace std;
-
 /** @brief Enum for read/write command types */
 enum cmd_rw_t {CMD_RO, CMD_WO, CMD_RW};
 
@@ -101,15 +99,15 @@ void remove_opt(int * argc, char ** argv, size_t ind, size_t num);
  * 
  * @param rel_path Path of the file relative to the current working directory 
  */
-string convert_to_abs_path(const string rel_path);
+std::string convert_to_abs_path(const std::string rel_path);
 
 
 /**
- * @brief Convert lib name into th path to the library
+ * @brief Convert lib name into the path to the library
  * 
  * @param lib_name Name of the library to load (without lib prefix)
  */
-string get_dynamic_lib_path(const string lib_name);
+std::string get_dynamic_lib_path(const std::string lib_name);
 
 /**
  * @brief Open the dynamic library
