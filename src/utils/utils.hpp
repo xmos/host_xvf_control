@@ -104,11 +104,11 @@ void remove_opt(int * argc, char ** argv, size_t ind, size_t num);
 string get_dynamic_lib_path(const string lib_name);
 
 /**
- * @brief Convert lib name into th path to the library
+ * @brief Convert command map relative path into the absolute path
  * 
- * @param lib_name Name of the library to load (without lib prefix)
+ * @param cmd_map_rel_path Path of the command map file to load relative to the current directory
  */
-string get_command_map_path(const string command_map_file);
+string get_cmd_map_abs_path(const string cmd_map_rel_path);
 
 /**
  * @brief Open the dynamic library
