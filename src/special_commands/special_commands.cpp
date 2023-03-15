@@ -15,7 +15,8 @@ opt_t options[] = {
             {"--help",                    "-h",        "display this information"                                                  },
             {"--version",                 "-v",        "print the current version of this application",                            },
             {"--list-commands",           "-l",        "print the list of commands"                                                },
-            {"--use",                     "-u",        "use specific harware protocol, I2C and SPI are available to use"           },
+            {"--use",                     "-u",        "use specific hardware protocol, I2C and SPI are available to use"          },
+            {"--command-map-path",        "-cmp",      "use specific command map path, the path is relative to the working dir"    },
             {"--bypass-range-check",      "-br",       "bypass parameter range check",                                             },
             {"--dump-params",             "-d",        "print all the parameters"                                                  },
             {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u *"    },
@@ -29,6 +30,40 @@ opt_t options[] = {
 size_t num_options = end(options) - begin(options);
 
 extern size_t num_commands;
+
+string get_cmd_map_abs_path(int * argc, char ** argv)
+{
+    string cmd_map_rel_path = default_command_map_name;
+    string cmd_map_abs_path = "";
+    opt_t * cmp_opt = option_lookup("--command-map-path");
+    size_t index = argv_option_lookup(*argc, argv, cmp_opt);
+    if(index != 0)
+    {
+        // Use path given via CLI
+        cmd_map_rel_path = argv[index + 1];
+        remove_opt(argc, argv, index, 2);
+        cmd_map_abs_path = convert_to_abs_path(cmd_map_rel_path);
+    }
+    else
+    {
+        cmd_map_abs_path = get_dynamic_lib_path(cmd_map_rel_path);
+
+    }
+    return cmd_map_abs_path;
+}
+
+/*dl_handle_t load_command_map_dll(const std::string cmd_map_abs_path)
+{
+
+    dl_handle_t handle = get_dynamic_lib(cmd_map_abs_path);
+
+    cmd_map_fptr get_command_map = get_cmd_map_fptr(handle);
+    num_cmd_fptr get_num_commands = get_num_cmd_fptr(handle);
+
+    commands = get_command_map();
+    num_commands = get_num_commands();
+    return handle;
+}*/
 
 opt_t * option_lookup(const string str)
 {

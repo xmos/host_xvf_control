@@ -7,6 +7,16 @@
 #include "command.hpp"
 
 /**
+ * @brief Return the absolute path to the command map file
+ * 
+ * If no command map path is given in the CLI argument lists,
+ * the default location will be used. 
+ * 
+ * @note Will decrement argc, if option is present
+ */
+std::string get_cmd_map_abs_path(int * argc, char ** argv);
+
+/**
  * @brief Look up the string in the option list.
  * 
  * If the string is not found, will suggest a possible match and exit.

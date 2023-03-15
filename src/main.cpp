@@ -13,8 +13,9 @@ int main(int argc, char ** argv)
         << "Or use --list-commands to print the list of commands and their info." << endl;
         return 0;
     }
-    
-    string lib_name = get_device_lib_name(&argc, argv);
+
+    string command_map_path = get_cmd_map_abs_path(&argc, argv);
+    string device_dl_name = get_device_lib_name(&argc, argv);
     bool bypass_range_check = get_bypass_range_check(&argc, argv);
 
     opt_t * opt = nullptr;
@@ -35,7 +36,7 @@ int main(int argc, char ** argv)
         }
     }
 
-    dl_handle_t cmd_map_handle = load_command_map_dll();
+    dl_handle_t cmd_map_handle = load_command_map_dll(command_map_path);
 
     if(next_cmd[0] == '-')
     {
@@ -47,8 +48,12 @@ int main(int argc, char ** argv)
         }
     }
 
-    dl_handle_t device_handle = get_dynamic_lib(lib_name);
-    int * device_init_info = get_device_init_info(cmd_map_handle, lib_name);
+    string device_dl_lib_path = get_dynamic_lib_path(device_dl_name);
+    dl_handle_t device_handle = get_dynamic_lib(device_dl_lib_path);
+    int * device_init_info = get_device_init_info(cmd_map_handle, device_dl_name);
+
+    print_args_fptr print_args = get_print_args_fptr(cmd_map_handle);
+    check_range_fptr check_range = get_check_range_fptr(cmd_map_handle);
     device_fptr make_dev = get_device_fptr(device_handle);
     Device * device = make_dev(device_init_info);
 

@@ -55,9 +55,9 @@ int * get_device_init_info(dl_handle_t handle, string lib_name)
     return get_device_info();
 }
 
-dl_handle_t load_command_map_dll()
+dl_handle_t load_command_map_dll(const string cmd_map_abs_path)
 {
-    dl_handle_t handle = get_dynamic_lib("command_map");
+    dl_handle_t handle = get_dynamic_lib(cmd_map_abs_path);
     
     num_cmd_fptr get_num_commands = get_num_cmd_fptr(handle);
     num_commands = get_num_commands();

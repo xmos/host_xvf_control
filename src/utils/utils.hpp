@@ -83,6 +83,9 @@ const std::string device_spi_dl_name = "device_spi";
 */
 const std::string default_driver_name = device_i2c_dl_name;
 
+/** @brief Default command_map dl name to use */
+const std::string default_command_map_name = "command_map";
+
 /** @brief Current version of this application
  * 
  * @note This will have to be manually changed after the release
@@ -98,13 +101,13 @@ std::string to_lower(std::string str);
 /** 
  * @brief Get informantion to initialise a device
  * 
- * @param handle    Poiter to the comamnd_map dl
+ * @param handle    Pointer to the comamnd_map dl
  * @param lib_name  Device dl name
  */
 int * get_device_init_info(dl_handle_t handle, std::string lib_name);
 
 /** @brief Load the command_map shared object and get the cmd tools from it */
-dl_handle_t load_command_map_dll();
+dl_handle_t load_command_map_dll(const std::string cmd_map_abs_path);
 
 /** @brief Initialise cmd_t structure with ether command name or it's index */
 void init_cmd(cmd_t * cmd, const std::string cmd_name, size_t index = UINT32_MAX);
@@ -116,11 +119,25 @@ size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup);
 void remove_opt(int * argc, char ** argv, size_t ind, size_t num);
 
 /**
- * @brief Open the dynamic library
+ * @brief Convert relative path to working directory to absolute path
+ * 
+ * @param rel_path Path of the file relative to the current working directory 
+ */
+std::string convert_to_abs_path(const std::string rel_path);
+
+/**
+ * @brief Convert lib name into the path to the library
  * 
  * @param lib_name Name of the library to load (without lib prefix)
  */
-dl_handle_t get_dynamic_lib(const std::string lib_name);
+std::string get_dynamic_lib_path(const std::string lib_name);
+
+/**
+ * @brief Open the dynamic library
+ * 
+ * @param lib_path Path to the library to load (without lib prefix)
+ */
+dl_handle_t get_dynamic_lib(const std::string lib_path);
 
 /** uint32_t function pointer type */
 using num_cmd_fptr = uint32_t (*)();
