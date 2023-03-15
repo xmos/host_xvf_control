@@ -78,21 +78,65 @@ static cmd_t commands[] = {
 static size_t num_commands = std::end(commands) - std::begin(commands);
 
 extern "C"
+size_t get_cmd_index(const std::string cmd_name)
+{
+    size_t index = UINT32_MAX;
+    for(size_t i = 0; i < num_commands; i++)
+    {
+        cmd_t * cmd = &commands[i];
+        if (cmd_name == cmd->cmd_name)
+        {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+
+extern "C"
+std::string get_cmd_name(const size_t index)
+{
+    return commands[index].cmd_name;
+}
+
+extern "C"
+void get_cmd_id_info(control_resid_t * res_id, control_cmd_t * cmd_id, const size_t index)
+{
+    *res_id = commands[index].res_id;
+    *cmd_id = commands[index].cmd_id;
+}
+
+extern "C"
+void get_cmd_val_info(cmd_param_type_t * type, cmd_rw_t * rw, unsigned * num_vals, const size_t index)
+{
+
+    *type = commands[index].type;
+    *rw = commands[index].rw;
+    *num_vals = commands[index].num_values;
+}
+
+extern "C"
+std::string get_cmd_info(const size_t index)
+{
+    return commands[index].info;
+}
+
+extern "C"
+bool get_cmd_hidden(const size_t index)
+{
+    return commands[index].hidden_cmd;
+}
+
+extern "C"
 uint32_t get_num_commands()
 {
     return num_commands;
 }
 
-extern "C"
-cmd_t * get_command_map()
-{
-    return commands;
-}
-
 static const int dummy_info = 0x74736574;    // 'test' in ascii
 
 extern "C"
-const int * get_info()
+const int * get_info_i2c()
 {
     return &dummy_info;
 }
@@ -126,8 +170,9 @@ void print_arg_local(const cmd_param_type_t type, const cmd_param_t val)
 }
 
 extern "C"
-void super_print_arg(const cmd_t *cmd, cmd_param_t *values)
+void super_print_arg(const std::string cmd_name, cmd_param_t *values)
 {
+    cmd_t * cmd = &commands[get_cmd_index(cmd_name)];
     std::cout << cmd->cmd_name << " ";
     for(unsigned i = 0; i < cmd->num_values; i++)
     {
@@ -266,8 +311,10 @@ std::map<std::string, val_range_t *> test_map{
 };
 
 extern "C"
-void check_range(const cmd_t * cmd, const cmd_param_t * vals)
+void check_range(const std::string cmd_name, const cmd_param_t * vals)
 {
+    cmd_t * cmd = &commands[get_cmd_index(cmd_name)];
+
     if(cmd->cmd_name == "RANGE_TEST0")
     {
         range0[0].i32 = 0;

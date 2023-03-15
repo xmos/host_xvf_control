@@ -8,8 +8,6 @@ add_library(low_level_test_device_i2c SHARED)
 target_sources(low_level_test_device_i2c
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/device/device_i2c.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/device/device_utils.cpp
-
 )
 target_include_directories(low_level_test_device_i2c
     PUBLIC
@@ -34,7 +32,6 @@ add_library(low_level_test_device_spi SHARED)
 target_sources(low_level_test_device_spi
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/device/device_spi.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/device/device_utils.cpp
 )
 target_include_directories(low_level_test_device_spi
     PUBLIC
