@@ -54,7 +54,6 @@ def get_dummy_files():
         if device_path.is_file():
             os.remove(device_path)
         os.rename(device_dummy_path, device_path)
-    print(f"cmd_map_path in get_dummy_files() is {cmd_map_path}")
     return test_dir, host_bin_copy, control_protocol, cmd_map_so + dl_suffix
 
 def run_cmd(command, cwd, verbose = False, expect_success = True):
@@ -85,7 +84,6 @@ def execute_command(host_bin, control_protocol, cwd, cmd_name, cmd_map_path = No
         run_cmd(cmd_write, cwd, True, expect_success)
 
     stdout = run_cmd(command, cwd, True)
-    print(f"stdout in execure_command() is {stdout}")
     words = str(stdout, 'utf-8').strip().split(' ')
 
     # This will check that the right command is returned
