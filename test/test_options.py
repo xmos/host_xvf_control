@@ -31,9 +31,11 @@ def test_execute_cmd_list():
     print("CHECK HERE\n")
     print(os.getcwd())
     print(os.listdir('.'))
-    copy_path = str(Path("..") / cmd_map_name.replace('command', 'cmd'))
-    shutil.copyfile(cmd_map_name, copy_path)
-    out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path = copy_path)
+    copy_file_name = cmd_map_name.replace('command', 'cmd')
+    copy_file_path = str(Path("..") / copy_file_name)
+    print(f"current dir is {os.getcwd()}")
+    shutil.copyfile(Path("../build/test") / cmd_map_name, copy_file_path)
+    out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path = str(Path("../../") / copy_file_name))
     print(out)
 
 
