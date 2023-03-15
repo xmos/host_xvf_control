@@ -10,7 +10,15 @@
 
 #if defined(_WIN32)
 #include <string>
+#include <windows.h>
+/** @brief Typedef for storing dynamically opened library  */
+typedef HMODULE dl_handle_t;
+#elif (defined(__APPLE__) || defined(__linux__))
+/** @brief Typedef for storing dynamically opened library  */
+typedef void * dl_handle_t;
 #endif
+
+#define HOST_APP_ERROR -1
 
 /** @brief Enum for read/write command types */
 enum cmd_rw_t {CMD_RO, CMD_WO, CMD_RW};
@@ -63,18 +71,20 @@ struct opt_t
     /** Option info */
     std::string info;
 };
+/** @brief I2C device driver name */
+const std::string device_i2c_dl_name = "device_i2c";
+
+/** @brief SPI device driver name */
+const std::string device_spi_dl_name = "device_spi";
 
 /** @brief Default driver name to use
  * 
  * @note Using I2C by default for now as USB is currently not supported
 */
+const std::string default_driver_name = device_i2c_dl_name;
+
+/** @brief Default command_map dl name to use */
 const std::string default_command_map_name = "command_map";
-
-/** @brief Default driver name to use
- * 
- * @note Using I2C by default for now as USB is currently not supported
-*/
-const std::string default_driver_name = "device_i2c";
 
 /** @brief Current version of this application
  * 
@@ -88,6 +98,20 @@ std::string to_upper(std::string str);
 /** @brief Convert string to lower case */
 std::string to_lower(std::string str);
 
+/** 
+ * @brief Get informantion to initialise a device
+ * 
+ * @param handle    Pointer to the comamnd_map dl
+ * @param lib_name  Device dl name
+ */
+int * get_device_init_info(dl_handle_t handle, std::string lib_name);
+
+/** @brief Load the command_map shared object and get the cmd tools from it */
+dl_handle_t load_command_map_dll(const std::string cmd_map_abs_path);
+
+/** @brief Initialise cmd_t structure with ether command name or it's index */
+void init_cmd(cmd_t * cmd, const std::string cmd_name, size_t index = UINT32_MAX);
+
 /** @brief Lookup option in argv */
 size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup);
 
@@ -100,7 +124,6 @@ void remove_opt(int * argc, char ** argv, size_t ind, size_t num);
  * @param rel_path Path of the file relative to the current working directory 
  */
 std::string convert_to_abs_path(const std::string rel_path);
-
 
 /**
  * @brief Convert lib name into the path to the library
@@ -116,27 +139,38 @@ std::string get_dynamic_lib_path(const std::string lib_name);
  */
 dl_handle_t get_dynamic_lib(const std::string lib_path);
 
-/** cmd_t * function pointer type */
-using cmd_map_fptr = cmd_t * (*)();
-
 /** uint32_t function pointer type */
 using num_cmd_fptr = uint32_t (*)();
 
+/** Fintion poiter for getting index if the command */
+using cmd_index_fptr = size_t (*)(const std::string);
+
+/** Function poiter for getting command name form index */
+using cmd_name_fptr = std::string (*)(const size_t);
+
+/** Function poiter for getting cmd id related info */
+using cmd_id_info_fptr = void (*)(control_resid_t *, control_cmd_t *, const size_t);
+
+/** Function poiter for getting cmd val related info */
+using cmd_val_info_fptr = void (*)(cmd_param_type_t *, cmd_rw_t *, unsigned *, const size_t);
+
+/** Function poiter for getting cmd info */
+using cmd_info_fptr = std::string (*)(const size_t);
+
+/** Function poiter for getting cmd hidden status */
+using cmd_hidden_fptr = bool (*)(const size_t);
+
 /** Function pointer that takes void * and returns Device */
-using device_fptr = Device * (*)(void *);
+using device_fptr = Device * (*)(int *);
+
+/** Function pointer for getting the information to initialise a device */
+using device_info_fptr = int * (*)();
 
 /** Function pointer that prints different argument types */
-using print_args_fptr = void (*)(const cmd_t *, cmd_param_t *);
+using print_args_fptr = void (*)(const std::string, cmd_param_t *);
 
 /** Function pointer to get the range check info */
-using check_range_fptr = void (*)(const cmd_t *, const cmd_param_t *);
-
-/**
- * @brief Get the function pointer to get_command_map()
- * 
- * @param handle Pointer to the command_map shared object
- */
-cmd_map_fptr get_cmd_map_fptr(dl_handle_t handle);
+using check_range_fptr = void (*)(const std::string, const cmd_param_t *);
 
 /**
  * @brief Get the function pointer to get_num_commands()
@@ -146,11 +180,61 @@ cmd_map_fptr get_cmd_map_fptr(dl_handle_t handle);
 num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle);
 
 /**
+ * @brief Get the function pointer to get_cmd_name()
+ * 
+ * @param handle Pointer to the command_map shared object
+ */
+cmd_name_fptr get_cmd_name_fptr(dl_handle_t handle);
+
+/**
+ * @brief Get the function pointer to get_cmd_index()
+ * 
+ * @param handle Pointer to the command_map shared object
+ */
+cmd_index_fptr get_cmd_index_fptr(dl_handle_t handle);
+
+/**
+ * @brief Get the function pointer to get_cmd_id_info()
+ * 
+ * @param handle Pointer to the command_map shared object
+ */
+cmd_id_info_fptr get_cmd_id_info_fptr(dl_handle_t handle);
+
+/**
+ * @brief Get the function pointer to get_cmd_val_info()
+ * 
+ * @param handle Pointer to the command_map shared object
+ */
+cmd_val_info_fptr get_cmd_val_info_fptr(dl_handle_t handle);
+
+/**
+ * @brief Get the function pointer to get_cmd_info()
+ * 
+ * @param handle Pointer to the command_map shared object
+ */
+cmd_info_fptr get_cmd_info_fptr(dl_handle_t handle);
+
+/**
+ * @brief Get the function pointer to get_cmd_hidden()
+ * 
+ * @param handle Pointer to the command_map shared object
+ */
+cmd_hidden_fptr get_cmd_hidden_fptr(dl_handle_t handle);
+
+/**
  * @brief Get the function pointer to make_Dev()
  * 
  * @param handle Pointer to the device shared object
  */
 device_fptr get_device_fptr(dl_handle_t handle);
+
+/**
+ * @brief Get the function pointer to get_info_***()
+ * 
+ * @param handle Pointer to the command_map shared object
+ * @param symbol Name of the function to lookup
+ */
+device_info_fptr get_device_info_fptr(dl_handle_t handle, const std::string symbol);
 
 /**
  * @brief Get the function pointer to super_print_arg()
