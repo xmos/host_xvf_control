@@ -18,12 +18,33 @@
 #elif defined(_WIN32)
 #include <Windows.h>        // GetModuleFileNameA
 #include <errhandlingapi.h> // GetLastError
-
+#include <direct.h>         // _getcwd
+#define getcwd _getcwd
+#define PATH_MAX 1000 
 #else
 #error "Unknown Operating System"
 #endif
 
 using namespace std;
+
+string convert_to_abs_path(const string rel_path)
+{
+
+    string dir_path_str;
+    char path[PATH_MAX];
+    if (getcwd(path, sizeof(path)) == NULL) {
+        cerr << "Could not find current working directory path " << endl;
+    }
+    dir_path_str = path;
+#if defined(_WIN32)
+    dir_path_str += '\\';
+#else
+    dir_path_str += "/";
+#endif
+    string file_path_str = dir_path_str + rel_path;
+
+    return file_path_str;
+}
 
 string get_dynamic_lib_path(const string lib_name)
 {
@@ -72,14 +93,13 @@ string get_dynamic_lib_path(const string lib_name)
     return lib_path_str;
 }
 
-dl_handle_t get_dynamic_lib(const string lib_name)
+dl_handle_t get_dynamic_lib(const string lib_path)
 {
-    string dyn_lib_path = get_dynamic_lib_path(lib_name);
 #if (defined(__linux__) || defined(__APPLE__))
     static_cast<void>(dlerror()); // clear errors
-    dl_handle_t handle = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
+    dl_handle_t handle = dlopen(lib_path.c_str(), RTLD_NOW);
 #elif defined(_WIN32)
-    dl_handle_t handle = LoadLibrary(dyn_lib_path.c_str());
+    dl_handle_t handle = LoadLibrary(lib_path.c_str());
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows
@@ -88,7 +108,7 @@ dl_handle_t get_dynamic_lib(const string lib_name)
 #if (defined(__linux__) || defined(__APPLE__))
         cerr << dlerror() << endl;
 #elif defined(_WIN32)
-        cerr << "Could not load " << lib_name << ", got " << GetLastError() << " error code" << endl;
+        cerr << "Could not load " << lib_path << ", got " << GetLastError() << " error code" << endl;
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows        

@@ -68,6 +68,12 @@ struct opt_t
  * 
  * @note Using I2C by default for now as USB is currently not supported
 */
+const std::string default_command_map_name = "command_map";
+
+/** @brief Default driver name to use
+ * 
+ * @note Using I2C by default for now as USB is currently not supported
+*/
 const std::string default_driver_name = "device_i2c";
 
 /** @brief Current version of this application
@@ -89,11 +95,26 @@ size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup);
 void remove_opt(int * argc, char ** argv, size_t ind, size_t num);
 
 /**
- * @brief Open the dynamic library
+ * @brief Convert relative path to working directory to absolute path
+ * 
+ * @param rel_path Path of the file relative to the current working directory 
+ */
+std::string convert_to_abs_path(const std::string rel_path);
+
+
+/**
+ * @brief Convert lib name into the path to the library
  * 
  * @param lib_name Name of the library to load (without lib prefix)
  */
-dl_handle_t get_dynamic_lib(const std::string lib_name);
+std::string get_dynamic_lib_path(const std::string lib_name);
+
+/**
+ * @brief Open the dynamic library
+ * 
+ * @param lib_path Path to the library to load (without lib prefix)
+ */
+dl_handle_t get_dynamic_lib(const std::string lib_path);
 
 /** cmd_t * function pointer type */
 using cmd_map_fptr = cmd_t * (*)();
