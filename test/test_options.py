@@ -22,19 +22,15 @@ def test_execute_cmd_list():
     # check that it does not fail
     out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e")
     print(out)
-    print(f"cmd_map_name in test_execute_cmd_list() is {cmd_map_name}")
     os.system("tree")
     # test command-map-path option from one location
     out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path = cmd_map_name)
     print(out)
-    # test command-map-path option from a second location
-    print("CHECK HERE\n")
-    print(os.getcwd())
-    print(os.listdir('.'))
+    # rename and move command map file
     copy_file_name = cmd_map_name.replace('command', 'cmd')
     copy_file_path = str(Path("..") / copy_file_name)
-    print(f"current dir is {os.getcwd()}")
     shutil.copyfile(Path("../build/test") / cmd_map_name, copy_file_path)
+    # test command-map-path option from a second location
     out = test_utils.execute_command(host_bin, control_protocol, test_dir, "-e", cmd_map_path = str(Path("../../") / copy_file_name))
     print(out)
 
