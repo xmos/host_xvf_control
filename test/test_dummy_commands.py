@@ -49,4 +49,4 @@ def test_dummy_commands():
         output = test_utils.execute_command(host_bin, control_protocol, test_dir, char_cmd)
         sentence = " ".join(str(word) for word in output)
 
-        assert sentence == "my name is Pavel\0\0\0\0"
+        assert sentence == "Hello New World!\0\0\0\0"
