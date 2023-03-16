@@ -5,14 +5,15 @@
 #include <cstring>
 #include <fstream>
 
+#define NUM_CHARS 20 // This number is defined in command_map_dummy.cpp
+
 using namespace std;
 
 
-const size_t num_vals = 20;
-uint8_t buffer[num_vals * sizeof(float)] = {0};
+uint8_t buffer[NUM_CHARS * sizeof(float)] = {0};
 const string buf_filename = "test_buf.bin";
 const size_t buff_size = end(buffer) - begin(buffer);
-const char ch_ar[20] = "my name is Pavel\0\0\0";
+const char ch_ar[NUM_CHARS] = "Hello New World!\0\0\0";
 
 Device::Device(int * info)
 {

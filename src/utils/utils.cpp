@@ -7,12 +7,12 @@
 
 using namespace std;
 
-cmd_index_fptr get_cmd_index = nullptr;
-cmd_name_fptr get_cmd_name = nullptr;
-cmd_id_info_fptr get_cmd_id_info = nullptr;
-cmd_val_info_fptr get_cmd_val_info = nullptr;
-cmd_info_fptr get_cmd_info = nullptr;
-cmd_hidden_fptr get_cmd_hidden = nullptr;
+static cmd_index_fptr get_cmd_index = nullptr;
+static cmd_name_fptr get_cmd_name = nullptr;
+static cmd_id_info_fptr get_cmd_id_info = nullptr;
+static cmd_val_info_fptr get_cmd_val_info = nullptr;
+static cmd_info_fptr get_cmd_info = nullptr;
+static cmd_hidden_fptr get_cmd_hidden = nullptr;
 
 size_t num_commands = 0;
 

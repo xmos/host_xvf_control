@@ -34,6 +34,7 @@ string convert_to_abs_path(const string rel_path)
     char path[PATH_MAX];
     if (getcwd(path, sizeof(path)) == NULL) {
         cerr << "Could not find current working directory path " << endl;
+        exit(HOST_APP_ERROR);
     }
     dir_path_str = path;
 #if defined(_WIN32)
