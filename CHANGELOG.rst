@@ -10,7 +10,7 @@ Host XVF Control change log
   * ADDED: calls to the ``get_cmd_*`` functions from the ``comamnd_map`` dynamic library
   * ADDED: call to the ``range_check`` function from the ``command_map`` dynamic library
   * CHANGED: Error messages for the hanging resource
-  * CHANGED: Device no longer fetches the information to initilise itself from the ``command_map``
+  * CHANGED: Device no longer fetches the information to initialize itself from the ``command_map``
   * CHANGED: Moved ``print_arg`` into the ``command_map`` dynamic library
   * CHANGED: All internal host application errors are now ``255``
   * FIXED: UINT8 value overwrite in ``cmd_arg_srt_to_val`` function
