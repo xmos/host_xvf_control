@@ -6,18 +6,15 @@
 
 #include "command.hpp"
 
-/** @brief Load the command_map shared object and get the cmd_t array from it */
-dl_handle_t load_command_map_dll();
-
 /**
- * @brief Look up the string in the command list.
+ * @brief Return the absolute path to the command map file
  * 
- * If the string is not found, will suggest a possible match and exit.
+ * If no command map path is given in the CLI argument lists,
+ * the default location will be used. 
  * 
- * @param str   String sequence to look up
- * @note Function is case insensitive
+ * @note Will decrement argc, if option is present
  */
-cmd_t * command_lookup(const std::string str);
+std::string get_cmd_map_abs_path(int * argc, char ** argv);
 
 /**
  * @brief Look up the string in the option list.
@@ -28,6 +25,20 @@ cmd_t * command_lookup(const std::string str);
  * @note Function is case insensitive
  */
 opt_t * option_lookup(const std::string str);
+
+/** 
+ * @brief Gets device driver name to load by looking for --use
+ * 
+ * @note Will decrement argc, if option is present
+ */
+std::string get_device_lib_name(int * argc, char ** argv);
+
+/** 
+ * @brief Gets bypass range check state by looking for --bypass-range-check in argv
+ * 
+ * @note Will decrement argc, if option is present
+ */
+bool get_bypass_range_check(int * argc, char ** argv);
 
 /** @brief Print application help menu */
 control_ret_t print_help_menu();

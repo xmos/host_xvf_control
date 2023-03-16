@@ -18,12 +18,33 @@
 #elif defined(_WIN32)
 #include <Windows.h>        // GetModuleFileNameA
 #include <errhandlingapi.h> // GetLastError
-
+#include <direct.h>         // _getcwd
+#define getcwd _getcwd
+#define PATH_MAX 1000 
 #else
 #error "Unknown Operating System"
 #endif
 
 using namespace std;
+
+string convert_to_abs_path(const string rel_path)
+{
+
+    string dir_path_str;
+    char path[PATH_MAX];
+    if (getcwd(path, sizeof(path)) == NULL) {
+        cerr << "Could not find current working directory path " << endl;
+    }
+    dir_path_str = path;
+#if defined(_WIN32)
+    dir_path_str += '\\';
+#else
+    dir_path_str += "/";
+#endif
+    string file_path_str = dir_path_str + rel_path;
+
+    return file_path_str;
+}
 
 string get_dynamic_lib_path(const string lib_name)
 {
@@ -37,7 +58,7 @@ string get_dynamic_lib_path(const string lib_name)
     if (count == -1)
     {
         cerr << "Could not read /proc/self/exe into " << PATH_MAX << " string" << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     full_lib_name += ".so";
     path[count] = '\0'; // readlink doesn't always add NULL for some reason
@@ -50,7 +71,7 @@ string get_dynamic_lib_path(const string lib_name)
     if (_NSGetExecutablePath(path, &size) != 0)
     {
         cerr << "Could not get binary path into " << PATH_MAX << " string" << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     full_lib_name += ".dylib";
 #elif defined(_WIN32)
@@ -60,7 +81,7 @@ string get_dynamic_lib_path(const string lib_name)
     if(0 == GetModuleFileNameA(GetModuleHandle(NULL), path, MAX_PATH))
     {
         cerr << "Could not get binary path into " << MAX_PATH << " string" << endl;
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     full_lib_name += ".dll";
 #endif // linux vs apple vs windows
@@ -72,14 +93,13 @@ string get_dynamic_lib_path(const string lib_name)
     return lib_path_str;
 }
 
-dl_handle_t get_dynamic_lib(const string lib_name)
+dl_handle_t get_dynamic_lib(const string lib_path)
 {
-    string dyn_lib_path = get_dynamic_lib_path(lib_name);
 #if (defined(__linux__) || defined(__APPLE__))
     static_cast<void>(dlerror()); // clear errors
-    dl_handle_t handle = dlopen(dyn_lib_path.c_str(), RTLD_NOW);
+    dl_handle_t handle = dlopen(lib_path.c_str(), RTLD_NOW);
 #elif defined(_WIN32)
-    dl_handle_t handle = LoadLibrary(dyn_lib_path.c_str());
+    dl_handle_t handle = LoadLibrary(lib_path.c_str());
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows
@@ -88,11 +108,11 @@ dl_handle_t get_dynamic_lib(const string lib_name)
 #if (defined(__linux__) || defined(__APPLE__))
         cerr << dlerror() << endl;
 #elif defined(_WIN32)
-        cerr << "Could not load " << lib_name << ", got " << GetLastError() << " error code" << endl;
+        cerr << "Could not load " << lib_path << ", got " << GetLastError() << " error code" << endl;
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows        
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     return handle;
 }
@@ -117,14 +137,9 @@ T get_function(dl_handle_t handle, const string symbol)
 #else
 #error "Unknown Operating System"
 #endif // unix vs windows
-        exit(CONTROL_ERROR);
+        exit(HOST_APP_ERROR);
     }
     return func;
-}
-
-cmd_map_fptr get_cmd_map_fptr(dl_handle_t handle)
-{
-    return get_function<cmd_map_fptr>(handle, "get_command_map");
 }
 
 num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle)
@@ -132,9 +147,54 @@ num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle)
     return get_function<num_cmd_fptr>(handle, "get_num_commands");
 }
 
+cmd_index_fptr get_cmd_index_fptr(dl_handle_t handle)
+{
+    return get_function<cmd_index_fptr>(handle, "get_cmd_index");
+}
+
+cmd_name_fptr get_cmd_name_fptr(dl_handle_t handle)
+{
+    return get_function<cmd_name_fptr>(handle, "get_cmd_name");
+}
+
+cmd_id_info_fptr get_cmd_id_info_fptr(dl_handle_t handle)
+{
+    return get_function<cmd_id_info_fptr>(handle, "get_cmd_id_info");
+}
+
+cmd_val_info_fptr get_cmd_val_info_fptr(dl_handle_t handle)
+{
+    return get_function<cmd_val_info_fptr>(handle, "get_cmd_val_info");
+}
+
+cmd_info_fptr get_cmd_info_fptr(dl_handle_t handle)
+{
+    return get_function<cmd_info_fptr>(handle, "get_cmd_info");
+}
+
+cmd_hidden_fptr get_cmd_hidden_fptr(dl_handle_t handle)
+{
+    return get_function<cmd_hidden_fptr>(handle, "get_cmd_hidden");
+}
+
 device_fptr get_device_fptr(dl_handle_t handle)
 {
     return get_function<device_fptr>(handle, "make_Dev");
+}
+
+device_info_fptr get_device_info_fptr(dl_handle_t handle, const string symbol)
+{
+    return get_function<device_info_fptr>(handle, symbol);
+}
+
+print_args_fptr get_print_args_fptr(dl_handle_t handle)
+{
+    return get_function<print_args_fptr>(handle, "super_print_arg");
+}
+
+check_range_fptr get_check_range_fptr(dl_handle_t handle)
+{
+    return get_function<check_range_fptr>(handle, "check_range");
 }
 
 size_t get_term_width()

@@ -14,9 +14,9 @@ const string buf_filename = "test_buf.bin";
 const size_t buff_size = end(buffer) - begin(buffer);
 const char ch_ar[20] = "my name is Pavel\0\0\0";
 
-Device::Device(dl_handle_t handle)
+Device::Device(int * info)
 {
-    get_device_info(handle , "get_info");
+    device_info = info;
 }
 
 control_ret_t Device::device_init()
@@ -127,8 +127,8 @@ Device::~Device()
 }
 
 extern "C"
-Device * make_Dev(dl_handle_t handle)
+Device * make_Dev(int * info)
 {
-    static Device dev_obj(handle);
+    static Device dev_obj(info);
     return &dev_obj;
 }
