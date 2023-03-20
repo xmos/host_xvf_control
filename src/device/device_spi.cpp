@@ -7,15 +7,6 @@
 
 using namespace std;
 
-extern "C"{
-control_ret_t control_init_spi_pi(spi_mode_t spi_mode, bcm2835SPIClockDivider clock_divider);
-control_ret_t control_write_command(control_resid_t resid, control_cmd_t cmd,
-                      const uint8_t payload[], size_t payload_len);
-control_ret_t control_read_command(control_resid_t resid, control_cmd_t cmd,
-                     uint8_t payload[], size_t payload_len);
-control_ret_t control_cleanup_spi();
-}
-
 Device::Device(int* info)
 {
     device_info = info;
@@ -26,7 +17,9 @@ control_ret_t Device::device_init()
     control_ret_t ret = CONTROL_SUCCESS;
     if(!device_initialised)
     {
-        ret = control_init_spi_pi(static_cast<spi_mode_t>(device_info[0]), static_cast<bcm2835SPIClockDivider>(device_info[1]));
+        ret = control_init_spi_pi(static_cast<spi_mode_t>(device_info[0]),
+                                  static_cast<bcm2835SPIClockDivider>(device_info[1]),
+                                  device_info[2]);
         device_initialised = true;
     }
     return ret;
