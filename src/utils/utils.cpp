@@ -7,6 +7,15 @@
 
 using namespace std;
 
+static cmd_index_fptr get_cmd_index = nullptr;
+static cmd_name_fptr get_cmd_name = nullptr;
+static cmd_id_info_fptr get_cmd_id_info = nullptr;
+static cmd_val_info_fptr get_cmd_val_info = nullptr;
+static cmd_info_fptr get_cmd_info = nullptr;
+static cmd_hidden_fptr get_cmd_hidden = nullptr;
+
+size_t num_commands = 0;
+
 string to_upper(string str)
 {
     for(unsigned i = 0; i < str.length(); i++)
@@ -23,6 +32,87 @@ string to_lower(string str)
         str[i] = tolower(str[i]);
     }
     return str;
+}
+
+int * get_device_init_info(dl_handle_t handle, string lib_name)
+{
+    string symbol;
+    if(lib_name == device_i2c_dl_name)
+    {
+        symbol = "get_info_i2c";
+    }
+    else if(lib_name == device_spi_dl_name)
+    {
+        symbol = "get_info_spi";
+    }
+    else
+    {
+        cerr << "Not a valid device dl name " << lib_name << endl;
+        exit(HOST_APP_ERROR);
+    }
+    device_info_fptr get_device_info = get_device_info_fptr(handle, symbol);
+
+    return get_device_info();
+}
+
+dl_handle_t load_command_map_dll(const string cmd_map_abs_path)
+{
+    dl_handle_t handle = get_dynamic_lib(cmd_map_abs_path);
+    
+    num_cmd_fptr get_num_commands = get_num_cmd_fptr(handle);
+    num_commands = get_num_commands();
+
+    get_cmd_index = get_cmd_index_fptr(handle);
+    get_cmd_name = get_cmd_name_fptr(handle);
+    get_cmd_id_info = get_cmd_id_info_fptr(handle);
+    get_cmd_val_info = get_cmd_val_info_fptr(handle);
+    get_cmd_info = get_cmd_info_fptr(handle);
+    get_cmd_hidden = get_cmd_hidden_fptr(handle);
+
+    return handle;
+}
+
+void calc_Levenshtein_and_error(const string str)
+{
+    int shortest_dist = 100;
+    size_t indx  = 0;
+    for(size_t i = 0; i < num_commands; i++)
+    {
+        string comp_name = get_cmd_name(i);
+        int dist = Levenshtein_distance(str, comp_name);
+        if(dist < shortest_dist)
+        {
+            shortest_dist = dist;
+            indx = i;
+        }
+    }
+    cerr << "Command " << str << " does not exist." << endl
+    << "Maybe you meant " << get_cmd_name(indx) <<  "." << endl;
+    exit(HOST_APP_ERROR);
+}
+
+void init_cmd(cmd_t * cmd, const string cmd_name, size_t index)
+{
+    const string up_str = to_upper(cmd_name);
+    
+    if(index == UINT32_MAX)
+    {
+        index = get_cmd_index(up_str);
+        if(index == UINT32_MAX)
+        {
+            calc_Levenshtein_and_error(up_str);
+        }
+        cmd->cmd_name = up_str;
+    }
+    else
+    {
+        cmd->cmd_name = get_cmd_name(index);
+    }
+
+    get_cmd_id_info(&cmd->res_id, &cmd->cmd_id, index);
+    get_cmd_val_info(&cmd->type, &cmd->rw, &cmd->num_values, index);
+    cmd->info = get_cmd_info(index);
+    cmd->hidden_cmd = get_cmd_hidden(index);
 }
 
 size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup)

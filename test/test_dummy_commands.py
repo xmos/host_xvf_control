@@ -15,7 +15,7 @@ small_cmd = "CMD_SMALL"
 
 def single_command_test(host_bin, control_protocol, cwd, cmd_name, cmd_vals):
     # Set and get values within the command range and test closeness
-    out_list = test_utils.execute_command(host_bin, control_protocol, cwd, cmd_name, cmd_vals)
+    out_list = test_utils.execute_command(host_bin, control_protocol, cwd, cmd_name, cmd_vals=cmd_vals)
 
     for i in range(len(cmd_vals)):
         read_output = float(out_list[i])
@@ -27,7 +27,7 @@ def single_command_test(host_bin, control_protocol, cwd, cmd_name, cmd_vals):
         assert rel_error < rtol
 
 def test_dummy_commands():
-    test_dir, host_bin, control_protocol = test_utils.get_dummy_files()
+    test_dir, host_bin, control_protocol, _ = test_utils.get_dummy_files()
     print("\n")
 
     with open(test_dir / 'test_buf.bin', 'w'):
@@ -49,4 +49,4 @@ def test_dummy_commands():
         output = test_utils.execute_command(host_bin, control_protocol, test_dir, char_cmd)
         sentence = " ".join(str(word) for word in output)
 
-        assert sentence == "my name is Pavel\0\0\0\0"
+        assert sentence == "Hello New World!\0\0\0\0"

@@ -53,6 +53,7 @@ pipeline {
                         }
                     }
                 } // RPI Build & Test
+
                 stage ('Mac Build & Test') {
                     agent {
                         label 'macos&&x86_64'
@@ -92,47 +93,48 @@ pipeline {
                         }
                     }
                 } // Mac Build & Test
-                //stage ('Windows Build & Test') {
-                //    agent {
-                //        label 'sw-bld-win0'
-                //    }
-                //    stages {
-                //        stage ('Build') {
-                //            steps {
-                //                runningOn(env.NODE_NAME)
-                //                // fetch submodules
-                //                bat 'git submodule update --init --jobs 4'
-                //                // build
-                //                dir('build') {
-                //                    withVS {
-                //                        bat 'cmake -G "NMake Makefiles" -S .. -DTESTING=ON'
-                //                        bat 'nmake'
-                //                    }
-                //                    // archive Mac binaries
-                //                    bat 'mkdir windows && cp xvf_host windows/'
-                //                    archiveArtifacts artifacts: 'windows/*', fingerprint: true
-                //                }
-                //            }
-                //        }
-                //        stage ('Create Python enviroment') {
-                //            steps {
-                //                bat 'python3 -m venv .venv && .venv\\Scripts\\activate && pip install pytest && pip install jinja2'
-                //            }
-                //        }
-                //        stage ('Test') {
-                //            steps {
-                //                dir('test') {
-                //                    bat '..\\.venv\\Scripts\\activate && pytest -s'
-                //                }
-                //            }
-                //        }
-                //    } // stages
-                //    post {
-                //        cleanup {
-                //            cleanWs()
-                //        }
-                //    }
-                //} // Windows Build & Test
+
+                stage ('Windows Build & Test') {
+                    agent {
+                        label 'sw-bld-win0'
+                    }
+                    stages {
+                        stage ('Build') {
+                            steps {
+                                runningOn(env.NODE_NAME)
+                                // fetch submodules
+                                bat 'git submodule update --init --jobs 4'
+                                // build
+                                dir('build') {
+                                    withVS {
+                                        bat 'cmake -G "NMake Makefiles" -S .. -DTESTING=ON'
+                                        bat 'nmake'
+                                    }
+                                    // archive Mac binaries
+                                    bat 'mkdir windows && cp xvf_host windows/'
+                                    archiveArtifacts artifacts: 'windows/*', fingerprint: true
+                                }
+                            }
+                        }
+                        stage ('Create Python enviroment') {
+                            steps {
+                                bat 'python3 -m venv .venv && .venv\\Scripts\\activate && pip install pytest && pip install jinja2'
+                            }
+                        }
+                        stage ('Test') {
+                            steps {
+                                dir('test') {
+                                    bat '..\\.venv\\Scripts\\activate && pytest -s'
+                                }
+                            }
+                        }
+                    } // stages
+                    post {
+                        cleanup {
+                            cleanWs()
+                        }
+                    }
+                } // Windows Build & Test
             } // parallel
         } // Cross-platform Builds & Tests
     } // stages

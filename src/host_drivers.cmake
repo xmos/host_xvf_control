@@ -47,7 +47,6 @@ add_library(device_i2c SHARED)
 target_sources(device_i2c
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/device/device_i2c.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/device/device_utils.cpp
 
 )
 target_include_directories(device_i2c
@@ -67,7 +66,6 @@ add_library(device_spi SHARED)
 target_sources(device_spi
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/device/device_spi.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/device/device_utils.cpp
 )
 target_include_directories(device_spi
     PUBLIC

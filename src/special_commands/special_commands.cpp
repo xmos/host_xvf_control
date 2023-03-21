@@ -15,7 +15,8 @@ opt_t options[] = {
             {"--help",                    "-h",        "display this information"                                                  },
             {"--version",                 "-v",        "print the current version of this application",                            },
             {"--list-commands",           "-l",        "print the list of commands"                                                },
-            {"--use",                     "-u",        "use specific harware protocol, I2C and SPI are available to use"           },
+            {"--use",                     "-u",        "use specific hardware protocol, I2C and SPI are available to use"          },
+            {"--command-map-path",        "-cmp",      "use specific command map path, the path is relative to the working dir"    },
             {"--bypass-range-check",      "-br",       "bypass parameter range check",                                             },
             {"--dump-params",             "-d",        "print all the parameters"                                                  },
             {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u *"    },
@@ -28,19 +29,26 @@ opt_t options[] = {
 };
 size_t num_options = end(options) - begin(options);
 
-cmd_t * commands;
-size_t num_commands;
+extern size_t num_commands;
 
-dl_handle_t load_command_map_dll()
+string get_cmd_map_abs_path(int * argc, char ** argv)
 {
-    dl_handle_t handle = get_dynamic_lib("command_map");
-
-    cmd_map_fptr get_command_map = get_cmd_map_fptr(handle);
-    num_cmd_fptr get_num_commands = get_num_cmd_fptr(handle);
-
-    commands = get_command_map();
-    num_commands = get_num_commands();
-    return handle;
+    string cmd_map_rel_path = default_command_map_name;
+    string cmd_map_abs_path = "";
+    opt_t * cmp_opt = option_lookup("--command-map-path");
+    size_t index = argv_option_lookup(*argc, argv, cmp_opt);
+    if(index != 0)
+    {
+        // Use path given via CLI
+        cmd_map_rel_path = argv[index + 1];
+        remove_opt(argc, argv, index, 2);
+        cmd_map_abs_path = convert_to_abs_path(cmd_map_rel_path);
+    }
+    else
+    {
+        cmd_map_abs_path = get_dynamic_lib_path(cmd_map_rel_path);
+    }
+    return cmd_map_abs_path;
 }
 
 opt_t * option_lookup(const string str)
@@ -76,36 +84,6 @@ opt_t * option_lookup(const string str)
     return nullptr;
 }
 
-cmd_t * command_lookup(const string str)
-{
-    string up_str = to_upper(str);
-    for(size_t i = 0; i < num_commands; i++)
-    {
-        cmd_t * cmd = &commands[i];
-        if (up_str == cmd->cmd_name)
-        {
-            return cmd;
-        }
-    }
-
-    int shortest_dist = 100;
-    size_t indx  = 0;
-    for(size_t i = 0; i < num_commands; i++)
-    {
-        cmd_t * cmd = &commands[i];
-        int dist = Levenshtein_distance(up_str, cmd->cmd_name);
-        if(dist < shortest_dist)
-        {
-            shortest_dist = dist;
-            indx = i;
-        }
-    }
-    cerr << "Command " << str << " does not exist." << endl
-    << "Maybe you meant " << commands[indx].cmd_name <<  "." << endl;
-    exit(HOST_APP_ERROR);
-    return nullptr;
-}
-
 string get_device_lib_name(int * argc, char ** argv)
 {
     string lib_name = default_driver_name;
@@ -121,11 +99,11 @@ string get_device_lib_name(int * argc, char ** argv)
         string protocol_name = argv[index + 1];
         if (to_upper(protocol_name) == "I2C")
         {
-            lib_name = "device_i2c";
+            lib_name = device_i2c_dl_name;
         }
         else if (to_upper(protocol_name) == "SPI")
         {
-            lib_name = "device_spi";
+            lib_name = device_spi_dl_name;
         }
         else if (to_upper(protocol_name) == "USB")
         {
@@ -227,14 +205,15 @@ control_ret_t print_command_list()
     size_t longest_info = 0;
     for(size_t i = 0; i < num_commands; i ++)
     {
-        cmd_t * cmd = &commands[i];
+        cmd_t cmd = {0};
+        init_cmd(&cmd, "_", i);
         // skipping hidden commands
-        if(cmd->hidden_cmd)
+        if(cmd.hidden_cmd)
         {
             continue;
         }
-        size_t name_len = cmd->cmd_name.length();
-        size_t info_len = cmd->info.length();
+        size_t name_len = cmd.cmd_name.length();
+        size_t info_len = cmd.info.length();
         longest_command = (longest_command < name_len) ? name_len : longest_command;
         longest_info = (longest_info < info_len) ? info_len : longest_info;
     }
@@ -247,31 +226,32 @@ control_ret_t print_command_list()
 
     for(size_t i = 0; i < num_commands; i ++)
     {
-        cmd_t * cmd = &commands[i];
+        cmd_t cmd = {0};
+        init_cmd(&cmd, "_", i);
         // skipping hidden commands
-        if(cmd->hidden_cmd)
+        if(cmd.hidden_cmd)
         {
             continue;
         }
         // name   rw   args   type   info
-        size_t name_len = cmd->cmd_name.length();
-        string rw = command_rw_type_name(cmd->rw);
+        size_t name_len = cmd.cmd_name.length();
+        string rw = command_rw_type_name(cmd.rw);
         size_t rw_len = rw.length();
-        size_t args_len = to_string(cmd->num_values).length();
-        string type = command_param_type_name(cmd->type);
+        size_t args_len = to_string(cmd.num_values).length();
+        string type = command_param_type_name(cmd.type);
         size_t type_len = type.length();
-        size_t first_word_len = cmd->info.find_first_of(' ');
+        size_t first_word_len = cmd.info.find_first_of(' ');
 
         int first_space = rw_offset - name_len + rw_len;
         int second_space = args_offset - rw_len - rw_offset + args_len;
         int third_space = type_offset - args_len - args_offset + type_len;
         int fourth_space = info_offset - type_len - type_offset + first_word_len;
 
-        cout << cmd->cmd_name << setw(first_space) << rw
-        << setw(second_space) << cmd->num_values << setw(third_space)
+        cout << cmd.cmd_name << setw(first_space) << rw
+        << setw(second_space) << cmd.num_values << setw(third_space)
         << type << setw(fourth_space);
 
-        stringstream ss(cmd->info);
+        stringstream ss(cmd.info);
         string word;
         size_t curr_pos = info_offset;
         while(ss >> word)
@@ -298,15 +278,16 @@ control_ret_t dump_params(Command * command)
 {
     for(size_t i = 0; i < num_commands; i ++)
     {
-        cmd_t * cmd = &commands[i];
+        cmd_t cmd = {0};
+        init_cmd(&cmd, "_", i);
         // skipping hidden commands
-        if(cmd->hidden_cmd)
+        if(cmd.hidden_cmd)
         {
             continue;
         }
-        if(cmd->rw != CMD_WO)
+        if(cmd.rw != CMD_WO)
         {
-            command->do_command(&commands[i], nullptr, 0, 0);
+            command->do_command(cmd.cmd_name, nullptr, 0, 0);
         }
     }
     return CONTROL_SUCCESS;
@@ -317,8 +298,9 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
     size_t largest_command = 0;
     for(size_t i = 0; i < num_commands; i++)
     {
-        cmd_t * cmd = &commands[i];
-        size_t num_args = cmd->num_values;
+        cmd_t cmd = {0};
+        init_cmd(&cmd, "_", i);
+        size_t num_args = cmd.num_values;
         largest_command = (num_args > largest_command) ? num_args : largest_command;
     }
     largest_command++; // +1 for the command name
@@ -362,8 +344,7 @@ control_ret_t execute_cmd_list(Command * command, const string filename)
         }
         int cmd_indx = 0;
         int arg_indx =  cmd_indx + 1; // 0 is the command
-        cmd_t * cmd = command_lookup(line_ch[cmd_indx]);
-        command->do_command(cmd, line_ch, num, arg_indx);
+        command->do_command(line_ch[cmd_indx], line_ch, num, arg_indx);
         delete []line_ch;
     }
     file.close();
@@ -405,12 +386,15 @@ control_ret_t test_bytestream(Command * command, const string in_filename)
 
 control_ret_t test_control_interface(Command * command, const string out_filename)
 {
-    control_ret_t ret;
-    cmd_t * test_cmd = command_lookup("TEST_CONTROL");
+    control_ret_t  ret = CONTROL_ERROR;
     int test_frames = 50;
-    cmd_param_t * test_in_buffer = new cmd_param_t[test_cmd->num_values * test_frames];
-    cmd_param_t * test_out_buffer = new cmd_param_t[test_cmd->num_values * test_frames];
-    size_t num_all_vals = test_frames * test_cmd->num_values;
+
+    const string test_cmd_name = "TEST_CONTROL";
+    cmd_t test_cmd = {0};
+    init_cmd(&test_cmd, test_cmd_name);
+    cmd_param_t * test_in_buffer = new cmd_param_t[test_cmd.num_values * test_frames];
+    cmd_param_t * test_out_buffer = new cmd_param_t[test_cmd.num_values * test_frames];
+    size_t num_all_vals = test_frames * test_cmd.num_values;
 
     string in_filename = "test_input_buf.bin";
     ifstream rf(in_filename, ios::out | ios::binary);
@@ -443,12 +427,12 @@ control_ret_t test_control_interface(Command * command, const string out_filenam
         cerr << "Error occured while reading " << in_filename << endl;
         exit(HOST_APP_ERROR);
     }
-
+    command->init_cmd_info(test_cmd_name);
     for(int n = 0; n < test_frames; n++)
     {
-        ret = command->command_set(test_cmd, &test_in_buffer[n * test_cmd->num_values]);
+        ret = command->command_set(&test_in_buffer[n * test_cmd.num_values]);
 
-        ret = command->command_get(test_cmd, &test_out_buffer[n * test_cmd->num_values]);
+        ret = command->command_get(&test_out_buffer[n * test_cmd.num_values]);
     }
     delete []test_in_buffer;
 
