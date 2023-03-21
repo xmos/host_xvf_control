@@ -6,15 +6,6 @@
 
 using namespace std;
 
-extern "C"{
-control_ret_t control_init_i2c(unsigned char i2c_slave_address);
-control_ret_t control_write_command(control_resid_t resid, control_cmd_t cmd,
-                      const uint8_t payload[], size_t payload_len);
-control_ret_t control_read_command(control_resid_t resid, control_cmd_t cmd,
-                     uint8_t payload[], size_t payload_len);
-control_ret_t control_cleanup_i2c();
-}
-
 Device::Device(int * info)
 {
     device_info = info;
