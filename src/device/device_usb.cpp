@@ -12,9 +12,9 @@ control_ret_t control_read_command(control_resid_t resid, control_cmd_t cmd,
                      uint8_t payload[], size_t payload_len);
 }
 
-Device::Device(dl_handle_t handle)
+Device::Device(int * info)
 {
-    get_device_info(handle , "get_info_usb");
+    device_info = info;
 }
 
 control_ret_t Device::device_init()
@@ -50,8 +50,8 @@ Device::~Device()
 }
 
 extern "C"
-Device * make_Dev(dl_handle_t handle)
+Device * make_Dev(int * info)
 {
-    static Device dev_obj(handle);
+    static Device dev_obj(info);
     return &dev_obj;
 }

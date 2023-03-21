@@ -107,7 +107,7 @@ string get_device_lib_name(int * argc, char ** argv)
         }
         else if (to_upper(protocol_name) == "USB")
         {
-            lib_name = "device_usb";
+            lib_name = device_usb_dl_name;
         }
         else
         {

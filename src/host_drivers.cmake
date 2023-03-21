@@ -125,7 +125,6 @@ add_library(device_usb SHARED)
 target_sources(device_usb
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/device/device_usb.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/device/device_utils.cpp
 )
 target_include_directories(device_usb
     PUBLIC
