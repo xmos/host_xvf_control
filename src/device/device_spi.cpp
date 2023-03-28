@@ -7,6 +7,8 @@
 
 using namespace std;
 
+static constexpr long intertransaction_delay_ns = 0;
+
 Device::Device(int* info)
 {
     device_info = info;
@@ -19,7 +21,7 @@ control_ret_t Device::device_init()
     {
         ret = control_init_spi_pi(static_cast<spi_mode_t>(device_info[0]),
                                   static_cast<bcm2835SPIClockDivider>(device_info[1]),
-                                  device_info[2]);
+                                  intertransaction_delay_ns);
         device_initialised = true;
     }
     return ret;
