@@ -96,7 +96,7 @@ pipeline {
 
                 stage ('Windows Build & Test') {
                     agent {
-                        label 'sw-bld-win0'
+                        label 'dev-test-win'
                     }
                     stages {
                         stage ('Build') {
@@ -118,13 +118,16 @@ pipeline {
                         }
                         stage ('Create Python enviroment') {
                             steps {
-                                bat 'python3 -m venv .venv && .venv\\Scripts\\activate && pip install pytest && pip install jinja2'
+                                //bat 'python3 -m venv .venv && .venv\\Scripts\\activate && pip install pytest && pip install jinja2'
+                                createVenv("requirements.txt")
                             }
                         }
                         stage ('Test') {
                             steps {
-                                dir('test') {
-                                    bat '..\\.venv\\Scripts\\activate && pytest -s'
+                                withVenv{
+                                    dir('test') {
+                                        bat 'pytest -s'
+                                    }
                                 }
                             }
                         }
