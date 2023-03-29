@@ -120,12 +120,16 @@ pipeline {
                             steps {
                                 //bat 'python3 -m venv .venv && .venv\\Scripts\\activate && pip install pytest && pip install jinja2'
                                 createVenv("requirements.txt")
+                                withVenv{
+                                    bat 'pip install -r requirements.txt'
+                                }
                             }
                         }
                         stage ('Test') {
                             steps {
                                 withVenv{
                                     dir('test') {
+                                        bat 'set'
                                         bat 'pytest -s'
                                     }
                                 }
