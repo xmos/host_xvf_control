@@ -79,7 +79,7 @@ pipeline {
                                 //sh 'python3 -m venv .venv && source .venv/bin/activate && pip install pytest && pip install jinja2'
                                 createVenv("requirements.txt")
                                 withVenv{
-                                    bat 'pip install -r requirements.txt'
+                                    sh 'pip install -r requirements.txt'
                                 }
                             }
                         }
