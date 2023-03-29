@@ -96,7 +96,7 @@ pipeline {
 
                 stage ('Windows Build & Test') {
                     agent {
-                        label 'dev-test-win'
+                        label 'sw-bld-win0'
                     }
                     stages {
                         stage ('Build') {
