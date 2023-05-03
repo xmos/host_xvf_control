@@ -75,14 +75,18 @@ pipeline {
                         }
                         stage ('Create Python enviroment') {
                             steps {
-                                //sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install -r requirements-dev.txt'
-                                sh 'python3 -m venv .venv && source .venv/bin/activate && pip install pytest && pip install jinja2'
+                                createVenv("requirements.txt")
+                                withVenv{
+                                    sh 'pip install -r requirements.txt'
+                                }
                             }
                         }
                         stage ('Test') {
                             steps {
-                                dir('test') {
-                                    sh 'source ../.venv/bin/activate && pytest -s'
+                                withVenv{
+                                    dir('test') {
+                                        sh 'pytest -s'
+                                    }
                                 }
                             }
                         }
@@ -118,13 +122,18 @@ pipeline {
                         }
                         stage ('Create Python enviroment') {
                             steps {
-                                bat 'python3 -m venv .venv && .venv\\Scripts\\activate && pip install pytest && pip install jinja2'
+                                createVenv("requirements.txt")
+                                withVenv{
+                                    bat 'pip install -r requirements.txt'
+                                }
                             }
                         }
                         stage ('Test') {
                             steps {
-                                dir('test') {
-                                    bat '..\\.venv\\Scripts\\activate && pytest -s'
+                                withVenv{
+                                    dir('test') {
+                                        bat 'pytest -s'
+                                    }
                                 }
                             }
                         }
