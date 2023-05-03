@@ -1,16 +1,10 @@
+// Copyright 2023 XMOS LIMITED.
+// This Software is subject to the terms of the XCORE VocalFusion Licence.
+
 #include "device.hpp"
 #include "device_control_host.h"
 
 using namespace std;
-
-extern "C"{
-control_ret_t control_init_usb(int vendor_id, int product_id, int interface_num);
-control_ret_t control_cleanup_usb(void);
-control_ret_t control_write_command(control_resid_t resid, control_cmd_t cmd,
-                      const uint8_t payload[], size_t payload_len);
-control_ret_t control_read_command(control_resid_t resid, control_cmd_t cmd,
-                     uint8_t payload[], size_t payload_len);
-}
 
 Device::Device(int * info)
 {
