@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@v0.23.0')
+@Library('xmos_jenkins_shared_library@v0.24.0')
 
 def runningOn(machine) {
     println "Stage running on:"
@@ -106,7 +106,7 @@ pipeline {
                                 bat 'git submodule update --init --jobs 4'
                                 // build
                                 dir('build') {
-                                    withVS {
+                                    withVS('vcvars32.bat') {
                                         bat 'cmake -G "NMake Makefiles" -S .. -DTESTING=ON'
                                         bat 'nmake'
                                     }
