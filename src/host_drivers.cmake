@@ -78,26 +78,27 @@ target_link_libraries(device_spi
 )
 target_link_libraries(device_spi PRIVATE -fPIC)
 
-endif()
+endif() # armv7l
 
 # Build device_control_host for USB
+
 add_library(framework_rtos_sw_services_device_control_host_usb INTERFACE)
 set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE INTERNAL "")
 
 # Discern OS for libusb library location
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-target_link_directories(framework_rtos_sw_services_device_control_host_usb INTERFACE "${DEVICE_CONTROL_PATH}/host/libusb/OSX64")
-set(libusb-1.0_INCLUDE_DIRS "${DEVICE_CONTROL_PATH}/host/libusb/OSX64")
-set(LINK_LIBS usb-1.0.0)
+    target_link_directories(framework_rtos_sw_services_device_control_host_usb INTERFACE "${DEVICE_CONTROL_PATH}/host/libusb/OSX64")
+    set(libusb-1.0_INCLUDE_DIRS "${DEVICE_CONTROL_PATH}/host/libusb/OSX64")
+    set(LINK_LIBS usb-1.0.0)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-find_package(PkgConfig)
-pkg_check_modules(libusb-1.0 REQUIRED libusb-1.0)
-set(LINK_LIBS usb-1.0)
+    find_package(PkgConfig)
+    pkg_check_modules(libusb-1.0 REQUIRED libusb-1.0)
+    set(LINK_LIBS usb-1.0)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-add_compile_definitions(nologo W4 WX- O2 EHa _CRT_SECURE_NO_WARNINGS)
-target_link_directories(framework_rtos_sw_services_device_control_host_usb INTERFACE "${DEVICE_CONTROL_PATH}/host/libusb/Win32")
-set(libusb-1.0_INCLUDE_DIRS "${DEVICE_CONTROL_PATH}/host/libusb/Win32")
-set(LINK_LIBS libusb)
+    add_compile_definitions(nologo W4 WX- O2 EHa _CRT_SECURE_NO_WARNINGS)
+    target_link_directories(framework_rtos_sw_services_device_control_host_usb INTERFACE "${DEVICE_CONTROL_PATH}/host/libusb/Win32")
+    set(libusb-1.0_INCLUDE_DIRS "${DEVICE_CONTROL_PATH}/host/libusb/Win32")
+    set(LINK_LIBS libusb)
 endif()
 
 target_sources(framework_rtos_sw_services_device_control_host_usb
@@ -114,8 +115,8 @@ target_include_directories(framework_rtos_sw_services_device_control_host_usb
 target_compile_definitions(framework_rtos_sw_services_device_control_host_usb INTERFACE USE_USB=1)
 
 target_link_libraries(framework_rtos_sw_services_device_control_host_usb
-INTERFACE
-    ${LINK_LIBS}
+    INTERFACE
+        ${LINK_LIBS}
 )
 add_library(rtos::sw_services::device_control_host_usb ALIAS framework_rtos_sw_services_device_control_host_usb)
 
@@ -139,14 +140,14 @@ target_link_libraries(device_usb
 target_link_libraries(device_usb PRIVATE -fPIC)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    add_custom_command(TARGET device_usb
-        POST_BUILD COMMAND
-        ${CMAKE_INSTALL_NAME_TOOL} -change "/usr/local/lib/libusb-1.0.0.dylib" "@executable_path/libusb-1.0.0.dylib" ${CMAKE_BINARY_DIR}/"libdevice_usb.dylib"
-        )
-add_custom_command(
-    TARGET device_usb POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        ${DEVICE_CONTROL_PATH}/host/libusb/OSX64/libusb-1.0.0.dylib
-        ${CMAKE_BINARY_DIR}
-                )
+    add_custom_command(
+        TARGET device_usb
+        POST_BUILD 
+        COMMAND ${CMAKE_INSTALL_NAME_TOOL} -change "/usr/local/lib/libusb-1.0.0.dylib" "@executable_path/libusb-1.0.0.dylib" ${CMAKE_BINARY_DIR}/"libdevice_usb.dylib"
+    )
+    add_custom_command(
+        TARGET device_usb
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${DEVICE_CONTROL_PATH}/host/libusb/OSX64/libusb-1.0.0.dylib ${CMAKE_BINARY_DIR}
+    )
 endif()

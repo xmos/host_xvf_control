@@ -34,7 +34,7 @@ Build with cmake from the host_xvf_contol/ folder:
         cmake -G "NMake Makefiles" -B build && cd build && nmake
 
 .. note:: 
-    For now, windows drivers can only be build with a 32-bit tools
+    For now, windows drivers can only be built with 32-bit tools
 
 *****
 Using
