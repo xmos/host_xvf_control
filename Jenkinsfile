@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@v0.23.0')
+@Library('xmos_jenkins_shared_library@v0.24.0')
 
 def runningOn(machine) {
     println "Stage running on:"
@@ -68,7 +68,7 @@ pipeline {
                                 dir('build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive Mac binaries
-                                    sh 'mkdir mac_x86 && cp xvf_host mac_x86/'
+                                    sh 'mkdir mac_x86 && cp xvf_host *.dylib mac_x86/'
                                     archiveArtifacts artifacts: 'mac_x86/*', fingerprint: true
                                 }
                             }
@@ -110,12 +110,12 @@ pipeline {
                                 bat 'git submodule update --init --jobs 4'
                                 // build
                                 dir('build') {
-                                    withVS {
+                                    withVS('vcvars32.bat') {
                                         bat 'cmake -G "NMake Makefiles" -S .. -DTESTING=ON'
                                         bat 'nmake'
                                     }
                                     // archive Mac binaries
-                                    bat 'mkdir windows && cp xvf_host windows/'
+                                    bat 'mkdir windows && cp xvf_host.exe *.dll windows/'
                                     archiveArtifacts artifacts: 'windows/*', fingerprint: true
                                 }
                             }

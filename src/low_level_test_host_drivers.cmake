@@ -14,12 +14,10 @@ target_include_directories(low_level_test_device_i2c
         ${CMAKE_CURRENT_LIST_DIR}/device
         ${DEVICE_CONTROL_PATH}/host
 )
-
 target_compile_definitions(low_level_test_device_i2c
     PUBLIC
         LOW_LEVEL_TESTING=1
 )
-
 target_link_libraries(low_level_test_device_i2c
     PUBLIC  
         rtos::sw_services::device_control_host_i2c

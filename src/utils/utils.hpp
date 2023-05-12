@@ -77,6 +77,9 @@ const std::string device_i2c_dl_name = "device_i2c";
 /** @brief SPI device driver name */
 const std::string device_spi_dl_name = "device_spi";
 
+/** @brief USB device driver name */
+const std::string device_usb_dl_name = "device_usb";
+
 /** @brief Default driver name to use
  * 
  * @note Using I2C by default for now as USB is currently not supported

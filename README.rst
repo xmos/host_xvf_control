@@ -33,6 +33,9 @@ Build with cmake from the host_xvf_contol/ folder:
         # building with VS tools
         cmake -G "NMake Makefiles" -B build && cd build && nmake
 
+.. note:: 
+    For now, windows drivers can only be built with 32-bit tools
+
 *****
 Using
 *****
@@ -71,11 +74,10 @@ Supported platforms and control protocols
     - xvf_host
     - libdevice_i2c.so
     - libdevice_spi.so
+    - libdevice_usb.so
 - Mac x86
     - xvf_host
+    - libdevice_usb.dylib
 - Windows
     - xvf_host.exe
-
-.. note:: 
-    Mac and Windows builds don't have hardware drivers for now. If you want to test Mac or Windows applications,
-    use ``-DTESTING=ON`` option when you do cmake, it will build dummy device and command_map dynamic libraries for all platforms.
+    - device_usb.dll
