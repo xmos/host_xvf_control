@@ -11,6 +11,7 @@ pipeline {
     stages {
         stage ('Cross-platform Builds & Tests') {
             parallel {
+            
                 stage ('RPI Build & Test') {
                     agent {
                         label 'armv7l&&raspian'
@@ -75,7 +76,10 @@ pipeline {
                         }
                         stage ('Create Python enviroment') {
                             steps {
-                                sh 'pip install -r requirements.txt'
+                                createVenv("requirements.txt")
+                                withVenv{
+                                    sh 'pip install -r requirements.txt'
+                                }
                             }
                         }
                         stage ('Test') {
