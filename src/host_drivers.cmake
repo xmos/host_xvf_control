@@ -83,12 +83,15 @@ endif() # armv7l
 # Build device_control_host for USB
 
 add_library(framework_rtos_sw_services_device_control_host_usb INTERFACE)
-set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE INTERNAL "")
 
 # Discern OS for libusb library location
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+if ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND (${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64"))
     target_link_directories(framework_rtos_sw_services_device_control_host_usb INTERFACE "${DEVICE_CONTROL_PATH}/host/libusb/OSX64")
     set(libusb-1.0_INCLUDE_DIRS "${DEVICE_CONTROL_PATH}/host/libusb/OSX64")
+    set(LINK_LIBS usb-1.0.0)
+elseif ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm64"))
+    target_link_directories(framework_rtos_sw_services_device_control_host_usb INTERFACE "${DEVICE_CONTROL_PATH}/host/libusb/OSXARM")
+    set(libusb-1.0_INCLUDE_DIRS "${DEVICE_CONTROL_PATH}/host/libusb/OSXARM")
     set(LINK_LIBS usb-1.0.0)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     find_package(PkgConfig)

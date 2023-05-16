@@ -75,7 +75,13 @@ Supported platforms and control protocols
     - libdevice_i2c.so
     - libdevice_spi.so
     - libdevice_usb.so
+- Linux x86
+    - xvf_host
+    - libdevice_usb.so
 - Mac x86
+    - xvf_host
+    - libdevice_usb.dylib
+- Mac arm64
     - xvf_host
     - libdevice_usb.dylib
 - Windows
