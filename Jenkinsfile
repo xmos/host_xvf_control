@@ -11,6 +11,7 @@ pipeline {
     stages {
         stage ('Cross-platform Builds & Tests') {
             parallel {
+            
                 stage ('RPI Build & Test') {
                     agent {
                         label 'armv7l&&raspian'
@@ -54,7 +55,51 @@ pipeline {
                     }
                 } // RPI Build & Test
 
-                stage ('Mac Build & Test') {
+                stage ('Linux x86 Build & Test') {
+                    agent {
+                        label 'linux&&x86_64'
+                    }
+                    stages {
+                        stage ('Build') {
+                            steps {
+                                runningOn(env.NODE_NAME)
+                                // fetch submodules
+                                sh 'git submodule update --init --jobs 4'
+                                // build
+                                dir('build') {
+                                    sh 'cmake -S .. -DTESTING=ON && make -j4'
+                                    // archive RPI binaries
+                                    sh 'mkdir linux_x86 && cp xvf_host *.so linux_x86/'
+                                    archiveArtifacts artifacts: 'linux_x86/*', fingerprint: true
+                                }
+                            }
+                        }
+                        stage ('Create Python enviroment') {
+                            steps {
+                                createVenv("requirements.txt")
+                                withVenv{
+                                    sh 'pip install -r requirements.txt'
+                                }
+                            }
+                        }
+                        stage ('Test') {
+                            steps {
+                                withVenv{
+                                    dir('test') {
+                                        sh 'pytest -s'
+                                    }
+                                }
+                            }
+                        }
+                    } // stages
+                    post {
+                        cleanup {
+                            cleanWs()
+                        }
+                    }
+                } // Linux x86 Build & Test
+
+                stage ('Mac x86 Build & Test') {
                     agent {
                         label 'macos&&x86_64'
                     }
@@ -96,7 +141,51 @@ pipeline {
                             cleanWs()
                         }
                     }
-                } // Mac Build & Test
+                } // Mac x86 Build & Test
+
+                stage ('Mac arm64 Build & Test') {
+                    agent {
+                        label 'macos&&arm64'
+                    }
+                    stages {
+                        stage ('Build') {
+                            steps {
+                                runningOn(env.NODE_NAME)
+                                // fetch submodules
+                                sh 'git submodule update --init --jobs 4'
+                                // build
+                                dir('build') {
+                                    sh 'cmake -S .. -DTESTING=ON && make -j4'
+                                    // archive Mac binaries
+                                    sh 'mkdir mac_arm64 && cp xvf_host *.dylib mac_arm64/'
+                                    archiveArtifacts artifacts: 'mac_arm64/*', fingerprint: true
+                                }
+                            }
+                        }
+                        stage ('Create Python enviroment') {
+                            steps {
+                                createVenv("requirements.txt")
+                                withVenv{
+                                    sh 'pip install -r requirements.txt'
+                                }
+                            }
+                        }
+                        stage ('Test') {
+                            steps {
+                                withVenv{
+                                    dir('test') {
+                                        sh 'pytest -s'
+                                    }
+                                }
+                            }
+                        }
+                    } // stages
+                    post {
+                        cleanup {
+                            cleanWs()
+                        }
+                    }
+                } // Mac arm64 Build & Test
 
                 stage ('Windows Build & Test') {
                     agent {
