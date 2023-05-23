@@ -12,20 +12,20 @@
 using namespace std;
 
 opt_t options[] = {
-            {"--help",                    "-h",        "display this information"                                                  },
-            {"--version",                 "-v",        "print the current version of this application",                            },
-            {"--list-commands",           "-l",        "print the list of commands"                                                },
-            {"--use",                     "-u",        "use specific hardware protocol, I2C and SPI are available to use"          },
-            {"--command-map-path",        "-cmp",      "use specific command map path, the path is relative to the working dir"    },
-            {"--bypass-range-check",      "-br",       "bypass parameter range check",                                             },
-            {"--dump-params",             "-d",        "print all the parameters"                                                  },
-            {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u *"    },
-            {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files, default is aec_filter.bin.fx.mx"           },
-            {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"           },
-            {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"              },
-            {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"              },
-            {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                        },
-            {"--test-bytestream",         "-tb",       "test device by writing a user defined stream of bytes to it"               }
+    {"--help",                    "-h",        "display this information"                                                                   },
+    {"--version",                 "-v",        "print the current version of this application",                                             },
+    {"--list-commands",           "-l",        "print list of the available commands"                                                       },
+    {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                      },
+    {"--command-map-path",        "-cmp",      "use specific command map path, the path is relative to the working dir"                     },
+    {"--bypass-range-check",      "-br",       "bypass parameter range check",                                                              },
+    {"--dump-params",             "-d",        "print all readable parameters"                                                              },
+    {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u * in the .txt file"    },
+    {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files, default is aec_filter.bin.fx.mx"                            },
+    {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"                            },
+    {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"                               },
+    {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"                               },
+    {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                                         },
+    {"--test-bytestream",         "-tb",       "test device by writing a user defined stream of bytes to it"                                }
 };
 size_t num_options = end(options) - begin(options);
 
@@ -155,11 +155,13 @@ control_ret_t print_help_menu()
     cout << "usage: xvf_host [ command | option ]" << endl
     << setw(77) << "[ -u <protocol> ] [-cmp <path> ] [ -br ] [ command | option ]" << endl
     << endl << "Current application version is " << current_host_app_version << "."
-    << endl << "You can use --use option to specify protocol you want to use"
+    << endl << "You can use --use or -u option to specify protocol you want to use"
     << endl << "or call the option/command directly using default control protocol."
-    << endl << "Default control protocol is I2C."
+    << endl << "Default control protocol is USB."
     << endl << "You can use --bypass-range-check or -br to bypass parameter range checking."
-    << endl << "Range check is True unless -br is specified." << endl << endl << "Options:" << endl;
+    << endl << "Range check is True unless -br is specified."
+    << endl << "You can use --command-map-path or -cmp to specify the comand_map object to use."
+    << endl << endl << "Options:" << endl;
     for(opt_t opt : options)
     {
         size_t short_len = opt.short_name.length();

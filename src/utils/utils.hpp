@@ -80,11 +80,8 @@ const std::string device_spi_dl_name = "device_spi";
 /** @brief USB device driver name */
 const std::string device_usb_dl_name = "device_usb";
 
-/** @brief Default driver name to use
- * 
- * @note Using I2C by default for now as USB is currently not supported
-*/
-const std::string default_driver_name = device_i2c_dl_name;
+/** @brief Default driver name to use */
+const std::string default_driver_name = device_usb_dl_name;
 
 /** @brief Default command_map dl name to use */
 const std::string default_command_map_name = "command_map";
@@ -93,7 +90,7 @@ const std::string default_command_map_name = "command_map";
  * 
  * @note This will have to be manually changed after the release
  */
-const std::string current_host_app_version = "1.1.0";
+const std::string current_host_app_version = "2.0.0";
 
 /** @brief Convert string to uper case */
 std::string to_upper(std::string str);
