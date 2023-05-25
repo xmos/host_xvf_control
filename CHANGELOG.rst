@@ -1,10 +1,10 @@
 Host XVF Control change log
 ===========================
 
-1.1.0
+2.0.0
 -----
 
-  * ADDED: Intertransaction delay configuration for SPI via command map shared library.
+  * ADDED: Intertransaction delay configuration for SPI via command map shared library
   * ADDED: Support for the USB communication with the device
 
 1.0.0
