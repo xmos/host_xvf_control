@@ -152,8 +152,9 @@ control_ret_t print_help_menu()
     // Getting current terminal width here to set the cout line limit
     const size_t hard_stop = get_term_width();
 
+    // Please avoid lines which have more than 80 characters
     cout << "usage: xvf_host [ command | option ]" << endl
-    << setw(77) << "[ -u <protocol> ] [-cmp <path> ] [ -br ] [ command | option ]" << endl
+    << setw(78) << "[ -u <protocol> ] [ -cmp <path> ] [ -br ] [ command | option ]" << endl
     << endl << "Current application version is " << current_host_app_version << "."
     << endl << "You can use --use or -u option to specify protocol you want to use"
     << endl << "or call the option/command directly using default control protocol."
