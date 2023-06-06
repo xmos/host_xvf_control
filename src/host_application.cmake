@@ -37,4 +37,4 @@ target_link_options(xvf_host
     PRIVATE
         -rdynamic
 )
-endif()
+endif() # not windows

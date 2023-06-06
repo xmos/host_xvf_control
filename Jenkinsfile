@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@v0.23.0')
+@Library('xmos_jenkins_shared_library@v0.24.0')
 
 def runningOn(machine) {
     println "Stage running on:"
@@ -11,6 +11,7 @@ pipeline {
     stages {
         stage ('Cross-platform Builds & Tests') {
             parallel {
+            
                 stage ('RPI Build & Test') {
                     agent {
                         label 'armv7l&&raspian'
@@ -54,7 +55,51 @@ pipeline {
                     }
                 } // RPI Build & Test
 
-                stage ('Mac Build & Test') {
+                stage ('Linux x86 Build & Test') {
+                    agent {
+                        label 'linux&&x86_64'
+                    }
+                    stages {
+                        stage ('Build') {
+                            steps {
+                                runningOn(env.NODE_NAME)
+                                // fetch submodules
+                                sh 'git submodule update --init --jobs 4'
+                                // build
+                                dir('build') {
+                                    sh 'cmake -S .. -DTESTING=ON && make -j4'
+                                    // archive RPI binaries
+                                    sh 'mkdir linux_x86 && cp xvf_host *.so linux_x86/'
+                                    archiveArtifacts artifacts: 'linux_x86/*', fingerprint: true
+                                }
+                            }
+                        }
+                        stage ('Create Python enviroment') {
+                            steps {
+                                createVenv("requirements.txt")
+                                withVenv{
+                                    sh 'pip install -r requirements.txt'
+                                }
+                            }
+                        }
+                        stage ('Test') {
+                            steps {
+                                withVenv{
+                                    dir('test') {
+                                        sh 'pytest -s'
+                                    }
+                                }
+                            }
+                        }
+                    } // stages
+                    post {
+                        cleanup {
+                            cleanWs()
+                        }
+                    }
+                } // Linux x86 Build & Test
+
+                stage ('Mac x86 Build & Test') {
                     agent {
                         label 'macos&&x86_64'
                     }
@@ -68,21 +113,25 @@ pipeline {
                                 dir('build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive Mac binaries
-                                    sh 'mkdir mac_x86 && cp xvf_host mac_x86/'
+                                    sh 'mkdir mac_x86 && cp xvf_host *.dylib mac_x86/'
                                     archiveArtifacts artifacts: 'mac_x86/*', fingerprint: true
                                 }
                             }
                         }
                         stage ('Create Python enviroment') {
                             steps {
-                                //sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install -r requirements-dev.txt'
-                                sh 'python3 -m venv .venv && source .venv/bin/activate && pip install pytest && pip install jinja2'
+                                createVenv("requirements.txt")
+                                withVenv{
+                                    sh 'pip install -r requirements.txt'
+                                }
                             }
                         }
                         stage ('Test') {
                             steps {
-                                dir('test') {
-                                    sh 'source ../.venv/bin/activate && pytest -s'
+                                withVenv{
+                                    dir('test') {
+                                        sh 'pytest -s'
+                                    }
                                 }
                             }
                         }
@@ -92,7 +141,51 @@ pipeline {
                             cleanWs()
                         }
                     }
-                } // Mac Build & Test
+                } // Mac x86 Build & Test
+
+                stage ('Mac arm64 Build & Test') {
+                    agent {
+                        label 'macos&&arm64'
+                    }
+                    stages {
+                        stage ('Build') {
+                            steps {
+                                runningOn(env.NODE_NAME)
+                                // fetch submodules
+                                sh 'git submodule update --init --jobs 4'
+                                // build
+                                dir('build') {
+                                    sh 'cmake -S .. -DTESTING=ON && make -j4'
+                                    // archive Mac binaries
+                                    sh 'mkdir mac_arm64 && cp xvf_host *.dylib mac_arm64/'
+                                    archiveArtifacts artifacts: 'mac_arm64/*', fingerprint: true
+                                }
+                            }
+                        }
+                        stage ('Create Python enviroment') {
+                            steps {
+                                createVenv("requirements.txt")
+                                withVenv{
+                                    sh 'pip install -r requirements.txt'
+                                }
+                            }
+                        }
+                        stage ('Test') {
+                            steps {
+                                withVenv{
+                                    dir('test') {
+                                        sh 'pytest -s'
+                                    }
+                                }
+                            }
+                        }
+                    } // stages
+                    post {
+                        cleanup {
+                            cleanWs()
+                        }
+                    }
+                } // Mac arm64 Build & Test
 
                 stage ('Windows Build & Test') {
                     agent {
@@ -106,25 +199,30 @@ pipeline {
                                 bat 'git submodule update --init --jobs 4'
                                 // build
                                 dir('build') {
-                                    withVS {
+                                    withVS('vcvars32.bat') {
                                         bat 'cmake -G "NMake Makefiles" -S .. -DTESTING=ON'
                                         bat 'nmake'
                                     }
                                     // archive Mac binaries
-                                    bat 'mkdir windows && cp xvf_host windows/'
+                                    bat 'mkdir windows && cp xvf_host.exe *.dll windows/'
                                     archiveArtifacts artifacts: 'windows/*', fingerprint: true
                                 }
                             }
                         }
                         stage ('Create Python enviroment') {
                             steps {
-                                bat 'python3 -m venv .venv && .venv\\Scripts\\activate && pip install pytest && pip install jinja2'
+                                createVenv("requirements.txt")
+                                withVenv{
+                                    bat 'pip install -r requirements.txt'
+                                }
                             }
                         }
                         stage ('Test') {
                             steps {
-                                dir('test') {
-                                    bat '..\\.venv\\Scripts\\activate && pytest -s'
+                                withVenv{
+                                    dir('test') {
+                                        bat 'pytest -s'
+                                    }
                                 }
                             }
                         }
