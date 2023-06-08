@@ -45,6 +45,10 @@ int * get_device_init_info(dl_handle_t handle, string lib_name)
     {
         symbol = "get_info_spi";
     }
+    else if(lib_name == device_usb_dl_name)
+    {
+        symbol = "get_info_usb";
+    }
     else
     {
         cerr << "Not a valid device dl name " << lib_name << endl;

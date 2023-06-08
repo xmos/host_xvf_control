@@ -1,4 +1,4 @@
-// Copyright 2022-2023 XMOS LIMITED.
+// Copyright 2023 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #include "device.hpp"
@@ -16,7 +16,7 @@ control_ret_t Device::device_init()
     control_ret_t ret = CONTROL_SUCCESS;
     if(!device_initialised)
     {
-        ret = control_init_i2c(device_info[0]);
+        ret = control_init_usb(static_cast<int>(device_info[0]), static_cast<int>(device_info[1]), static_cast<int>(device_info[2]));
         device_initialised = true;
     }
     return ret;
@@ -38,7 +38,7 @@ Device::~Device()
 {
     if(device_initialised)
     {
-        control_cleanup_i2c();
+        control_cleanup_usb();
         device_initialised = false;
     }
 }
