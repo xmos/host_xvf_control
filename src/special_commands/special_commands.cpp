@@ -4,6 +4,7 @@
 #include "special_commands.hpp"
 #include <fstream>
 #include <iomanip>
+#include <ctype.h>
 
 #if (defined(__APPLE__) || defined(_WIN32))
 #include <sstream>
@@ -25,7 +26,8 @@ opt_t options[] = {
     {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"                               },
     {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"                               },
     {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                                         },
-    {"--test-bytestream",         "-tb",       "test device by writing a user defined stream of bytes to it"                                }
+    {"--test-bytestream",         "-tb",       "test device by writing a user defined stream of bytes to it"                                },
+    {"--band",                    "-b",        "Optional parameter indicating which band (0 for low-band or 1 for high-band) the NL model is set or get for. 0 by default" }
 };
 size_t num_options = end(options) - begin(options);
 
@@ -126,13 +128,42 @@ bool get_bypass_range_check(int * argc, char ** argv)
     size_t index = argv_option_lookup(*argc, argv, bp_opt);
     if(index == 0)
     {
-        // if option is not preset bypass is false
+        // if option is not present bypass is false
         return false;
     }
     else
     {
         remove_opt(argc, argv, index, 1);
         return true;
+    }
+}
+
+uint8_t get_band_option(int * argc, char ** argv)
+{
+    opt_t *band_opt = option_lookup("--band");
+    size_t index = argv_option_lookup(*argc, argv, band_opt);
+    if (index == 0) // --band not provided. Default to band 0
+    {
+        return 0;
+    }
+    else
+    {
+        if (isdigit(argv[index+1][0])) // Get the actual band index that follows the --band option
+        {
+            int band = atoi(argv[index+1]);
+            if((band != 0) && (band != 1))
+            {
+                cerr << "Invalid band index provided after the --band option. Provide either 0 or 1" << endl;
+                exit(HOST_APP_ERROR);
+            }
+            remove_opt(argc, argv, index, 2);
+            return band;
+        }
+        else
+        {
+            cerr << "No band index provided after the --band option. Provide either 0 or 1" << endl;
+            exit(HOST_APP_ERROR);
+        }
     }
 }
 
@@ -173,7 +204,7 @@ control_ret_t print_help_menu()
         int second_space = info_offset - long_len - long_opt_offset + first_word_len;
         int num_spaces = 2; // adding two black spaces at the beggining to make it look nicer
 
-        cout << setw(num_spaces) << " " << opt.short_name << setw(first_space) 
+        cout << setw(num_spaces) << " " << opt.short_name << setw(first_space)
         << opt.long_name << setw(second_space);
 
         stringstream ss(opt.info);
@@ -367,7 +398,7 @@ control_ret_t test_bytestream(Command * command, const string in_filename)
     streamoff size = rf.tellg();
     rf.seekg (0, rf.beg);
 
-    uint8_t *data = new uint8_t[size]; 
+    uint8_t *data = new uint8_t[size];
     for(int i=0; i<size; i++)
     {
         rf.read(reinterpret_cast<char *>(&data[i]), sizeof(uint8_t));

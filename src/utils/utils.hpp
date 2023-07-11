@@ -25,7 +25,7 @@ enum cmd_rw_t {CMD_RO, CMD_WO, CMD_RW};
 
 /**
  * @brief Enum for supported param types
- * 
+ *
  * @note Add new cmd_param_type's to the end of the list.
  * @note TYPE_CHAR can only be READ ONLY.
  */
@@ -35,7 +35,7 @@ enum cmd_param_type_t {TYPE_CHAR, TYPE_UINT8, TYPE_INT32, TYPE_FLOAT, TYPE_UINT3
 union cmd_param_t {uint8_t ui8; int32_t i32; float f; uint32_t ui32;};
 
 /** @brief Command configuration structure
- * 
+ *
  * @note cmd_name has to be upper case
  */
 struct cmd_t
@@ -59,7 +59,7 @@ struct cmd_t
 };
 
 /** @brief Option configuration structure
- * 
+ *
  * @note Option names have to be lower case
  */
 struct opt_t
@@ -87,7 +87,7 @@ const std::string default_driver_name = device_usb_dl_name;
 const std::string default_command_map_name = "command_map";
 
 /** @brief Current version of this application
- * 
+ *
  * @note This will have to be manually changed after the release
  */
 const std::string current_host_app_version = "2.0.0";
@@ -98,9 +98,9 @@ std::string to_upper(std::string str);
 /** @brief Convert string to lower case */
 std::string to_lower(std::string str);
 
-/** 
+/**
  * @brief Get information to initialise a device
- * 
+ *
  * @param handle    Pointer to the comamnd_map dl
  * @param lib_name  Device dl name
  */
@@ -115,26 +115,26 @@ void init_cmd(cmd_t * cmd, const std::string cmd_name, size_t index = UINT32_MAX
 /** @brief Lookup option in argv */
 size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup);
 
-/** @brief Remove wirds from argv, decrement argc */
+/** @brief Remove words from argv, decrement argc */
 void remove_opt(int * argc, char ** argv, size_t ind, size_t num);
 
 /**
  * @brief Convert relative path to working directory to absolute path
- * 
- * @param rel_path Path of the file relative to the current working directory 
+ *
+ * @param rel_path Path of the file relative to the current working directory
  */
 std::string convert_to_abs_path(const std::string rel_path);
 
 /**
  * @brief Convert lib name into the path to the library
- * 
+ *
  * @param lib_name Name of the library to load (without lib prefix)
  */
 std::string get_dynamic_lib_path(const std::string lib_name);
 
 /**
  * @brief Open the dynamic library
- * 
+ *
  * @param lib_path Path to the library to load (without lib prefix)
  */
 dl_handle_t get_dynamic_lib(const std::string lib_path);
@@ -174,63 +174,63 @@ using check_range_fptr = void (*)(const std::string, const cmd_param_t *);
 
 /**
  * @brief Get the function pointer to get_num_commands()
- * 
+ *
  * @param handle Pointer to the command_map shared object
  */
 num_cmd_fptr get_num_cmd_fptr(dl_handle_t handle);
 
 /**
  * @brief Get the function pointer to get_cmd_name()
- * 
+ *
  * @param handle Pointer to the command_map shared object
  */
 cmd_name_fptr get_cmd_name_fptr(dl_handle_t handle);
 
 /**
  * @brief Get the function pointer to get_cmd_index()
- * 
+ *
  * @param handle Pointer to the command_map shared object
  */
 cmd_index_fptr get_cmd_index_fptr(dl_handle_t handle);
 
 /**
  * @brief Get the function pointer to get_cmd_id_info()
- * 
+ *
  * @param handle Pointer to the command_map shared object
  */
 cmd_id_info_fptr get_cmd_id_info_fptr(dl_handle_t handle);
 
 /**
  * @brief Get the function pointer to get_cmd_val_info()
- * 
+ *
  * @param handle Pointer to the command_map shared object
  */
 cmd_val_info_fptr get_cmd_val_info_fptr(dl_handle_t handle);
 
 /**
  * @brief Get the function pointer to get_cmd_info()
- * 
+ *
  * @param handle Pointer to the command_map shared object
  */
 cmd_info_fptr get_cmd_info_fptr(dl_handle_t handle);
 
 /**
  * @brief Get the function pointer to get_cmd_hidden()
- * 
+ *
  * @param handle Pointer to the command_map shared object
  */
 cmd_hidden_fptr get_cmd_hidden_fptr(dl_handle_t handle);
 
 /**
  * @brief Get the function pointer to make_Dev()
- * 
+ *
  * @param handle Pointer to the device shared object
  */
 device_fptr get_device_fptr(dl_handle_t handle);
 
 /**
  * @brief Get the function pointer to get_info_***()
- * 
+ *
  * @param handle Pointer to the command_map shared object
  * @param symbol Name of the function to lookup
  */
@@ -238,14 +238,14 @@ device_info_fptr get_device_info_fptr(dl_handle_t handle, const std::string symb
 
 /**
  * @brief Get the function pointer to super_print_arg()
- * 
+ *
  * @param handle Pointer to the device shared object
  */
 print_args_fptr get_print_args_fptr(dl_handle_t handle);
 
 /**
  * @brief Get the function pointer to get_range_info()
- * 
+ *
  * @param handle Pointer to the device shared object
  */
 check_range_fptr get_check_range_fptr(dl_handle_t handle);
@@ -279,5 +279,10 @@ int Levenshtein_distance(const std::string source, const std::string target);
 
 /** @brief Get current terminal width */
 size_t get_term_width();
+
+/** @brief Check if a given command is present in the command_map.
+ * @return true if command present, false otherwise
+*/
+bool check_if_cmd_exists(const std::string cmd_name);
 
 #endif
