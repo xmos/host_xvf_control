@@ -27,7 +27,7 @@ opt_t options[] = {
     {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"                                   },
     {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                                             },
     {"--test-bytestream",         "-tb",       "test device by writing a user defined stream of bytes to it"                                    },
-    {"--band",                    "-b",        "Indicate the NL model band to set/get (0: low-band, 1: high-band), default is 0 if unspecified" }
+    {"--band",                    "-b",        "NL model band to set/get (0: low-band, 1: high-band), default is 0 if unspecified"              }
 };
 size_t num_options = end(options) - begin(options);
 
