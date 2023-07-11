@@ -13,21 +13,21 @@
 using namespace std;
 
 opt_t options[] = {
-    {"--help",                    "-h",        "display this information"                                                                   },
-    {"--version",                 "-v",        "print the current version of this application",                                             },
-    {"--list-commands",           "-l",        "print list of the available commands"                                                       },
-    {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                      },
-    {"--command-map-path",        "-cmp",      "use specific command map path, the path is relative to the working dir"                     },
-    {"--bypass-range-check",      "-br",       "bypass parameter range check",                                                              },
-    {"--dump-params",             "-d",        "print all readable parameters"                                                              },
-    {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u * in the .txt file"    },
-    {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files, default is aec_filter.bin.fx.mx"                            },
-    {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"                            },
-    {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"                               },
-    {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"                               },
-    {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                                         },
-    {"--test-bytestream",         "-tb",       "test device by writing a user defined stream of bytes to it"                                },
-    {"--band",                    "-b",        "Optional parameter indicating which band (0 for low-band or 1 for high-band) the NL model is set or get for. 0 by default" }
+    {"--help",                    "-h",        "display this information"                                                                       },
+    {"--version",                 "-v",        "print the current version of this application",                                                 },
+    {"--list-commands",           "-l",        "print list of the available commands"                                                           },
+    {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                          },
+    {"--command-map-path",        "-cmp",      "use specific command map path, the path is relative to the working dir"                         },
+    {"--bypass-range-check",      "-br",       "bypass parameter range check",                                                                  },
+    {"--dump-params",             "-d",        "print all readable parameters"                                                                  },
+    {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u * in the .txt file"        },
+    {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files, default is aec_filter.bin.fx.mx"                                },
+    {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"                                },
+    {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"                                   },
+    {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"                                   },
+    {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                                             },
+    {"--test-bytestream",         "-tb",       "test device by writing a user defined stream of bytes to it"                                    },
+    {"--band",                    "-b",        "Indicate the NL model band to set/get (0: low-band, 1: high-band), default is 0 if unspecified" }
 };
 size_t num_options = end(options) - begin(options);
 

@@ -40,6 +40,14 @@ std::string get_device_lib_name(int * argc, char ** argv);
  */
 bool get_bypass_range_check(int * argc, char ** argv);
 
+/**
+ * @brief Gets NL model band to get/set state by looking for --band <index> in argv
+ *
+ * @return band index of the band to get/set NLModel for
+ * @note Will decrement argc, if option is present
+ */
+uint8_t get_band_option(int * argc, char ** argv);
+
 /** @brief Print application help menu */
 control_ret_t print_help_menu();
 
@@ -87,6 +95,7 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
  *
  * @param command           Pointer to the Command class object
  * @param flag_buffer_get   Boolean to specify read/write operation
+ * @param band_index        Index of the band for which the NL model is get/set
  * @param filename          File name to read from/write to
  * @note Default filename is 'nlm_buffer.bin'
  * @note This function will get number of rows and columns from the device
@@ -114,7 +123,5 @@ control_ret_t test_control_interface(Command * command, const std::string filena
  * @param filename      File name containing the input byte stream
  */
 control_ret_t test_bytestream(Command * command, const std::string in_filename);
-
-uint8_t get_band_option(int * argc, char ** argv);
 
 #endif
