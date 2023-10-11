@@ -2,7 +2,8 @@
 HOST_XVF_CONTROL Repository
 ===========================
 
-HOST_XVF_CONTROL is host control reference application to be used for XVF3800 and onwards.
+HOST_XVF_CONTROL is a host control reference application.
+It can be used with products in the XVF38xx product family.
 
 *******
 Cloning
@@ -31,7 +32,7 @@ Build with cmake from the host_xvf_contol/ folder:
     .. code-block:: console
 
         # building with VS tools
-        cmake -G "NMake Makefiles" -B build && cd build && nmake
+        cmake -G "Ninja" -B build && cd build && ninja
 
 .. note:: 
     For now, windows drivers can only be built with 32-bit tools

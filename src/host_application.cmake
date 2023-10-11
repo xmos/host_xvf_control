@@ -21,9 +21,8 @@ set(COMMON_INCLUDES
 
 add_executable( ${APP_NAME})
 
-if(WIN32)
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
-    include(GenerateExportHeader)
+# Add options for different compilers
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options( ${APP_NAME}
         PRIVATE
             -WX
@@ -33,7 +32,7 @@ else()
         PRIVATE
             -Werror
             -g
-  )
+    )
 endif()
 
 target_sources( ${APP_NAME}

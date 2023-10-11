@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@v0.24.0')
+@Library('xmos_jenkins_shared_library@v0.27.0')
 
 def runningOn(machine) {
     println "Stage running on:"
@@ -8,10 +8,41 @@ def runningOn(machine) {
 getApproval()
 pipeline {
     agent none
+
+    options {
+        timestamps()
+        buildDiscarder(xmosDiscardBuildSettings(onlyArtifacts=false))
+    } // options
+
     stages {
+        stage ('Create release package') {
+            agent {
+                label 'linux&&x86_64'
+            }
+            stages {
+                stage ('Build release package') {
+                    steps {
+                        runningOn(env.NODE_NAME)
+                        // fetch submodules
+                        sh 'git submodule update --init --jobs 4'
+                        // Run release script
+                        sh 'tools/ci/release.sh'
+                        // archive release package
+                        archiveArtifacts artifacts: 'host_xvf_control_release_*.zip', fingerprint: true
+                        stash name: "release_source", includes: "release/**"
+                    }
+                }
+            } // stages
+            post {
+                cleanup {
+                    xcoreCleanSandbox()
+                }
+            }
+        } // Create release package
+
         stage ('Cross-platform Builds & Tests') {
             parallel {
-            
+
                 stage ('RPI Build & Test') {
                     agent {
                         label 'armv7l&&raspian'
@@ -20,16 +51,18 @@ pipeline {
                         stage ('Build') {
                             steps {
                                 runningOn(env.NODE_NAME)
-                                // fetch submodules
-                                sh 'git submodule update --init --jobs 4'
+                                // unstash release files
+                                unstash "release_source"
+                                // copy test folder into release folder
+                                sh 'mv test release/'
                                 // build
-                                dir('build') {
+                                dir('release/build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive RPI binaries
                                     sh 'mkdir rpi && cp xvf_host *.so rpi/'
                                     archiveArtifacts artifacts: 'rpi/*', fingerprint: true
                                 }
-                                dir('fwk_rtos/modules/sw_services/device_control/api') {
+                                dir('release/fwk_rtos/modules/sw_services/device_control/api') {
                                     archiveArtifacts artifacts: 'device_control_shared.h', fingerprint: true
                                 }
                             }
@@ -42,15 +75,15 @@ pipeline {
                         }
                         stage ('Test') {
                             steps {
-                                dir('test') {
-                                    sh 'source ../.venv/bin/activate && pytest -s'
+                                dir('release/test') {
+                                    sh 'source ../../.venv/bin/activate && pytest -s'
                                 }
                             }
                         }
                     } // stages
                     post {
                         cleanup {
-                            cleanWs()
+                             xcoreCleanSandbox()
                         }
                     }
                 } // RPI Build & Test
@@ -63,10 +96,12 @@ pipeline {
                         stage ('Build') {
                             steps {
                                 runningOn(env.NODE_NAME)
-                                // fetch submodules
-                                sh 'git submodule update --init --jobs 4'
+                                // unstash release files
+                                unstash "release_source"
+                                // copy test folder into release folder
+                                sh 'mv test release/'
                                 // build
-                                dir('build') {
+                                dir('release/build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive RPI binaries
                                     sh 'mkdir linux_x86 && cp xvf_host *.so linux_x86/'
@@ -85,7 +120,7 @@ pipeline {
                         stage ('Test') {
                             steps {
                                 withVenv{
-                                    dir('test') {
+                                    dir('release/test') {
                                         sh 'pytest -s'
                                     }
                                 }
@@ -94,7 +129,7 @@ pipeline {
                     } // stages
                     post {
                         cleanup {
-                            cleanWs()
+                             xcoreCleanSandbox()
                         }
                     }
                 } // Linux x86 Build & Test
@@ -107,10 +142,12 @@ pipeline {
                         stage ('Build') {
                             steps {
                                 runningOn(env.NODE_NAME)
-                                // fetch submodules
-                                sh 'git submodule update --init --jobs 4'
+                                // unstash release files
+                                unstash "release_source"
+                                // copy test folder into release folder
+                                sh 'mv test release/'
                                 // build
-                                dir('build') {
+                                dir('release/build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive Mac binaries
                                     sh 'mkdir mac_x86 && cp xvf_host *.dylib mac_x86/'
@@ -129,7 +166,7 @@ pipeline {
                         stage ('Test') {
                             steps {
                                 withVenv{
-                                    dir('test') {
+                                    dir('release/test') {
                                         sh 'pytest -s'
                                     }
                                 }
@@ -138,7 +175,7 @@ pipeline {
                     } // stages
                     post {
                         cleanup {
-                            cleanWs()
+                             xcoreCleanSandbox()
                         }
                     }
                 } // Mac x86 Build & Test
@@ -151,10 +188,12 @@ pipeline {
                         stage ('Build') {
                             steps {
                                 runningOn(env.NODE_NAME)
-                                // fetch submodules
-                                sh 'git submodule update --init --jobs 4'
+                                // unstash release files
+                                unstash "release_source"
+                                // copy test folder into release folder
+                                sh 'mv test release/'
                                 // build
-                                dir('build') {
+                                dir('release/build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive Mac binaries
                                     sh 'mkdir mac_arm64 && cp xvf_host *.dylib mac_arm64/'
@@ -173,7 +212,7 @@ pipeline {
                         stage ('Test') {
                             steps {
                                 withVenv{
-                                    dir('test') {
+                                    dir('release/test') {
                                         sh 'pytest -s'
                                     }
                                 }
@@ -182,7 +221,7 @@ pipeline {
                     } // stages
                     post {
                         cleanup {
-                            cleanWs()
+                             xcoreCleanSandbox()
                         }
                     }
                 } // Mac arm64 Build & Test
@@ -195,13 +234,15 @@ pipeline {
                         stage ('Build') {
                             steps {
                                 runningOn(env.NODE_NAME)
-                                // fetch submodules
-                                bat 'git submodule update --init --jobs 4'
+                                // unstash release files
+                                unstash "release_source"
+                                // copy test folder into release folder
+                                bat 'move test release/'
                                 // build
-                                dir('build') {
+                                dir('release/build') {
                                     withVS('vcvars32.bat') {
-                                        bat 'cmake -G "NMake Makefiles" -S .. -DTESTING=ON'
-                                        bat 'nmake'
+                                        bat 'cmake -G "Ninja" -S .. -DTESTING=ON'
+                                        bat 'ninja'
                                     }
                                     // archive Mac binaries
                                     bat 'mkdir windows && cp xvf_host.exe *.dll windows/'
@@ -220,7 +261,7 @@ pipeline {
                         stage ('Test') {
                             steps {
                                 withVenv{
-                                    dir('test') {
+                                    dir('release/test') {
                                         bat 'pytest -s'
                                     }
                                 }
@@ -229,7 +270,7 @@ pipeline {
                     } // stages
                     post {
                         cleanup {
-                            cleanWs()
+                             xcoreCleanSandbox()
                         }
                     }
                 } // Windows Build & Test
