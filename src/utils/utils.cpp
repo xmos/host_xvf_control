@@ -132,7 +132,7 @@ void init_cmd(cmd_t * cmd, const std::string cmd_name, size_t index)
 
 size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup)
 {
-    for(size_t i = 1; i < argc; i++)
+    for(int i = 1; i < argc; i++)
     {
         string cmd_arg = to_lower(argv[i]);
         if((cmd_arg == opt_lookup->long_name) || (cmd_arg == opt_lookup->short_name))
