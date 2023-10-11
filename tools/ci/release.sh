@@ -4,17 +4,17 @@
 
 # Script fails on an unchecked error exit code
 # script echos everything
-# set -ex
+set -ex
 
 title () {
-    #set +x
+    set +x
     title_len=$(printf "$1" | wc -c)
     echo
     echo $1
     printf "=%.0s" $(seq $title_len)
     printf "\n"
     echo
-    #set -x
+    set -x
 }
 
 ROOT_DIR=$(pwd)
