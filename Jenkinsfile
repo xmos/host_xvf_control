@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@v0.24.0')
+@Library('xmos_jenkins_shared_library@v0.27.0')
 
 def runningOn(machine) {
     println "Stage running on:"
@@ -8,6 +8,12 @@ def runningOn(machine) {
 getApproval()
 pipeline {
     agent none
+
+    options {
+        timestamps()
+        buildDiscarder(xmosDiscardBuildSettings(onlyArtifacts=false))
+    } // options
+
     stages {
         stage ('Create release package') {
             agent {
@@ -36,7 +42,7 @@ pipeline {
 
         stage ('Cross-platform Builds & Tests') {
             parallel {
-            
+
                 stage ('RPI Build & Test') {
                     agent {
                         label 'armv7l&&raspian'
