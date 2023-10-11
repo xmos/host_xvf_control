@@ -24,4 +24,7 @@ title "Files and folders to copy"
 cat $(pwd)/tools/ci/release-sources-allowlist.txt
 title "Create source release package"
 cat $(pwd)/tools/ci/release-sources-allowlist.txt | xargs -I% cp -r --parents %  ${RELEASE_DIR}
+title "Zip files"
+VERSION=$(sed -n '4p' < $(pwd)/CHANGELOG.rst)
+zip -r host_xvf_control_release_v${VERSION}.zip release
 title "Completed"

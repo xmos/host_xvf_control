@@ -9,6 +9,26 @@ getApproval()
 pipeline {
     agent none
     stages {
+        stage ('Create release package') {
+            agent {
+                label 'linux&&x86_64'
+            }
+            stages {
+                stage ('Build release package') {
+                    steps {
+                        runningOn(env.NODE_NAME)
+                        // fetch submodules
+                        sh 'git submodule update --init --jobs 4'
+                        // Run release script
+                        sh './tools/ci/release.sh'
+                        // archive release package
+                        archiveArtifacts artifacts: 'host_xvf_control_release_*.zip', fingerprint: true
+                        stash name: "release_source", includes: "release/**"
+                    }
+                }
+            }
+        }
+
         stage ('Cross-platform Builds & Tests') {
             parallel {
             
@@ -20,16 +40,16 @@ pipeline {
                         stage ('Build') {
                             steps {
                                 runningOn(env.NODE_NAME)
-                                // fetch submodules
-                                sh 'git submodule update --init --jobs 4'
+                                // unstash release files
+                                unstash "release_source"
                                 // build
-                                dir('build') {
+                                dir('release') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive RPI binaries
                                     sh 'mkdir rpi && cp xvf_host *.so rpi/'
                                     archiveArtifacts artifacts: 'rpi/*', fingerprint: true
                                 }
-                                dir('fwk_rtos/modules/sw_services/device_control/api') {
+                                dir('release/fwk_rtos/modules/sw_services/device_control/api') {
                                     archiveArtifacts artifacts: 'device_control_shared.h', fingerprint: true
                                 }
                             }
