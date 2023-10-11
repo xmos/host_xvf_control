@@ -42,7 +42,7 @@ pipeline {
                                 runningOn(env.NODE_NAME)
                                 // unstash release files
                                 unstash "release_source"
-                                // copy test folder in release files
+                                // copy test folder to release folder
                                 sh 'mv test release/'
                                 // build
                                 dir('release/build') {
@@ -85,10 +85,12 @@ pipeline {
                         stage ('Build') {
                             steps {
                                 runningOn(env.NODE_NAME)
-                                // fetch submodules
-                                sh 'git submodule update --init --jobs 4'
+                                // unstash release files
+                                unstash "release_source"
+                                // copy test folder to release folder
+                                sh 'mv test release/'
                                 // build
-                                dir('build') {
+                                dir('release/build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive RPI binaries
                                     sh 'mkdir linux_x86 && cp xvf_host *.so linux_x86/'
@@ -107,7 +109,7 @@ pipeline {
                         stage ('Test') {
                             steps {
                                 withVenv{
-                                    dir('test') {
+                                    dir('release/test') {
                                         sh 'pytest -s'
                                     }
                                 }
@@ -129,10 +131,12 @@ pipeline {
                         stage ('Build') {
                             steps {
                                 runningOn(env.NODE_NAME)
-                                // fetch submodules
-                                sh 'git submodule update --init --jobs 4'
+                                // unstash release files
+                                unstash "release_source"
+                                // copy test folder to release folder
+                                sh 'mv test release/'
                                 // build
-                                dir('build') {
+                                dir('release/build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive Mac binaries
                                     sh 'mkdir mac_x86 && cp xvf_host *.dylib mac_x86/'
@@ -151,7 +155,7 @@ pipeline {
                         stage ('Test') {
                             steps {
                                 withVenv{
-                                    dir('test') {
+                                    dir('release/test') {
                                         sh 'pytest -s'
                                     }
                                 }
@@ -173,10 +177,12 @@ pipeline {
                         stage ('Build') {
                             steps {
                                 runningOn(env.NODE_NAME)
-                                // fetch submodules
-                                sh 'git submodule update --init --jobs 4'
+                                // unstash release files
+                                unstash "release_source"
+                                // copy test folder to release folder
+                                sh 'mv test release/'
                                 // build
-                                dir('build') {
+                                dir('release/build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive Mac binaries
                                     sh 'mkdir mac_arm64 && cp xvf_host *.dylib mac_arm64/'
@@ -195,7 +201,7 @@ pipeline {
                         stage ('Test') {
                             steps {
                                 withVenv{
-                                    dir('test') {
+                                    dir('release/test') {
                                         sh 'pytest -s'
                                     }
                                 }
@@ -217,10 +223,12 @@ pipeline {
                         stage ('Build') {
                             steps {
                                 runningOn(env.NODE_NAME)
-                                // fetch submodules
-                                bat 'git submodule update --init --jobs 4'
+                                // unstash release files
+                                unstash "release_source"
+                                // copy test folder to release folder
+                                bat 'move test release/'
                                 // build
-                                dir('build') {
+                                dir('release/build') {
                                     withVS('vcvars32.bat') {
                                         bat 'cmake -G "NMake Makefiles" -S .. -DTESTING=ON'
                                         bat 'nmake'
@@ -242,7 +250,7 @@ pipeline {
                         stage ('Test') {
                             steps {
                                 withVenv{
-                                    dir('test') {
+                                    dir('release/test') {
                                         bat 'pytest -s'
                                     }
                                 }
