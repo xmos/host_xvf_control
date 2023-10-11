@@ -2,7 +2,8 @@
 HOST_XVF_CONTROL Repository
 ===========================
 
-HOST_XVF_CONTROL is host control reference application to be used for XVF3800 and onwards.
+HOST_XVF_CONTROL is a host control reference application.
+It can be used with products in the XVF38xx product family.
 
 *******
 Cloning
