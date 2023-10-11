@@ -42,8 +42,10 @@ pipeline {
                                 runningOn(env.NODE_NAME)
                                 // unstash release files
                                 unstash "release_source"
+                                // copy test folder in release files
+                                sh 'mv test release/'
                                 // build
-                                dir('release') {
+                                dir('release/build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive RPI binaries
                                     sh 'mkdir rpi && cp xvf_host *.so rpi/'
