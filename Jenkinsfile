@@ -20,7 +20,7 @@ pipeline {
                         // fetch submodules
                         sh 'git submodule update --init --jobs 4'
                         // Run release script
-                        sh './tools/ci/release.sh'
+                        sh 'tools/ci/release.sh'
                         // archive release package
                         archiveArtifacts artifacts: 'host_xvf_control_release_*.zip', fingerprint: true
                         stash name: "release_source", includes: "release/**"
