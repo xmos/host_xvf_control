@@ -65,7 +65,7 @@ pipeline {
                         stage ('Test') {
                             steps {
                                 dir('release/test') {
-                                    sh 'source ../.venv/bin/activate && pytest -s'
+                                    sh 'source ../../.venv/bin/activate && pytest -s'
                                 }
                             }
                         }
