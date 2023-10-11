@@ -26,8 +26,13 @@ pipeline {
                         stash name: "release_source", includes: "release/**"
                     }
                 }
+            } // stages
+            post {
+                cleanup {
+                    xcoreCleanSandbox()
+                }
             }
-        }
+        } // Create release package
 
         stage ('Cross-platform Builds & Tests') {
             parallel {
@@ -42,7 +47,7 @@ pipeline {
                                 runningOn(env.NODE_NAME)
                                 // unstash release files
                                 unstash "release_source"
-                                // copy test folder to release folder
+                                // copy test folder into release folder
                                 sh 'mv test release/'
                                 // build
                                 dir('release/build') {
@@ -72,7 +77,7 @@ pipeline {
                     } // stages
                     post {
                         cleanup {
-                            cleanWs()
+                             xcoreCleanSandbox()
                         }
                     }
                 } // RPI Build & Test
@@ -87,7 +92,7 @@ pipeline {
                                 runningOn(env.NODE_NAME)
                                 // unstash release files
                                 unstash "release_source"
-                                // copy test folder to release folder
+                                // copy test folder into release folder
                                 sh 'mv test release/'
                                 // build
                                 dir('release/build') {
@@ -118,7 +123,7 @@ pipeline {
                     } // stages
                     post {
                         cleanup {
-                            cleanWs()
+                             xcoreCleanSandbox()
                         }
                     }
                 } // Linux x86 Build & Test
@@ -133,7 +138,7 @@ pipeline {
                                 runningOn(env.NODE_NAME)
                                 // unstash release files
                                 unstash "release_source"
-                                // copy test folder to release folder
+                                // copy test folder into release folder
                                 sh 'mv test release/'
                                 // build
                                 dir('release/build') {
@@ -164,7 +169,7 @@ pipeline {
                     } // stages
                     post {
                         cleanup {
-                            cleanWs()
+                             xcoreCleanSandbox()
                         }
                     }
                 } // Mac x86 Build & Test
@@ -179,7 +184,7 @@ pipeline {
                                 runningOn(env.NODE_NAME)
                                 // unstash release files
                                 unstash "release_source"
-                                // copy test folder to release folder
+                                // copy test folder into release folder
                                 sh 'mv test release/'
                                 // build
                                 dir('release/build') {
@@ -210,7 +215,7 @@ pipeline {
                     } // stages
                     post {
                         cleanup {
-                            cleanWs()
+                             xcoreCleanSandbox()
                         }
                     }
                 } // Mac arm64 Build & Test
@@ -225,7 +230,7 @@ pipeline {
                                 runningOn(env.NODE_NAME)
                                 // unstash release files
                                 unstash "release_source"
-                                // copy test folder to release folder
+                                // copy test folder into release folder
                                 bat 'move test release/'
                                 // build
                                 dir('release/build') {
@@ -259,7 +264,7 @@ pipeline {
                     } // stages
                     post {
                         cleanup {
-                            cleanWs()
+                             xcoreCleanSandbox()
                         }
                     }
                 } // Windows Build & Test
