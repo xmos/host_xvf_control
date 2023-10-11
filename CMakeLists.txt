@@ -10,7 +10,7 @@ if(USE_CLANG)
     set(CMAKE_C_COMPILER "/usr/bin/clang" CACHE STRING "C compiler" FORCE)
 endif()
 
-if(WIN32)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
     include(GenerateExportHeader)
 endif()
