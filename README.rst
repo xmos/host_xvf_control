@@ -31,7 +31,7 @@ Build with cmake from the host_xvf_contol/ folder:
     .. code-block:: console
 
         # building with VS tools
-        cmake -G "NMake Makefiles" -B build && cd build && nmake
+        cmake -G "Ninja" -B build && cd build && ninja
 
 .. note:: 
     For now, windows drivers can only be built with 32-bit tools

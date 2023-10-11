@@ -241,8 +241,8 @@ pipeline {
                                 // build
                                 dir('release/build') {
                                     withVS('vcvars32.bat') {
-                                        bat 'cmake -G "NMake Makefiles" -S .. -DTESTING=ON'
-                                        bat 'nmake'
+                                        bat 'cmake -G "Ninja" -S .. -DTESTING=ON'
+                                        bat 'ninja'
                                     }
                                     // archive Mac binaries
                                     bat 'mkdir windows && cp xvf_host.exe *.dll windows/'
