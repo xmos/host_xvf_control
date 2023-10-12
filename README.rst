@@ -73,7 +73,7 @@ To find out use cases and more information about the application use:
 Supported platforms and control protocols
 *****************************************
 
-- Raspberry Pi - AArch32
+- Raspberry Pi - arm7l (32-bit)
     - xvf_host
     - libdevice_i2c.so
     - libdevice_spi.so
@@ -87,6 +87,6 @@ Supported platforms and control protocols
 - Mac - arm64
     - xvf_host
     - libdevice_usb.dylib
-- Windows - x86
+- Windows - x86 (32-bit)
     - xvf_host.exe
     - device_usb.dll
