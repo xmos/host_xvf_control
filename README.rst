@@ -21,21 +21,22 @@ Building
 
 Build with cmake from the host_xvf_contol/ folder:
 
-.. tab:: Linux and Mac
+- on Linux and Mac
 
-    .. code-block:: console
+.. code-block:: console
 
-        cmake -B build && cd build && make
+    cmake -B build && cd build && make
 
-.. tab:: Windows
+- on Windows
 
-    .. code-block:: console
+.. code-block:: console
 
-        # building with VS tools
-        cmake -G "NMake Makefiles" -B build && cd build && nmake
+    # building with VS tools
+    cmake -G Ninja -B build && cd build && ninja
 
 .. note:: 
-    For now, windows drivers can only be built with 32-bit tools
+
+    Windows drivers can only be built with 32-bit tools
 
 *****
 Using
@@ -48,6 +49,7 @@ In order to use the application you should have the following files in the same 
 - (lib)device_{protocol}.(so/dll/dylib)
 
 .. note::
+
     - Linux dynamic libraries end with ``.so``
     - Apple dynamic libraries end with ``.dylib``
     - Windows dynamic libraries don't have ``lib`` prefix and end with ``.dll``
@@ -55,36 +57,36 @@ In order to use the application you should have the following files in the same 
 The application and the device drivers can be obtained by following the build instructions of this repo. Command map is a part of the firmware code and built separately.
 To find out use cases and more information about the application use:
 
-.. tab:: Linux and Mac
+- on Linux and Mac
 
-    .. code-block:: console
+.. code-block:: console
 
-        ./xvf_host --help
+    ./xvf_host --help
 
-.. tab:: Windows
+- on Windows
 
-    .. code-block:: console
+.. code-block:: console
 
-        xvf_host.exe --help
+    xvf_host.exe --help
 
 *****************************************
 Supported platforms and control protocols
 *****************************************
 
-- Raspberry Pi
+- Raspberry Pi - arm7l (32-bit)
     - xvf_host
     - libdevice_i2c.so
     - libdevice_spi.so
     - libdevice_usb.so
-- Linux x86
+- Linux - x86_64
     - xvf_host
     - libdevice_usb.so
-- Mac x86
+- Mac - x86_64
     - xvf_host
     - libdevice_usb.dylib
-- Mac arm64
+- Mac - arm64
     - xvf_host
     - libdevice_usb.dylib
-- Windows
+- Windows - x86 (32-bit)
     - xvf_host.exe
     - device_usb.dll

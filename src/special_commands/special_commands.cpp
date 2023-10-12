@@ -395,11 +395,11 @@ control_ret_t test_bytestream(Command * command, const string in_filename)
         exit(HOST_APP_ERROR);
     }
     rf.seekg (0, rf.end);
-    streamoff size = rf.tellg();
+    size_t size = (size_t) rf.tellg();
     rf.seekg (0, rf.beg);
 
     uint8_t *data = new uint8_t[size];
-    for(int i=0; i<size; i++)
+    for(unsigned int i=0; i<size; i++)
     {
         rf.read(reinterpret_cast<char *>(&data[i]), sizeof(uint8_t));
     }
