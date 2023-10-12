@@ -15,7 +15,7 @@ What's in this release?
 
 HOST_XVF_CONTROL is a host control reference application. It can be used with products in the XVF38xx product family.
 
-Version 2.0.1 includes a new option to read/write different bands of the NL model, and it enables some compiler options to treat all warning as errors.
+Version 2.0.1 includes a new option to read/write different bands of the NL model, and it enables some compiler options to treat all warnings as errors.
 The full list of changes is available in the changelog file included in the release package.
 
 How to use the code
