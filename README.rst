@@ -23,16 +23,16 @@ Build with cmake from the host_xvf_contol/ folder:
 
 - on Linux and Mac
 
-    .. code-block:: console
+.. code-block:: console
 
-        cmake -B build && cd build && make
+    cmake -B build && cd build && make
 
 - on Windows
 
-    .. code-block:: console
+.. code-block:: console
 
-        # building with VS tools
-        cmake -G "Ninja" -B build && cd build && ninja
+    # building with VS tools
+    cmake -G Ninja -B build && cd build && ninja
 
 .. note:: 
 
@@ -59,15 +59,15 @@ To find out use cases and more information about the application use:
 
 - on Linux and Mac
 
-    .. code-block:: console
+.. code-block:: console
 
-        ./xvf_host --help
+    ./xvf_host --help
 
 - on Windows
 
-    .. code-block:: console
+.. code-block:: console
 
-        xvf_host.exe --help
+    xvf_host.exe --help
 
 *****************************************
 Supported platforms and control protocols
