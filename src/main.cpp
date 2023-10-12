@@ -18,6 +18,8 @@ int main(int argc, char ** argv)
     string device_dl_name = get_device_lib_name(&argc, argv);
     bool bypass_range_check = get_bypass_range_check(&argc, argv);
 
+    uint8_t band_index = get_band_option(&argc, argv); // band_index can be present anywhere on the cmd line. Get it first
+
     opt_t * opt = nullptr;
     int cmd_indx = 1;
     string next_cmd = argv[cmd_indx];
@@ -94,7 +96,7 @@ int main(int argc, char ** argv)
             else
             {
                 return special_cmd_aec_filter(&command, true, argv[arg_indx]);
-            } 
+            }
         }
         if(opt->long_name == "--set-aec-filter")
         {
@@ -106,27 +108,27 @@ int main(int argc, char ** argv)
             {
                 return special_cmd_aec_filter(&command, false, argv[arg_indx]);
             }
-        }        
+        }
         if(opt->long_name == "--get-nlmodel-buffer")
         {
             if(arg_indx >= argc)
             {
-                return special_cmd_nlmodel_buffer(&command, true);
+                return special_cmd_nlmodel_buffer(&command, true, band_index);
             }
             else
             {
-                return special_cmd_nlmodel_buffer(&command, true, argv[arg_indx]);
+                return special_cmd_nlmodel_buffer(&command, true, band_index, argv[arg_indx]);
             }
         }
         if(opt->long_name == "--set-nlmodel-buffer")
         {
             if(arg_indx >= argc)
             {
-                return special_cmd_nlmodel_buffer(&command, false);
+                return special_cmd_nlmodel_buffer(&command, false, band_index);
             }
             else
             {
-                return special_cmd_nlmodel_buffer(&command, false, argv[arg_indx]);
+                return special_cmd_nlmodel_buffer(&command, false, band_index, argv[arg_indx]);
             }
         }
         if(opt->long_name == "--test-control-interface")

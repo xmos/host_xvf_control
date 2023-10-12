@@ -1,6 +1,12 @@
 Host XVF Control change log
 ===========================
 
+2.0.1
+-----
+
+  * ADDED: ``--band`` option for the NL Model band index
+  * CHANGED: Added compiler option to treat all warnings as errors
+
 2.0.0
 -----
 

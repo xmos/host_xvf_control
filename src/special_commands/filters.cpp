@@ -39,7 +39,7 @@ control_ret_t get_or_set_full_buffer(Command * command, cmd_param_t * buffer, in
 control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_index, string filename, uint32_t buffer_length, bool flag_buffer_get)
 {
     cout << "Filename = " << filename << endl;
-    
+
     const string start_coeff_cmd_name = "SPECIAL_CMD_AEC_FILTER_COEFF_START_OFFSET"; // Set start offset
 
     const string filter_cmd_name = "SPECIAL_CMD_AEC_FILTER_COEFFS"; // Get buffer cmd
@@ -50,7 +50,7 @@ control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_i
     far_mic_index[1].i32 = mic_index;
     command->init_cmd_info("SPECIAL_CMD_AEC_FAR_MIC_INDEX");
     control_ret_t ret = command->command_set(far_mic_index);
-    
+
     // Set filter command to get it's lenght and allocate memory
     cmd_t filter_cmd = {0};
     init_cmd(&filter_cmd, filter_cmd_name);
@@ -167,11 +167,35 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
     return ret;
 }
 
-control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get, const string filename)
-{    
+control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get, uint8_t band_index, const string filename)
+{
     const string start_coeff_cmd_name = "SPECIAL_CMD_NLMODEL_COEFF_START_OFFSET";
 
     const string filter_cmd_name = "SPECIAL_CMD_PP_NLMODEL"; // buffer cmd
+
+    // Set the band index. If not set, FW will default to band 0, so that with an older host app version, we can still get or set band 0
+    if(check_if_cmd_exists("SPECIAL_CMD_PP_NLMODEL_BAND")) // Only if the device supports this command
+    {
+        command->init_cmd_info("SPECIAL_CMD_PP_NLMODEL_BAND");
+        cmd_param_t band_index_param;
+        band_index_param.ui8 = band_index;
+        control_ret_t ret = command->command_set(&band_index_param);
+        if(ret != CONTROL_SUCCESS)
+        {
+            return ret;
+        }
+    }
+    else
+    {
+        // FW version doesn't support SPECIAL_CMD_PP_NLMODEL_BAND. Default to band 0 unless the user specifically wants band 1
+        // in which case exit with error
+        if(band_index != 0)
+        {
+            cerr << "FW version does not support Hi Band NL model read or write." << endl;
+            exit(HOST_APP_ERROR);
+        }
+    }
+
 
     // Get buffer length
     int32_t NLM_buffer_length;
@@ -225,7 +249,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
 
         rf.peek(); // doing peek here to look for a character beyond file size so it will set eof
         rf.close();
-        
+
         if(!rf.eof() || rf.bad())
         {
             cerr << "Error occured while reading " << filter_name << endl;
@@ -239,7 +263,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
     {
         // Read the full buffer from the device
         ret = get_or_set_full_buffer(command, nlm_buffer, NLM_buffer_length, start_coeff_cmd_name, filter_cmd_name, flag_buffer_get);
-    
+
         // Write filter to file
         ofstream wf(filter_name, ios::out | ios::binary);
         if(!wf)
@@ -258,7 +282,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
         {
             cerr << "Error occured when writting to " << filter_name << endl;
             exit(HOST_APP_ERROR);
-        }  
+        }
     }
     delete []nlm_buffer;
     return ret;

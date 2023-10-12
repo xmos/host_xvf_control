@@ -4,6 +4,7 @@
 #include "special_commands.hpp"
 #include <fstream>
 #include <iomanip>
+#include <ctype.h>
 
 #if (defined(__APPLE__) || defined(_WIN32))
 #include <sstream>
@@ -12,20 +13,21 @@
 using namespace std;
 
 opt_t options[] = {
-    {"--help",                    "-h",        "display this information"                                                                   },
-    {"--version",                 "-v",        "print the current version of this application",                                             },
-    {"--list-commands",           "-l",        "print list of the available commands"                                                       },
-    {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                      },
-    {"--command-map-path",        "-cmp",      "use specific command map path, the path is relative to the working dir"                     },
-    {"--bypass-range-check",      "-br",       "bypass parameter range check",                                                              },
-    {"--dump-params",             "-d",        "print all readable parameters"                                                              },
-    {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u * in the .txt file"    },
-    {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files, default is aec_filter.bin.fx.mx"                            },
-    {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"                            },
-    {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"                               },
-    {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"                               },
-    {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                                         },
-    {"--test-bytestream",         "-tb",       "test device by writing a user defined stream of bytes to it"                                }
+    {"--help",                    "-h",        "display this information"                                                                       },
+    {"--version",                 "-v",        "print the current version of this application",                                                 },
+    {"--list-commands",           "-l",        "print list of the available commands"                                                           },
+    {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                          },
+    {"--command-map-path",        "-cmp",      "use specific command map path, the path is relative to the working dir"                         },
+    {"--bypass-range-check",      "-br",       "bypass parameter range check",                                                                  },
+    {"--dump-params",             "-d",        "print all readable parameters"                                                                  },
+    {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u * in the .txt file"        },
+    {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files, default is aec_filter.bin.fx.mx"                                },
+    {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"                                },
+    {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"                                   },
+    {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"                                   },
+    {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                                             },
+    {"--test-bytestream",         "-tb",       "test device by writing a user defined stream of bytes to it"                                    },
+    {"--band",                    "-b",        "NL model band to set/get (0: low-band, 1: high-band), default is 0 if unspecified"              }
 };
 size_t num_options = end(options) - begin(options);
 
@@ -126,13 +128,42 @@ bool get_bypass_range_check(int * argc, char ** argv)
     size_t index = argv_option_lookup(*argc, argv, bp_opt);
     if(index == 0)
     {
-        // if option is not preset bypass is false
+        // if option is not present bypass is false
         return false;
     }
     else
     {
         remove_opt(argc, argv, index, 1);
         return true;
+    }
+}
+
+uint8_t get_band_option(int * argc, char ** argv)
+{
+    opt_t *band_opt = option_lookup("--band");
+    size_t index = argv_option_lookup(*argc, argv, band_opt);
+    if (index == 0) // --band not provided. Default to band 0
+    {
+        return 0;
+    }
+    else
+    {
+        if (isdigit(argv[index+1][0])) // Get the actual band index that follows the --band option
+        {
+            int band = atoi(argv[index+1]);
+            if((band != 0) && (band != 1))
+            {
+                cerr << "Invalid band index provided after the --band option. Provide either 0 or 1" << endl;
+                exit(HOST_APP_ERROR);
+            }
+            remove_opt(argc, argv, index, 2);
+            return band;
+        }
+        else
+        {
+            cerr << "No band index provided after the --band option. Provide either 0 or 1" << endl;
+            exit(HOST_APP_ERROR);
+        }
     }
 }
 
@@ -173,7 +204,7 @@ control_ret_t print_help_menu()
         int second_space = info_offset - long_len - long_opt_offset + first_word_len;
         int num_spaces = 2; // adding two black spaces at the beggining to make it look nicer
 
-        cout << setw(num_spaces) << " " << opt.short_name << setw(first_space) 
+        cout << setw(num_spaces) << " " << opt.short_name << setw(first_space)
         << opt.long_name << setw(second_space);
 
         stringstream ss(opt.info);
@@ -364,11 +395,11 @@ control_ret_t test_bytestream(Command * command, const string in_filename)
         exit(HOST_APP_ERROR);
     }
     rf.seekg (0, rf.end);
-    streamoff size = rf.tellg();
+    size_t size = (size_t) rf.tellg();
     rf.seekg (0, rf.beg);
 
-    uint8_t *data = new uint8_t[size]; 
-    for(int i=0; i<size; i++)
+    uint8_t *data = new uint8_t[size];
+    for(unsigned int i=0; i<size; i++)
     {
         rf.read(reinterpret_cast<char *>(&data[i]), sizeof(uint8_t));
     }
