@@ -21,13 +21,13 @@ Building
 
 Build with cmake from the host_xvf_contol/ folder:
 
-.. tab:: Linux and Mac
+- on Linux and Mac
 
     .. code-block:: console
 
         cmake -B build && cd build && make
 
-.. tab:: Windows
+- on Windows
 
     .. code-block:: console
 
