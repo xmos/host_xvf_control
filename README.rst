@@ -73,23 +73,20 @@ To find out use cases and more information about the application use:
 Supported platforms and control protocols
 *****************************************
 
-- Raspberry Pi
+- Raspberry Pi - AArch32
     - xvf_host
     - libdevice_i2c.so
     - libdevice_spi.so
     - libdevice_usb.so
-- Linux x86
+- Linux - x86_64
     - xvf_host
     - libdevice_usb.so
-- Linux arm64
-    - xvf_host
-    - libdevice_usb.so
-- Mac x86
+- Mac - x86_64
     - xvf_host
     - libdevice_usb.dylib
-- Mac arm64
+- Mac - arm64
     - xvf_host
     - libdevice_usb.dylib
-- Windows x86
+- Windows - x86
     - xvf_host.exe
     - device_usb.dll
