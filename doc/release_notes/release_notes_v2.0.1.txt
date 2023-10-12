@@ -1,0 +1,29 @@
+--------------------------------
+Copyright (c) 2023 XMOS LIMITED.
+--------------------------------
+
+Release Notes: HOST_XVF_CONTROL version 2.0.1
+*********************************************
+
+Introduction
+============
+
+This note describes version 2.0.1 of the HOST_XVF_CONTROL code. This version can be built using the source code in this release.
+
+What's in this release?
+=======================
+
+HOST_XVF_CONTROL is a host control reference application. It can be used with products in the XVF38xx product family.
+
+Version 2.0.1 includes a new option to read/write different bands of the NL model and it enables some compiler options to treat all warning as errors.
+The full list of changes is available in the changelog file included in the release package.
+
+How to use the code
+===================
+
+The source code in this release can be built and run using the instructions in the readme file included in the release package.
+
+Known issues in this release
+============================
+
+None
