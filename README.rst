@@ -49,6 +49,7 @@ In order to use the application you should have the following files in the same 
 - (lib)device_{protocol}.(so/dll/dylib)
 
 .. note::
+
     - Linux dynamic libraries end with ``.so``
     - Apple dynamic libraries end with ``.dylib``
     - Windows dynamic libraries don't have ``lib`` prefix and end with ``.dll``
@@ -56,13 +57,13 @@ In order to use the application you should have the following files in the same 
 The application and the device drivers can be obtained by following the build instructions of this repo. Command map is a part of the firmware code and built separately.
 To find out use cases and more information about the application use:
 
-.. tab:: Linux and Mac
+- on Linux and Mac
 
     .. code-block:: console
 
         ./xvf_host --help
 
-.. tab:: Windows
+- on Windows
 
     .. code-block:: console
 
