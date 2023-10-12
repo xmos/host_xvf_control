@@ -35,7 +35,8 @@ Build with cmake from the host_xvf_contol/ folder:
         cmake -G "Ninja" -B build && cd build && ninja
 
 .. note:: 
-    For now, windows drivers can only be built with 32-bit tools
+
+    Windows and Linux drivers can only be built with 32-bit tools
 
 *****
 Using
@@ -85,6 +86,6 @@ Supported platforms and control protocols
 - Mac arm64
     - xvf_host
     - libdevice_usb.dylib
-- Windows
+- Windows x86
     - xvf_host.exe
     - device_usb.dll
