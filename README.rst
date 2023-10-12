@@ -36,7 +36,7 @@ Build with cmake from the host_xvf_contol/ folder:
 
 .. note:: 
 
-    Windows and Linux drivers can only be built with 32-bit tools
+    Windows drivers can only be built with 32-bit tools
 
 *****
 Using
@@ -79,6 +79,9 @@ Supported platforms and control protocols
     - libdevice_spi.so
     - libdevice_usb.so
 - Linux x86
+    - xvf_host
+    - libdevice_usb.so
+- Linux arm64
     - xvf_host
     - libdevice_usb.so
 - Mac x86
