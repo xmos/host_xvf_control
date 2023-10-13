@@ -28,7 +28,9 @@ pipeline {
                         // Run release script
                         sh 'tools/ci/release.sh'
                         // archive release package
-                        archiveArtifacts artifacts: 'host_xvf_control_release_*.zip', fingerprint: true
+                        dir('release') {
+                            archiveArtifacts artifacts: 'host_xvf_control_release_*.zip', fingerprint: true
+                        }
                         stash name: "release_source", includes: "release/**"
                     }
                 }
