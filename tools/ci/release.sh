@@ -34,5 +34,5 @@ else
 fi
 
 title "Zip files"
-zip -r host_xvf_control_release_v${VERSION}.zip release
+zip -r host_xvf_control_release_v${VERSION}.zip release/*
 title "Completed"
