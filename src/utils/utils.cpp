@@ -62,7 +62,7 @@ int * get_device_init_info(dl_handle_t handle, string lib_name)
 dl_handle_t load_command_map_dll(const string cmd_map_abs_path)
 {
     dl_handle_t handle = get_dynamic_lib(cmd_map_abs_path);
-    
+
     num_cmd_fptr get_num_commands = get_num_cmd_fptr(handle);
     num_commands = get_num_commands();
 
@@ -95,10 +95,21 @@ void calc_Levenshtein_and_error(const string str)
     exit(HOST_APP_ERROR);
 }
 
-void init_cmd(cmd_t * cmd, const string cmd_name, size_t index)
+bool check_if_cmd_exists(const string cmd_name)
 {
     const string up_str = to_upper(cmd_name);
-    
+    size_t index = get_cmd_index(up_str);
+    if(index == UINT32_MAX)
+    {
+        return false;
+    }
+    return true;
+}
+
+void init_cmd(cmd_t * cmd, const std::string cmd_name, size_t index)
+{
+    const string up_str = to_upper(cmd_name);
+
     if(index == UINT32_MAX)
     {
         index = get_cmd_index(up_str);
@@ -121,7 +132,7 @@ void init_cmd(cmd_t * cmd, const string cmd_name, size_t index)
 
 size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup)
 {
-    for(size_t i = 1; i < argc; i++)
+    for(int i = 1; i < argc; i++)
     {
         string cmd_arg = to_lower(argv[i]);
         if((cmd_arg == opt_lookup->long_name) || (cmd_arg == opt_lookup->short_name))
@@ -261,7 +272,7 @@ int Levenshtein_distance(const string source, const string target)
         return n;
     }
 
-    typedef vector<vector<int>> Tmatrix; 
+    typedef vector<vector<int>> Tmatrix;
 
     Tmatrix matrix(n + 1);
 
@@ -310,7 +321,7 @@ int Levenshtein_distance(const string source, const string target)
 
             // Cover transposition, in addition to deletion,
             // insertion and substitution. This step is taken from:
-            // Berghel, Hal ; Roach, David : "An Extension of Ukkonen's 
+            // Berghel, Hal ; Roach, David : "An Extension of Ukkonen's
             // Enhanced Dynamic Programming ASM Algorithm"
             // (http://www.acm.org/~hlb/publications/asm/asm.html)
 

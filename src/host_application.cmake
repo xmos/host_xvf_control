@@ -1,5 +1,7 @@
 # Building main application here
 
+set( APP_NAME  xvf_host )
+
 set(COMMON_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/main.cpp
     ${CMAKE_CURRENT_LIST_DIR}/utils/utils.cpp
@@ -17,13 +19,27 @@ set(COMMON_INCLUDES
     ${DEVICE_CONTROL_PATH}/api
 )
 
-add_executable(xvf_host)
+add_executable( ${APP_NAME})
 
-target_sources(xvf_host
+# Add options for different compilers
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_options( ${APP_NAME}
+        PRIVATE
+            -WX
+    )
+else()
+    target_compile_options( ${APP_NAME}
+        PRIVATE
+            -Werror
+            -g
+    )
+endif()
+
+target_sources( ${APP_NAME}
     PRIVATE
         ${COMMON_SOURCES}
 )
-target_include_directories(xvf_host
+target_include_directories( ${APP_NAME}
     PUBLIC
         ${COMMON_INCLUDES}
 )
