@@ -34,5 +34,7 @@ else
 fi
 
 title "Zip files"
-zip -r host_xvf_control_release_v${VERSION}.zip release
+pushd release
+zip -r host_xvf_control_release_v${VERSION}.zip *
+popd
 title "Completed"
