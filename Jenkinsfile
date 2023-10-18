@@ -88,7 +88,7 @@ pipeline {
                     }
                 } // RPI Build & Test
 
-                stage ('Linux x86 Build & Test') {
+                stage ('Linux x86_64 Build & Test') {
                     agent {
                         label 'linux&&x86_64'
                     }
@@ -104,8 +104,8 @@ pipeline {
                                 dir('release/build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive RPI binaries
-                                    sh 'mkdir linux_x86 && cp xvf_host *.so linux_x86/'
-                                    archiveArtifacts artifacts: 'linux_x86/*', fingerprint: true
+                                    sh 'mkdir linux_x86_64 && cp xvf_host *.so linux_x86_64/'
+                                    archiveArtifacts artifacts: 'linux_x86_64/*', fingerprint: true
                                 }
                             }
                         }
@@ -132,9 +132,9 @@ pipeline {
                              xcoreCleanSandbox()
                         }
                     }
-                } // Linux x86 Build & Test
+                } // Linux x86_64 Build & Test
 
-                stage ('Mac x86 Build & Test') {
+                stage ('Mac x86_64 Build & Test') {
                     agent {
                         label 'macos&&x86_64'
                     }
@@ -150,8 +150,8 @@ pipeline {
                                 dir('release/build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive Mac binaries
-                                    sh 'mkdir mac_x86 && cp xvf_host *.dylib mac_x86/'
-                                    archiveArtifacts artifacts: 'mac_x86/*', fingerprint: true
+                                    sh 'mkdir mac_x86_64 && cp xvf_host *.dylib mac_x86_64/'
+                                    archiveArtifacts artifacts: 'mac_x86_64/*', fingerprint: true
                                 }
                             }
                         }
@@ -178,7 +178,7 @@ pipeline {
                              xcoreCleanSandbox()
                         }
                     }
-                } // Mac x86 Build & Test
+                } // Mac x86_64 Build & Test
 
                 stage ('Mac arm64 Build & Test') {
                     agent {
@@ -226,7 +226,7 @@ pipeline {
                     }
                 } // Mac arm64 Build & Test
 
-                stage ('Windows Build & Test') {
+                stage ('Win32 Build & Test') {
                     agent {
                         label 'sw-bld-win0'
                     }
@@ -245,8 +245,8 @@ pipeline {
                                         bat 'ninja'
                                     }
                                     // archive Mac binaries
-                                    bat 'mkdir windows && cp xvf_host.exe *.dll windows/'
-                                    archiveArtifacts artifacts: 'windows/*', fingerprint: true
+                                    bat 'mkdir win32 && cp xvf_host.exe *.dll win32/'
+                                    archiveArtifacts artifacts: 'win32/*', fingerprint: true
                                 }
                             }
                         }
