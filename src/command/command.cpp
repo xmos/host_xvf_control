@@ -71,7 +71,7 @@ control_ret_t Command::command_set(const cmd_param_t * values)
     {
         check_range(cmd.cmd_name, values);
     }
-    
+
     size_t data_len = get_num_bytes_from_type(cmd.type) * cmd.num_values;
     uint8_t * data = new uint8_t[data_len];
 
@@ -189,4 +189,42 @@ control_ret_t Command::do_command(const string cmd_name, char ** argv, int argc,
     delete []cmd_values;
 
     return ret;
+}
+
+cmd_param_t command_bytes_to_value(const cmd_param_type_t type, const uint8_t * data, unsigned index)
+{
+    cmd_param_t value;
+    size_t size_bytes = get_num_bytes_from_type(type);
+
+    switch(size_bytes)
+    {
+    case 1:
+        memcpy(&value.ui8, data + index * size_bytes, size_bytes);
+        break;
+    case 4:
+        memcpy(&value.i32, data + index * size_bytes, size_bytes);
+        break;
+    default:
+        cerr << "Unsupported parameter type" << endl;
+        exit(HOST_APP_ERROR);
+    }
+
+    return value;
+}
+
+void command_bytes_from_value(const cmd_param_type_t type, uint8_t * data, unsigned index, const cmd_param_t value)
+{
+    size_t num_bytes = get_num_bytes_from_type(type);
+    switch(num_bytes)
+    {
+    case 1:
+        memcpy(data + index * num_bytes, &value.ui8, num_bytes);
+        break;
+    case 4:
+        memcpy(data + index * num_bytes, &value.i32, num_bytes);
+        break;
+    default:
+        cerr << "Unsupported parameter type" << endl;
+        exit(HOST_APP_ERROR);
+    }
 }

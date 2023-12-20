@@ -28,6 +28,7 @@ set(DEVICE_CONTROL_PATH ${FWK_RTOS}/modules/sw_services/device_control)
 
 include(src/host_drivers.cmake)
 include(src/host_application.cmake)
+include(src/dfu_application.cmake)
 
 if(TESTING)
     include(src/low_level_test_host_drivers.cmake)

@@ -3,6 +3,7 @@
 
 #include "utils.hpp"
 #include <vector>
+#include <iostream>
 #include "control_ret_str_map.h"
 
 using namespace std;
@@ -130,7 +131,7 @@ void init_cmd(cmd_t * cmd, const std::string cmd_name, size_t index)
     cmd->hidden_cmd = get_cmd_hidden(index);
 }
 
-size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup)
+size_t argv_option_lookup(int argc, char ** argv, const opt_t * opt_lookup)
 {
     for(int i = 1; i < argc; i++)
     {
@@ -218,44 +219,6 @@ control_ret_t check_num_args(const cmd_t * cmd, const size_t args_left)
     return CONTROL_SUCCESS;
 }
 
-cmd_param_t command_bytes_to_value(const cmd_param_type_t type, const uint8_t * data, unsigned index)
-{
-    cmd_param_t value;
-    size_t size_bytes = get_num_bytes_from_type(type);
-
-    switch(size_bytes)
-    {
-    case 1:
-        memcpy(&value.ui8, data + index * size_bytes, size_bytes);
-        break;
-    case 4:
-        memcpy(&value.i32, data + index * size_bytes, size_bytes);
-        break;
-    default:
-        cerr << "Unsupported parameter type" << endl;
-        exit(HOST_APP_ERROR);
-    }
-
-    return value;
-}
-
-void command_bytes_from_value(const cmd_param_type_t type, uint8_t * data, unsigned index, const cmd_param_t value)
-{
-    size_t num_bytes = get_num_bytes_from_type(type);
-    switch(num_bytes)
-    {
-    case 1:
-        memcpy(data + index * num_bytes, &value.ui8, num_bytes);
-        break;
-    case 4:
-        memcpy(data + index * num_bytes, &value.i32, num_bytes);
-        break;
-    default:
-        cerr << "Unsupported parameter type" << endl;
-        exit(HOST_APP_ERROR);
-    }
-}
-
 // Taken from:
 // https://www.talkativeman.com/levenshtein-distance-algorithm-string-comparison/
 int Levenshtein_distance(const string source, const string target)
@@ -338,4 +301,73 @@ int Levenshtein_distance(const string source, const string target)
     }
 
     return matrix[n][m];
+}
+
+string get_device_lib_name(int * argc, char ** argv, const opt_t* options, const size_t num_options)
+{
+    string lib_name = default_driver_name;
+    const opt_t * use_opt = option_lookup("--use", options, num_options);
+    size_t index = argv_option_lookup(*argc, argv, use_opt);
+    if(index == 0)
+    {
+        // could not find --use, using default driver name
+        return lib_name;
+    }
+    else
+    {
+        string protocol_name = argv[index + 1];
+        if (to_upper(protocol_name) == "I2C")
+        {
+            lib_name = device_i2c_dl_name;
+        }
+        else if (to_upper(protocol_name) == "SPI")
+        {
+            lib_name = device_spi_dl_name;
+        }
+        else if (to_upper(protocol_name) == "USB")
+        {
+            lib_name = device_usb_dl_name;
+        }
+        else
+        {
+            // Using I2C by default for now as USB is currently not supported
+            cout << "Could not find " << to_upper(protocol_name) << " in supported protocols"
+            << endl << "Will use I2C by default" << endl;
+        }
+        remove_opt(argc, argv, index, 2);
+        return lib_name;
+    }
+}
+
+const opt_t * option_lookup(const string str, const opt_t* options, const size_t num_options)
+{
+    string low_str = to_lower(str);
+    for(size_t i = 0; i < num_options; i++)
+    {
+        const opt_t * opt = &options[i];
+        if ((low_str == opt->long_name) || (low_str == opt->short_name))
+        {
+            return opt;
+        }
+    }
+
+    int shortest_dist = 100;
+    int indx  = 0;
+    for(size_t i = 0; i < num_options; i++)
+    {
+        const opt_t * opt = &options[i];
+        int dist_long = Levenshtein_distance(low_str, opt->long_name);
+        int dist_short = Levenshtein_distance(low_str, opt->short_name);
+        int dist = (dist_short < dist_long) ? dist_short : dist_long;
+        if(dist < shortest_dist)
+        {
+            shortest_dist = dist;
+            indx = i;
+        }
+    }
+    cerr << "Option " << str << " does not exist." << endl
+    << "Maybe you meant " << options[indx].short_name
+    << " or " << options[indx].long_name << "." << endl;
+    exit(HOST_APP_ERROR);
+    return nullptr;
 }

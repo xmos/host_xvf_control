@@ -1,6 +1,7 @@
 // Copyright 2022-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
+#include "utils.hpp"
 #include "special_commands.hpp"
 
 using namespace std;
@@ -15,18 +16,18 @@ int main(int argc, char ** argv)
     }
 
     string command_map_path = get_cmd_map_abs_path(&argc, argv);
-    string device_dl_name = get_device_lib_name(&argc, argv);
+    string device_dl_name = get_device_lib_name(&argc, argv, options, num_options);
     bool bypass_range_check = get_bypass_range_check(&argc, argv);
 
     uint8_t band_index = get_band_option(&argc, argv); // band_index can be present anywhere on the cmd line. Get it first
 
-    opt_t * opt = nullptr;
+    const opt_t * opt = nullptr;
     int cmd_indx = 1;
     string next_cmd = argv[cmd_indx];
 
     if(next_cmd[0] == '-')
     {
-        opt = option_lookup(next_cmd);
+        opt = option_lookup(next_cmd, options, num_options);
         if (opt->long_name == "--help")
         {
             return print_help_menu();

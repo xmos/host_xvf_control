@@ -113,7 +113,7 @@ dl_handle_t load_command_map_dll(const std::string cmd_map_abs_path);
 void init_cmd(cmd_t * cmd, const std::string cmd_name, size_t index = UINT32_MAX);
 
 /** @brief Lookup option in argv */
-size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup);
+size_t argv_option_lookup(int argc, char ** argv, const opt_t * opt_lookup);
 
 /** @brief Remove words from argv, decrement argc */
 void remove_opt(int * argc, char ** argv, size_t ind, size_t num);
@@ -285,4 +285,20 @@ size_t get_term_width();
 */
 bool check_if_cmd_exists(const std::string cmd_name);
 
+/**
+ * @brief Gets device driver name to load by looking for --use
+ *
+ * @note Will decrement argc, if option is present
+ */
+std::string get_device_lib_name(int * argc, char ** argv, const opt_t* options, const size_t num_options);
+
+/**
+ * @brief Look up the string in the option list.
+ *
+ * If the string is not found, will suggest a possible match and exit.
+ *
+ * @param str   String sequence to look up
+ * @note Function is case insensitive
+ */
+const opt_t * option_lookup(const std::string str, const opt_t* options, const size_t num_options);
 #endif
