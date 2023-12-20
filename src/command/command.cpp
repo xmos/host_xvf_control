@@ -27,7 +27,7 @@ control_ret_t Command::command_get(cmd_param_t * values)
 {
     control_cmd_t cmd_id = cmd.cmd_id | 0x80; // setting 8th bit for read commands
 
-    size_t data_len = get_num_bytes_from_type(cmd.type) * cmd.num_values + 1; // one extra for the status
+    size_t data_len = get_num_bytes_from_type(cmd.type)*cmd.num_values + 1; // one extra for the status
     uint8_t * data = new uint8_t[data_len];
 
     control_ret_t ret = device->device_get(cmd.res_id, cmd_id, data, data_len);
@@ -45,7 +45,7 @@ control_ret_t Command::command_get(cmd_param_t * values)
         {
             for (unsigned i = 0; i < cmd.num_values; i++)
             {
-                values[i] = command_bytes_to_value(cmd.type, &data[1], i);
+                values[i] = command_bytes_to_value(&data[1], i);
             }
             break;
         }
@@ -77,7 +77,7 @@ control_ret_t Command::command_set(const cmd_param_t * values)
 
     for (unsigned i = 0; i < cmd.num_values; i++)
     {
-        command_bytes_from_value(cmd.type, data, i, values[i]);
+        command_bytes_from_value(data, i, values[i]);
     }
 
     control_ret_t ret = device->device_set(cmd.res_id, cmd.cmd_id, data, data_len);
@@ -191,10 +191,10 @@ control_ret_t Command::do_command(const string cmd_name, char ** argv, int argc,
     return ret;
 }
 
-cmd_param_t command_bytes_to_value(const cmd_param_type_t type, const uint8_t * data, unsigned index)
+cmd_param_t Command::command_bytes_to_value(const uint8_t * data, unsigned index)
 {
     cmd_param_t value;
-    size_t size_bytes = get_num_bytes_from_type(type);
+    size_t size_bytes = get_num_bytes_from_type(cmd.type);
 
     switch(size_bytes)
     {
@@ -212,9 +212,9 @@ cmd_param_t command_bytes_to_value(const cmd_param_type_t type, const uint8_t * 
     return value;
 }
 
-void command_bytes_from_value(const cmd_param_type_t type, uint8_t * data, unsigned index, const cmd_param_t value)
+void Command::command_bytes_from_value(uint8_t * data, unsigned index, const cmd_param_t value)
 {
-    size_t num_bytes = get_num_bytes_from_type(type);
+    size_t num_bytes = get_num_bytes_from_type(cmd.type);
     switch(num_bytes)
     {
     case 1:

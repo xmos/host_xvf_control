@@ -96,15 +96,15 @@ class Command
          * @note                Only for internal testing
          */
         control_ret_t command_set_low_level(uint8_t *data, size_t payload_len);
+
+        /** @brief Convert single value from bytes to cmd_param_t */
+        cmd_param_t command_bytes_to_value(const uint8_t * data, unsigned index);
+
+        /** @brief Convert single value from cmd_param_t to bytes */
+        void command_bytes_from_value(uint8_t * data, unsigned index, const cmd_param_t value);
 };
 
 /** @brief Get number of bytes for the particular param type */
 size_t get_num_bytes_from_type(const cmd_param_type_t type);
-
-/** @brief Convert single value from bytes to cmd_param_t */
-cmd_param_t command_bytes_to_value(const cmd_param_type_t type, const uint8_t * data, unsigned index);
-
-/** @brief Convert single value from cmd_param_t to bytes */
-void command_bytes_from_value(const cmd_param_type_t type, uint8_t * data, unsigned index, const cmd_param_t value);
 
 #endif
