@@ -19,7 +19,7 @@ Some dependent components are included as git sub modules. These can be obtained
 Building
 ********
 
-Build with cmake from the host_xvf_contol/ folder:
+Build with cmake from the host_xvf_control/ folder:
 
 - on Linux and Mac
 
@@ -34,7 +34,7 @@ Build with cmake from the host_xvf_contol/ folder:
     # building with VS tools
     cmake -G Ninja -B build && cd build && ninja
 
-.. note:: 
+.. note::
 
     Windows drivers can only be built with 32-bit tools
 

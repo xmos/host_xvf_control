@@ -44,6 +44,11 @@ target_include_directories( ${APP_NAME}
         ${COMMON_INCLUDES}
 )
 
+target_compile_definitions( ${APP_NAME}
+    PRIVATE
+        DEFAULT_DRIVER_NAME=device_usb_dl_name
+)
+
 if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL Windows)
 target_link_libraries(xvf_host
     PUBLIC

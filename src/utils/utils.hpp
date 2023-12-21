@@ -81,7 +81,7 @@ const std::string device_spi_dl_name = "device_spi";
 const std::string device_usb_dl_name = "device_usb";
 
 /** @brief Default driver name to use */
-const std::string default_driver_name = device_usb_dl_name;
+const std::string default_driver_name = DEFAULT_DRIVER_NAME;
 
 /** @brief Default command_map dl name to use */
 const std::string default_command_map_name = "command_map";

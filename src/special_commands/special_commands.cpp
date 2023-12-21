@@ -114,7 +114,7 @@ control_ret_t print_help_menu()
         size_t first_word_len = opt.info.find_first_of(' ');
         int first_space = long_opt_offset - short_len + long_len;
         int second_space = info_offset - long_len - long_opt_offset + first_word_len;
-        int num_spaces = 2; // adding two black spaces at the beggining to make it look nicer
+        int num_spaces = 2; // adding two black spaces at the beginning to make it look nicer
 
         cout << setw(num_spaces) << " " << opt.short_name << setw(first_space)
         << opt.long_name << setw(second_space);
