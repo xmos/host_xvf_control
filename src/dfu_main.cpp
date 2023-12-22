@@ -18,86 +18,167 @@ static int spi_info[2] = {
     0,                  // SPI_MODE
     1024                // clock divider
 };
-#define ALT_FACTORY_ID 0
-#define ALT_UPGRADE_ID 1
-
 
 /* DFU_GETSTATUS bStatus values (Section 6.1.2, DFU Rev 1.1) */
-#define DFU_STATUS_OK			0x00
-#define DFU_STATUS_errTARGET		0x01
-#define DFU_STATUS_errFILE		0x02
-#define DFU_STATUS_errWRITE		0x03
-#define DFU_STATUS_errERASE		0x04
-#define DFU_STATUS_errCHECK_ERASED	0x05
-#define DFU_STATUS_errPROG		0x06
-#define DFU_STATUS_errVERIFY		0x07
-#define DFU_STATUS_errADDRESS		0x08
-#define DFU_STATUS_errNOTDONE		0x09
-#define DFU_STATUS_errFIRMWARE		0x0a
-#define DFU_STATUS_errVENDOR		0x0b
-#define DFU_STATUS_errUSBR		0x0c
-#define DFU_STATUS_errPOR		0x0d
-#define DFU_STATUS_errUNKNOWN		0x0e
-#define DFU_STATUS_errSTALLEDPKT	0x0f
+#define DFU_STATUS_OK               0x00
+#define DFU_STATUS_errTARGET        0x01
+#define DFU_STATUS_errFILE          0x02
+#define DFU_STATUS_errWRITE         0x03
+#define DFU_STATUS_errERASE         0x04
+#define DFU_STATUS_errCHECK_ERASED  0x05
+#define DFU_STATUS_errPROG          0x06
+#define DFU_STATUS_errVERIFY        0x07
+#define DFU_STATUS_errADDRESS       0x08
+#define DFU_STATUS_errNOTDONE       0x09
+#define DFU_STATUS_errFIRMWARE      0x0a
+#define DFU_STATUS_errVENDOR        0x0b
+#define DFU_STATUS_errUSBR          0x0c
+#define DFU_STATUS_errPOR           0x0d
+#define DFU_STATUS_errUNKNOWN       0x0e
+#define DFU_STATUS_errSTALLEDPKT    0x0f
 
-enum dfu_state {
-	DFU_STATE_appIDLE		= 0,
-	DFU_STATE_appDETACH		= 1,
-	DFU_STATE_dfuIDLE		= 2,
-	DFU_STATE_dfuDNLOAD_SYNC	= 3,
-	DFU_STATE_dfuDNBUSY		= 4,
-	DFU_STATE_dfuDNLOAD_IDLE	= 5,
-	DFU_STATE_dfuMANIFEST_SYNC	= 6,
-	DFU_STATE_dfuMANIFEST		= 7,
-	DFU_STATE_dfuMANIFEST_WAIT_RST	= 8,
-	DFU_STATE_dfuUPLOAD_IDLE	= 9,
-	DFU_STATE_dfuERROR		= 10
+/* DFU state values (Section 6.1.2, DFU Rev 1.1) */
+#define DFU_STATE_appIDLE               0
+#define DFU_STATE_appDETACH             1
+#define DFU_STATE_dfuIDLE               2
+#define DFU_STATE_dfuDNLOAD_SYNC        3
+#define DFU_STATE_dfuDNBUSY             4
+#define DFU_STATE_dfuDNLOAD_IDLE        5
+#define DFU_STATE_dfuMANIFEST_SYNC      6
+#define DFU_STATE_dfuMANIFEST           7
+#define DFU_STATE_dfuMANIFEST_WAIT_RST  8
+#define DFU_STATE_dfuUPLOAD_IDLE        9
+#define DFU_STATE_dfuERROR              10
+
+/* XMOS values for control commands */
+
+/* alt-setting for flash partition */
+#define DFU_ALT_FACTORY_ID 0
+#define DFU_ALT_UPGRADE_ID 1
+
+/* device control resource IDs **/
+#define DFU_CONTROLLER_SERVICER_RESID   0x12
+#define DFU_RESID                       0x13
+
+/* device control command values */
+#define DFU_DETACH_CMD_ID           0x00
+#define DFU_DETACH_CMD_NAME         "DFU_DETACH"
+#define DFU_DETACH_NUM_VALUES       61
+#define DFU_DOWNLOAD_CMD_ID         0x01
+#define DFU_DOWNLOAD_CMD_NAME       "DFU_DOWNLOAD"
+#define DFU_DOWNLOAD_NUM_VALUES     61
+#define DFU_UPLOAD_CMD_ID           0x02
+#define DFU_UPLOAD_CMD_NAME         "DFU_UPLOAD"
+#define DFU_UPLOAD_NUM_VALUES       61
+#define DFU_GETSTATUS_CMD_ID        0x03
+#define DFU_GETSTATUS_CMD_NAME      "DFU_GETSTATUS"
+#define DFU_GETSTATUS_NUM_VALUES    5
+#define DFU_CLRSTATUS_CMD_ID        0x04
+#define DFU_CLRSTATUS_CMD_NAME      "DFU_CLRSTATUS"
+#define DFU_CLRSTATUS_NUM_VALUES    0
+#define DFU_GETSTATE_CMD_ID         0x05
+#define DFU_GETSTATE_CMD_NAME       "DFU_GETSTATE"
+#define DFU_GETSTATE_NUM_VALUES     1
+#define DFU_ABORT_CMD_ID            0x06
+#define DFU_ABORT_CMD_NAME          "DFU_ABORT"
+#define DFU_ABORT_NUM_VALUES        0
+#define DFU_SETALTERNATE_CMD_ID     0x40
+#define DFU_SETALTERNATE_CMD_NAME   "DFU_SETALTERNATE"
+#define DFU_SETALTERNATE_NUM_VALUES 1
+#define DFU_REBOOT_CMD_ID           0x58
+#define DFU_REBOOT_CMD_NAME         "DFU_REBOOT"
+#define DFU_REBOOT_NUM_VALUES       0
+#define DFU_GETVERSION_CMD_ID       0x59
+#define DFU_GETVERSION_CMD_NAME     "DFU_GETVERSION"
+#define DFU_GETVERSION_NUM_VALUES   3
+
+const string dfu_state_to_string( int state )
+{
+    const char * message;
+
+    switch (state) {
+        case DFU_STATE_appIDLE:
+            message = "appIDLE";
+            break;
+        case DFU_STATE_appDETACH:
+            message = "appDETACH";
+            break;
+        case DFU_STATE_dfuIDLE:
+            message = "dfuIDLE";
+            break;
+        case DFU_STATE_dfuDNLOAD_SYNC:
+            message = "dfuDNLOAD-SYNC";
+            break;
+        case DFU_STATE_dfuDNBUSY:
+            message = "dfuDNBUSY";
+            break;
+        case DFU_STATE_dfuDNLOAD_IDLE:
+            message = "dfuDNLOAD-IDLE";
+            break;
+        case DFU_STATE_dfuMANIFEST_SYNC:
+            message = "dfuMANIFEST-SYNC";
+            break;
+        case DFU_STATE_dfuMANIFEST:
+            message = "dfuMANIFEST";
+            break;
+        case DFU_STATE_dfuMANIFEST_WAIT_RST:
+            message = "dfuMANIFEST-WAIT-RESET";
+            break;
+        case DFU_STATE_dfuUPLOAD_IDLE:
+            message = "dfuUPLOAD-IDLE";
+            break;
+        case DFU_STATE_dfuERROR:
+            message = "dfuERROR";
+            break;
+        default:
+            message = NULL;
+            break;
+    }
+
+    return string(message);
+}
+
+static const char *dfu_status_names[] = {
+    /* DFU_STATUS_OK */
+        "No error condition is present",
+    /* DFU_STATUS_errTARGET */
+        "File is not targeted for use by this device",
+    /* DFU_STATUS_errFILE */
+        "File is for this device but fails some vendor-specific test",
+    /* DFU_STATUS_errWRITE */
+        "Device is unable to write memory",
+    /* DFU_STATUS_errERASE */
+        "Memory erase function failed",
+    /* DFU_STATUS_errCHECK_ERASED */
+        "Memory erase check failed",
+    /* DFU_STATUS_errPROG */
+        "Program memory function failed",
+    /* DFU_STATUS_errVERIFY */
+        "Programmed memory failed verification",
+    /* DFU_STATUS_errADDRESS */
+        "Cannot program memory due to received address that is out of range",
+    /* DFU_STATUS_errNOTDONE */
+        "Received DFU_DNLOAD with wLength = 0, but device does not think that it has all data yet",
+    /* DFU_STATUS_errFIRMWARE */
+        "Device's firmware is corrupt. It cannot return to run-time (non-DFU) operations",
+    /* DFU_STATUS_errVENDOR */
+        "iString indicates a vendor specific error",
+    /* DFU_STATUS_errUSBR */
+        "Device detected unexpected USB reset signalling",
+    /* DFU_STATUS_errPOR */
+        "Device detected unexpected power on reset",
+    /* DFU_STATUS_errUNKNOWN */
+        "Something went wrong, but the device does not know what it was",
+    /* DFU_STATUS_errSTALLEDPKT */
+        "Device stalled an unexpected request"
 };
 
-#define DFU_CONTROLLER_SERVICER_RESID 18
-#define DFU_DETACH_CMD_ID 0x00
-#define DFU_DETACH_CMD_NAME "DFU_DETACH"
-#define DFU_DETACH_NUM_VALUES 61
-#define DFU_DOWNLOAD_CMD_ID 0x01
-#define DFU_DOWNLOAD_CMD_NAME "DFU_DOWNLOAD"
-#define DFU_DOWNLOAD_NUM_VALUES 61
-#define DFU_UPLOAD_CMD_ID 0x02
-#define DFU_UPLOAD_CMD_NAME "DFU_UPLOAD"
-#define DFU_UPLOAD_NUM_VALUES 61
-#define DFU_GETSTATUS_CMD_ID 0x03
-#define DFU_GETSTATUS_CMD_NAME "DFU_GETSTATUS"
-#define DFU_GETSTATUS_NUM_VALUES 5
-#define DFU_CLRSTATUS_CMD_ID 0x04
-#define DFU_CLRSTATUS_CMD_NAME "DFU_CLRSTATUS"
-#define DFU_CLRSTATUS_NUM_VALUES 0
-#define DFU_GETSTATE_CMD_ID 0x05
-#define DFU_GETSTATE_CMD_NAME "DFU_GETSTATE"
-#define DFU_GETSTATE_NUM_VALUES 1
-#define DFU_ABORT_CMD_ID 0x06
-#define DFU_ABORT_CMD_NAME "DFU_ABORT"
-#define DFU_ABORT_NUM_VALUES 0
-#define DFU_SETALTERNATE_CMD_ID 0x40
-#define DFU_SETALTERNATE_CMD_NAME "DFU_SETALTERNATE"
-#define DFU_SETALTERNATE_NUM_VALUES 1
-#define DFU_REBOOT_CMD_ID 0x58
-#define DFU_REBOOT_CMD_NAME "DFU_REBOOT"
-#define DFU_REBOOT_NUM_VALUES 0
-#define DFU_GETVERSION_CMD_ID 0x59
-#define DFU_GETVERSION_CMD_NAME "DFU_GETVERSION"
-#define DFU_GETVERSION_NUM_VALUES 3
-
-    /** Command resource ID */
-//    control_resid_t res_id;
-    /** Command name */
-//    std::string cmd_name;
-    /** Command value type */
-//    cmd_param_type_t type;
-    /** Command ID */
-//    control_cmd_t cmd_id;
-    /** Command read/write type */
-//    cmd_rw_t rw;
-    /** Number of values the command reads/writes */
- //   unsigned num_values;
+const string dfu_status_to_string(int status)
+{
+    if (status > DFU_STATUS_errSTALLEDPKT)
+        return "INVALID";
+    return string(dfu_status_names[status]);
+}
 
 control_ret_t command_get(Device * device, control_resid_t res_id, std::string cmd_name, control_cmd_t cmd_id, unsigned num_values, uint8_t * values)
 {
@@ -253,12 +334,12 @@ control_ret_t print_help_menu()
     return CONTROL_SUCCESS;
 }
 
-control_ret_t getstatus(uint8_t &status, dfu_state &state)
+control_ret_t getstatus(uint8_t &status, uint8_t &state)
 {
     uint8_t values[DFU_GETSTATUS_NUM_VALUES];
     control_ret_t cmd_ret;
 
-    cmd_ret = command_get(NULL, DFU_CONTROLLER_SERVICER_RESID, DFU_GETSTATUS_CMD_NAME, DFU_GETSTATUS_CMD_ID, DFU_GETSTATUS_NUM_VALUES, values);
+    cmd_ret = command_get(NULL, DFU_RESID, DFU_GETSTATUS_CMD_NAME, DFU_GETSTATUS_CMD_ID, DFU_GETSTATUS_NUM_VALUES, values);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << DFU_UPLOAD_CMD_NAME << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -267,22 +348,42 @@ control_ret_t getstatus(uint8_t &status, dfu_state &state)
     uint32_t poll_timeout = ((0xff & values[3]) << 16) |
                             ((0xff & values[2]) << 8)  |
                             (0xff & values[1]);
-    state = (dfu_state) values[4];
+    state = values[4];
     status = values[5];
-    printf("DFU_GETSTATUS: Status %d, State %d, Timeout (ms) %d\n", status, state, poll_timeout);
+    cout << "DFU_GETSTATUS: Status " << dfu_status_to_string(status) << ", State " << dfu_state_to_string(state) << ",Timeout (ms) " << poll_timeout << endl;
 
     std::this_thread::sleep_for(std::chrono::milliseconds(poll_timeout));
 
     return cmd_ret;
 }
 
+control_ret_t clearStatus() {
+    control_ret_t cmd_ret;
+
+    cmd_ret = command_set(NULL, DFU_RESID, DFU_CLRSTATUS_CMD_NAME, DFU_CLRSTATUS_CMD_ID, DFU_CLRSTATUS_NUM_VALUES, NULL);
+    if (cmd_ret != CONTROL_SUCCESS) {
+        cout << "Error: Command " << DFU_CLRSTATUS_CMD_NAME << " returned error " << cmd_ret << endl;
+        return cmd_ret;
+    }
+
+    return cmd_ret;
+}
+
 uint32_t status_is_idle() {
     uint8_t status;
-    dfu_state state;
+    uint8_t state;
     if (getstatus(status, state) ==  CONTROL_SUCCESS)
     {
-        if (state == DFU_STATE_appIDLE) {
-            return 1;
+        switch(state) {
+            case DFU_STATE_appIDLE:
+                return 1;
+            break;
+            case DFU_STATE_dfuERROR:
+                clearStatus();
+            break;
+            default:
+                // do nothing
+            break;
         }
     }
     return 0;
@@ -292,7 +393,7 @@ control_ret_t setalternate(uint8_t alternate)
     uint8_t values[DFU_GETSTATUS_NUM_VALUES];
     control_ret_t cmd_ret;
 
-    cmd_ret = command_set(NULL, DFU_CONTROLLER_SERVICER_RESID, DFU_SETALTERNATE_CMD_NAME, DFU_SETALTERNATE_CMD_ID, DFU_SETALTERNATE_NUM_VALUES, &alternate);
+    cmd_ret = command_set(NULL, DFU_RESID, DFU_SETALTERNATE_CMD_NAME, DFU_SETALTERNATE_CMD_ID, DFU_SETALTERNATE_NUM_VALUES, &alternate);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << DFU_SETALTERNATE_CMD_NAME << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -309,21 +410,21 @@ control_ret_t download_operation(const string image_path)
         return CONTROL_ERROR;
     }
     uint8_t status;
-    dfu_state state;
+    uint8_t state;
     size_t file_size = rf.tellg();
     uint32_t total_bytes = 0;
     control_ret_t cmd_ret;
     uint8_t is_state_not_idle = 1;
-
+    uint8_t is_state_not_error = 1;
     while (total_bytes <= file_size) {
         uint8_t * values = new uint8_t[DFU_UPLOAD_NUM_VALUES];
         rf.read((char*) values, DFU_UPLOAD_NUM_VALUES);
-        cmd_ret = command_set(NULL, DFU_CONTROLLER_SERVICER_RESID, DFU_DOWNLOAD_CMD_NAME, DFU_DOWNLOAD_CMD_ID, DFU_DOWNLOAD_NUM_VALUES, values);
+        cmd_ret = command_set(NULL, DFU_RESID, DFU_DOWNLOAD_CMD_NAME, DFU_DOWNLOAD_CMD_ID, DFU_DOWNLOAD_NUM_VALUES, values);
         if (cmd_ret != CONTROL_SUCCESS) {
             cout << "Error: Command " << DFU_DOWNLOAD_CMD_NAME << " returned error " << cmd_ret << endl;
             return cmd_ret;
         }
-        while (is_state_not_idle)
+        while (is_state_not_idle && is_state_not_error)
         {
             if (getstatus(status, state) ==  CONTROL_SUCCESS)
             {
@@ -332,7 +433,8 @@ control_ret_t download_operation(const string image_path)
                         is_state_not_idle = 0;
                     break;
                     case DFU_STATE_dfuERROR:
-                        // TODO: Handle error
+                        clearStatus();
+                        is_state_not_error = 0;
                     break;
                     default:
                         continue;
@@ -348,7 +450,7 @@ control_ret_t download_operation(const string image_path)
         return CONTROL_ERROR;
     }
     // Send empty download message. TODO: Check how to indicate the zero payload length
-    cmd_ret = command_set(NULL, DFU_CONTROLLER_SERVICER_RESID, DFU_DOWNLOAD_CMD_NAME, DFU_DOWNLOAD_CMD_ID, 0, NULL);
+    cmd_ret = command_set(NULL, DFU_RESID, DFU_DOWNLOAD_CMD_NAME, DFU_DOWNLOAD_CMD_ID, 0, NULL);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << DFU_DOWNLOAD_CMD_NAME << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -366,7 +468,7 @@ control_ret_t download_operation(const string image_path)
                     continue;
                 break;
                 default:
-                    cout << "Error: Invalid state: " << state << endl;
+                    cout << "Error: Invalid state: " << dfu_state_to_string(state) << endl;
                     return CONTROL_ERROR;
                 break;
             }
@@ -378,7 +480,7 @@ control_ret_t download_operation(const string image_path)
 control_ret_t reboot_operation()
 {
     cout << "Reboot device" << endl;
-    control_ret_t cmd_ret = command_set(NULL, DFU_CONTROLLER_SERVICER_RESID, DFU_DETACH_CMD_NAME, DFU_DETACH_CMD_ID, DFU_DETACH_NUM_VALUES, NULL);
+    control_ret_t cmd_ret = command_set(NULL, DFU_RESID, DFU_DETACH_CMD_NAME, DFU_DETACH_CMD_ID, DFU_DETACH_NUM_VALUES, NULL);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << DFU_SETALTERNATE_CMD_NAME << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -397,7 +499,7 @@ control_ret_t upload_operation(const string image_path)
     while (1) {
         control_ret_t cmd_ret;
         uint8_t * values = new uint8_t[DFU_UPLOAD_NUM_VALUES];
-        cmd_ret = command_get(NULL, DFU_CONTROLLER_SERVICER_RESID, DFU_UPLOAD_CMD_NAME, DFU_UPLOAD_CMD_ID, DFU_UPLOAD_NUM_VALUES, values);
+        cmd_ret = command_get(NULL, DFU_RESID, DFU_UPLOAD_CMD_NAME, DFU_UPLOAD_CMD_ID, DFU_UPLOAD_NUM_VALUES, values);
         if (cmd_ret != CONTROL_SUCCESS) {
             cout << "Error: Command " << DFU_UPLOAD_CMD_NAME << " returned error " << cmd_ret << endl;
             return cmd_ret;
@@ -487,9 +589,9 @@ int main(int argc, char ** argv)
     {
         if (opt->long_name == "--upload-factory")
         {
-            setalternate(ALT_FACTORY_ID);
+            setalternate(DFU_ALT_FACTORY_ID);
         } else {
-            setalternate(ALT_UPGRADE_ID);
+            setalternate(DFU_ALT_UPGRADE_ID);
         }
         if (!status_is_idle()) {
             return -1;
