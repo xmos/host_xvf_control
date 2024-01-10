@@ -20,7 +20,7 @@
 #include <errhandlingapi.h> // GetLastError
 #include <direct.h>         // _getcwd
 #define getcwd _getcwd
-#define PATH_MAX 1000 
+#define PATH_MAX 1000
 #else
 #error "Unknown Operating System"
 #endif
@@ -112,7 +112,7 @@ dl_handle_t get_dynamic_lib(const string lib_path)
         cerr << "Could not load " << lib_path << ", got " << GetLastError() << " error code" << endl;
 #else
 #error "Unknown Operating System"
-#endif // unix vs windows        
+#endif // unix vs windows
         exit(HOST_APP_ERROR);
     }
     return handle;

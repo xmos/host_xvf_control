@@ -7,18 +7,15 @@
 #include <iomanip>
 #include <chrono>
 #include <thread>
-
+#include <map>
 #include <sys/stat.h>
 #include <yaml-cpp/yaml.h>
+#include <unistd.h>         // readlink
+#include <sys/ioctl.h>      // ioctl
+#include <linux/limits.h>   // PATH_MAX#include <sys/stat.h>
 
 using namespace std;
 
-//static int i2c_info = 0x2C;    // I2C slave address
-
-//static int spi_info[2] = {
-//    0,                  // SPI_MODE
-//    1024                // clock divider
-//};
 
 /* DFU_GETSTATUS bStatus values (Section 6.1.2, DFU Rev 1.1) */
 #define DFU_STATUS_OK               0x00
@@ -57,49 +54,29 @@ using namespace std;
 #define DFU_ALT_FACTORY_ID 0
 #define DFU_ALT_UPGRADE_ID 1
 
-static int dfu_controller_servicer_resid;
-static int dfu_resid;
-static int dfu_detach_cmd_id;
-static int dfu_detach_cmd_name;
-static int dfu_drtach_num_values;
 
-#if 1
+
+class commandValues
+{
+    int id;
+    int num_values;
+    public:
+    commandValues(int id, int num_values)
+    {
+        id = id;
+        num_values = num_values;
+    }
+    int get_num_values() {return num_values;}
+    int get_id() {return id;}
+
+};
+static map<string, commandValues*>CommandInfo;
+static string commandList[] = {"DFU_DETACH", "DFU_DNLOAD", "DFU_UPLOAD", "DFU_GETSTATUS", "DFU_CLRSTATUS", "DFU_GETSTATE", "DFU_ABORT", "DFU_SETALTERNATE", "DFU_REBOOT", "DFU_VERSION"};
+
 /* device control resource IDs **/
-#define DFU_CONTROLLER_SERVICER_RESID   0x12
-#define DFU_RESID                       0x13
+static int dfu_controller_servicer_resid = -1;
+static int dfu_resid = -1;
 
-/* device control command values */
-#define DFU_DETACH_CMD_ID           0x00
-#define DFU_DETACH_CMD_NAME         "DFU_DETACH"
-#define DFU_DETACH_NUM_VALUES       61
-#define DFU_DOWNLOAD_CMD_ID         0x01
-#define DFU_DOWNLOAD_CMD_NAME       "DFU_DOWNLOAD"
-#define DFU_DOWNLOAD_NUM_VALUES     61
-#define DFU_UPLOAD_CMD_ID           0x02
-#define DFU_UPLOAD_CMD_NAME         "DFU_UPLOAD"
-#define DFU_UPLOAD_NUM_VALUES       61
-#define DFU_GETSTATUS_CMD_ID        0x03
-#define DFU_GETSTATUS_CMD_NAME      "DFU_GETSTATUS"
-#define DFU_GETSTATUS_NUM_VALUES    5
-#define DFU_CLRSTATUS_CMD_ID        0x04
-#define DFU_CLRSTATUS_CMD_NAME      "DFU_CLRSTATUS"
-#define DFU_CLRSTATUS_NUM_VALUES    0
-#define DFU_GETSTATE_CMD_ID         0x05
-#define DFU_GETSTATE_CMD_NAME       "DFU_GETSTATE"
-#define DFU_GETSTATE_NUM_VALUES     1
-#define DFU_ABORT_CMD_ID            0x06
-#define DFU_ABORT_CMD_NAME          "DFU_ABORT"
-#define DFU_ABORT_NUM_VALUES        0
-#define DFU_SETALTERNATE_CMD_ID     0x40
-#define DFU_SETALTERNATE_CMD_NAME   "DFU_SETALTERNATE"
-#define DFU_SETALTERNATE_NUM_VALUES 1
-#define DFU_REBOOT_CMD_ID           0x58
-#define DFU_REBOOT_CMD_NAME         "DFU_REBOOT"
-#define DFU_REBOOT_NUM_VALUES       0
-#define DFU_GETVERSION_CMD_ID       0x59
-#define DFU_GETVERSION_CMD_NAME     "DFU_GETVERSION"
-#define DFU_GETVERSION_NUM_VALUES   3
-#endif
 const string dfu_state_to_string( int state )
 {
     const char * message;
@@ -344,12 +321,12 @@ control_ret_t print_help_menu()
 
 control_ret_t getstatus(uint8_t &status, uint8_t &state)
 {
-    uint8_t values[DFU_GETSTATUS_NUM_VALUES];
-    control_ret_t cmd_ret;
+    string command_name = "DFU_GETSTATUS";
+    uint8_t values[CommandInfo[command_name]->get_num_values()];
 
-    cmd_ret = command_get(NULL, DFU_RESID, DFU_GETSTATUS_CMD_NAME, DFU_GETSTATUS_CMD_ID, DFU_GETSTATUS_NUM_VALUES, values);
+    control_ret_t cmd_ret = command_get(NULL, dfu_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cout << "Error: Command " << DFU_UPLOAD_CMD_NAME << " returned error " << cmd_ret << endl;
+        cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
 
@@ -366,11 +343,10 @@ control_ret_t getstatus(uint8_t &status, uint8_t &state)
 }
 
 control_ret_t clearStatus() {
-    control_ret_t cmd_ret;
-
-    cmd_ret = command_set(NULL, DFU_RESID, DFU_CLRSTATUS_CMD_NAME, DFU_CLRSTATUS_CMD_ID, DFU_CLRSTATUS_NUM_VALUES, NULL);
+    string command_name = "DFU_CLRSTATUS";
+    control_ret_t cmd_ret = command_set(NULL, dfu_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), NULL);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cout << "Error: Command " << DFU_CLRSTATUS_CMD_NAME << " returned error " << cmd_ret << endl;
+        cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
 
@@ -398,12 +374,10 @@ uint32_t status_is_idle() {
 }
 control_ret_t setalternate(uint8_t alternate)
 {
-    uint8_t values[DFU_GETSTATUS_NUM_VALUES];
-    control_ret_t cmd_ret;
-
-    cmd_ret = command_set(NULL, DFU_RESID, DFU_SETALTERNATE_CMD_NAME, DFU_SETALTERNATE_CMD_ID, DFU_SETALTERNATE_NUM_VALUES, &alternate);
+    string command_name = "DFU_SETALTERNATE";
+    control_ret_t cmd_ret = command_set(NULL, dfu_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), NULL);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cout << "Error: Command " << DFU_SETALTERNATE_CMD_NAME << " returned error " << cmd_ret << endl;
+        cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
 
@@ -425,11 +399,13 @@ control_ret_t download_operation(const string image_path)
     uint8_t is_state_not_idle = 1;
     uint8_t is_state_not_error = 1;
     while (total_bytes <= file_size) {
-        uint8_t * values = new uint8_t[DFU_UPLOAD_NUM_VALUES];
-        rf.read((char*) values, DFU_UPLOAD_NUM_VALUES);
-        cmd_ret = command_set(NULL, DFU_RESID, DFU_DOWNLOAD_CMD_NAME, DFU_DOWNLOAD_CMD_ID, DFU_DOWNLOAD_NUM_VALUES, values);
+        string command_name = "DFU_DNLOAD";
+        uint8_t num_values = CommandInfo[command_name]->get_num_values();
+        uint8_t * values = new uint8_t[num_values];
+        rf.read((char*) values, num_values);
+        cmd_ret = command_set(NULL, dfu_resid, command_name, CommandInfo[command_name]->get_id(), num_values, values);
         if (cmd_ret != CONTROL_SUCCESS) {
-            cout << "Error: Command " << DFU_DOWNLOAD_CMD_NAME << " returned error " << cmd_ret << endl;
+            cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
         }
         while (is_state_not_idle && is_state_not_error)
@@ -450,7 +426,7 @@ control_ret_t download_operation(const string image_path)
                 }
             }
         }
-        total_bytes += DFU_UPLOAD_NUM_VALUES;
+        total_bytes += num_values;
     }
     rf.close();
     if(!rf.good()) {
@@ -458,9 +434,10 @@ control_ret_t download_operation(const string image_path)
         return CONTROL_ERROR;
     }
     // Send empty download message. TODO: Check how to indicate the zero payload length
-    cmd_ret = command_set(NULL, DFU_RESID, DFU_DOWNLOAD_CMD_NAME, DFU_DOWNLOAD_CMD_ID, 0, NULL);
+    string command_name = "DFU_DNLOAD";
+    cmd_ret = command_set(NULL, dfu_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), 0);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cout << "Error: Command " << DFU_DOWNLOAD_CMD_NAME << " returned error " << cmd_ret << endl;
+        cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
     while (is_state_not_idle)
@@ -488,9 +465,10 @@ control_ret_t download_operation(const string image_path)
 control_ret_t reboot_operation()
 {
     cout << "Reboot device" << endl;
-    control_ret_t cmd_ret = command_set(NULL, DFU_RESID, DFU_DETACH_CMD_NAME, DFU_DETACH_CMD_ID, DFU_DETACH_NUM_VALUES, NULL);
+    string command_name = "DFU_DETACH";
+    control_ret_t cmd_ret = command_set(NULL, dfu_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), NULL);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cout << "Error: Command " << DFU_SETALTERNATE_CMD_NAME << " returned error " << cmd_ret << endl;
+        cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
     return CONTROL_SUCCESS;
@@ -505,14 +483,16 @@ control_ret_t upload_operation(const string image_path)
         return CONTROL_ERROR;
     }
     while (1) {
-        control_ret_t cmd_ret;
-        uint8_t * values = new uint8_t[DFU_UPLOAD_NUM_VALUES];
-        cmd_ret = command_get(NULL, DFU_RESID, DFU_UPLOAD_CMD_NAME, DFU_UPLOAD_CMD_ID, DFU_UPLOAD_NUM_VALUES, values);
+        string command_name = "DFU_UPLOAD";
+        uint8_t num_values = CommandInfo[command_name]->get_num_values();
+        uint8_t values[num_values];
+
+        control_ret_t cmd_ret = command_get(NULL, dfu_resid, command_name, CommandInfo[command_name]->get_id(), num_values, values);
         if (cmd_ret != CONTROL_SUCCESS) {
-            cout << "Error: Command " << DFU_UPLOAD_CMD_NAME << " returned error " << cmd_ret << endl;
+            cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
         }
-        wf.write((const char *) values, DFU_UPLOAD_NUM_VALUES);
+        wf.write((const char *) values, num_values);
     }
 
     wf.close();
@@ -541,10 +521,28 @@ int file_path_exists(char ** argv, const uint32_t arg_indx, const uint32_t argc,
     }
 }
 
-void parse_dfu_cmds_yaml()
+void add_command(YAML::Node yaml_info, const string command_name)
+{
+    for (const auto& command : yaml_info)
+    {
+        if (command["cmd"].as<string>().find(command_name) != string::npos)
+        {
+            int cmd_id = command["index"].as<int>();
+            int cmd_num_values = command["number_of_values"].as<int>();
+            commandValues* c = new commandValues(cmd_id, cmd_num_values);
+            CommandInfo[command_name] = c;
+            cout << "Added command " << command_name << " with ID " << cmd_id << " and number of values " << cmd_num_values << endl;
+            return;
+        }
+    }
+    cerr << "Warning: command " << command_name << " not found on yaml file" << endl;
+    exit(1);
+}
+
+void parse_dfu_cmds_yaml(string yaml_file_full_path)
 {
     // Load YAML file
-    YAML::Node config = YAML::LoadFile("src/dfu_cmds.yaml");
+    YAML::Node config = YAML::LoadFile(yaml_file_full_path);
     // string dfu_detach_cmd_name = config["DFU_CONTROLLER_SERVICER_RESID (0xF0)"]["dedicated_commands"][0]["cmd"].as<string>();
     YAML::Node resource_ids = config;
     for (const auto& node : config)
@@ -557,24 +555,57 @@ void parse_dfu_cmds_yaml()
         {
             resource_id = stoi(resource_id_string.substr(startPos + 1, endPos - startPos - 1), 0, 16);
         }
-        if (resource_id_string.find("DFU_CONTROLLER_SERVICER_RESID") != std::string::npos)
+        if (resource_id_string.find("DFU_CONTROLLER_SERVICER_RESID") != string::npos)
         {
             cout << "DFU_CONTROLLER_SERVICER_RESID is " << resource_id << endl;
+            dfu_controller_servicer_resid = resource_id;
         }
-        if (resource_id_string.find("DFU_RESID") != std::string::npos)
+        if (resource_id_string.find("DFU_RESID") != string::npos)
         {
             cout << "DFU_RESID is " << resource_id << endl;
+            dfu_resid = resource_id;
         }
         YAML::Node dedicated_commands = node.second["dedicated_commands"];
         if (dedicated_commands.IsSequence())
         {
-            for (const auto& command : dedicated_commands)
+            for (const auto& command_name : commandList)
             {
-                cout << command["cmd"] << endl;
+                add_command(dedicated_commands, command_name);
             }
         }
     }
+    if (dfu_controller_servicer_resid == -1)
+    {
+        cerr << "Error: DFU_CONTROLLER_SERVICER_RESID not set in YAML file" << endl;
+        exit(1);
+    }
+    if (dfu_resid == -1)
+    {
+        cerr << "Error: DFU_RESID not set in YAML file" << endl;
+        exit(1);
+    }
 }
+
+string get_file_path(const string rel_path)
+{
+
+    char path[PATH_MAX];
+    ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
+    if (count == -1)
+    {
+        cerr << "Could not read /proc/self/exe into " << PATH_MAX << " string" << endl;
+        exit(1);
+    }
+    path[count] = '\0'; // readlink doesn't always add NULL for some reason
+
+    string full_path = path;
+    size_t found = full_path.find_last_of("/\\"); // works for both unix and windows
+    string dir_path_str = full_path.substr(0, found);
+    string file_path_str = dir_path_str + "/" + rel_path;
+
+    return file_path_str;
+}
+
 int main(int argc, char ** argv)
 {
     if(argc == 1)
@@ -583,16 +614,19 @@ int main(int argc, char ** argv)
         << "Or use --list-commands to print the list of commands and their info." << endl;
         return 0;
     }
+
     // Load YAML file
-    YAML::Node config = YAML::LoadFile("src/transport_config.yaml");
+    YAML::Node config = YAML::LoadFile(get_file_path("src/transport_config.yaml"));
 
     // Read I2C parameters from YAML file
     int* i2c_info = new int[1];
     int* spi_info = new int[2];
 
     i2c_info[0] = config["I2C_ADDRESS"].as<int>();
-    cout << i2c_info[0] << endl << endl;
-    parse_dfu_cmds_yaml();
+    spi_info[0] = config["SPI_MODE"].as<int>();
+    spi_info[1] = 1024;
+
+    parse_dfu_cmds_yaml(get_file_path("src/dfu_cmds.yaml"));
     string device_dl_name = get_device_lib_name(&argc, argv, options, num_options);
     int * device_init_info = NULL;
     if(device_dl_name == device_i2c_dl_name)
