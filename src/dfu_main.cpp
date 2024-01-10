@@ -9,15 +9,16 @@
 #include <thread>
 
 #include <sys/stat.h>
+#include <yaml-cpp/yaml.h>
 
 using namespace std;
 
-static int i2c_info = 0x2C;    // I2C slave address
+//static int i2c_info = 0x2C;    // I2C slave address
 
-static int spi_info[2] = {
-    0,                  // SPI_MODE
-    1024                // clock divider
-};
+//static int spi_info[2] = {
+//    0,                  // SPI_MODE
+//    1024                // clock divider
+//};
 
 /* DFU_GETSTATUS bStatus values (Section 6.1.2, DFU Rev 1.1) */
 #define DFU_STATUS_OK               0x00
@@ -56,6 +57,13 @@ static int spi_info[2] = {
 #define DFU_ALT_FACTORY_ID 0
 #define DFU_ALT_UPGRADE_ID 1
 
+static int dfu_controller_servicer_resid;
+static int dfu_resid;
+static int dfu_detach_cmd_id;
+static int dfu_detach_cmd_name;
+static int dfu_drtach_num_values;
+
+#if 1
 /* device control resource IDs **/
 #define DFU_CONTROLLER_SERVICER_RESID   0x12
 #define DFU_RESID                       0x13
@@ -91,7 +99,7 @@ static int spi_info[2] = {
 #define DFU_GETVERSION_CMD_ID       0x59
 #define DFU_GETVERSION_CMD_NAME     "DFU_GETVERSION"
 #define DFU_GETVERSION_NUM_VALUES   3
-
+#endif
 const string dfu_state_to_string( int state )
 {
     const char * message;
@@ -533,6 +541,40 @@ int file_path_exists(char ** argv, const uint32_t arg_indx, const uint32_t argc,
     }
 }
 
+void parse_dfu_cmds_yaml()
+{
+    // Load YAML file
+    YAML::Node config = YAML::LoadFile("src/dfu_cmds.yaml");
+    // string dfu_detach_cmd_name = config["DFU_CONTROLLER_SERVICER_RESID (0xF0)"]["dedicated_commands"][0]["cmd"].as<string>();
+    YAML::Node resource_ids = config;
+    for (const auto& node : config)
+    {
+        string resource_id_string = node.first.as<string>();
+        size_t startPos = resource_id_string.find('(');
+        size_t endPos = resource_id_string.find(')', startPos);
+        int resource_id = -1;
+        if (startPos != string::npos and endPos != string::npos)
+        {
+            resource_id = stoi(resource_id_string.substr(startPos + 1, endPos - startPos - 1), 0, 16);
+        }
+        if (resource_id_string.find("DFU_CONTROLLER_SERVICER_RESID") != std::string::npos)
+        {
+            cout << "DFU_CONTROLLER_SERVICER_RESID is " << resource_id << endl;
+        }
+        if (resource_id_string.find("DFU_RESID") != std::string::npos)
+        {
+            cout << "DFU_RESID is " << resource_id << endl;
+        }
+        YAML::Node dedicated_commands = node.second["dedicated_commands"];
+        if (dedicated_commands.IsSequence())
+        {
+            for (const auto& command : dedicated_commands)
+            {
+                cout << command["cmd"] << endl;
+            }
+        }
+    }
+}
 int main(int argc, char ** argv)
 {
     if(argc == 1)
@@ -541,15 +583,24 @@ int main(int argc, char ** argv)
         << "Or use --list-commands to print the list of commands and their info." << endl;
         return 0;
     }
+    // Load YAML file
+    YAML::Node config = YAML::LoadFile("src/transport_config.yaml");
 
+    // Read I2C parameters from YAML file
+    int* i2c_info = new int[1];
+    int* spi_info = new int[2];
+
+    i2c_info[0] = config["I2C_ADDRESS"].as<int>();
+    cout << i2c_info[0] << endl << endl;
+    parse_dfu_cmds_yaml();
     string device_dl_name = get_device_lib_name(&argc, argv, options, num_options);
     int * device_init_info = NULL;
     if(device_dl_name == device_i2c_dl_name)
     {
-        device_init_info = &i2c_info;
+        device_init_info = i2c_info;
     } else if(device_dl_name == device_spi_dl_name)
     {
-        device_init_info = &spi_info[0];
+        device_init_info = spi_info;
     }
 
     const opt_t * opt = nullptr;

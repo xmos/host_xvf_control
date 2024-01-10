@@ -215,7 +215,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
     command->init_cmd_info("SPECIAL_CMD_NLMODEL_START");
     ret = command->command_set(&start_buffer_read);
 
-    // Set filter command to get it's lenght and allocate memory
+    // Set filter command to get it's length and allocate memory
     cmd_t filter_cmd = {0};
     init_cmd(&filter_cmd, filter_cmd_name);
     int32_t len = ((NLM_buffer_length + (filter_cmd.num_values - 1)) / filter_cmd.num_values) * filter_cmd.num_values;
@@ -241,7 +241,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
             exit(HOST_APP_ERROR);
         }
 
-        // Read from file intp the nlm_buffer buffer. Will need to be done byte by byte since nlm_buffer is of type cmd_param_t
+        // Read from file into the nlm_buffer buffer. Will need to be done byte by byte since nlm_buffer is of type cmd_param_t
         for(int i = 0; i < NLM_buffer_length; i++)
         {
             rf.read(reinterpret_cast<char *>(&nlm_buffer[i].f), sizeof(float));
@@ -252,7 +252,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
 
         if(!rf.eof() || rf.bad())
         {
-            cerr << "Error occured while reading " << filter_name << endl;
+            cerr << "Error occurred while reading " << filter_name << endl;
             exit(HOST_APP_ERROR);
         }
 
