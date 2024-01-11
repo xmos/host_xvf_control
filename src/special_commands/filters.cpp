@@ -122,6 +122,76 @@ control_ret_t get_one_filter(Command * command, int32_t mic_index, int32_t far_i
     return ret;
 }
 
+control_ret_t read_write_buffer(const bool flag_buffer_get, const string filter_name,
+                                Command * command, string start_coeff_cmd_name, string filter_cmd_name,
+                                const int32_t buffer_length, cmd_param_t * buffer)
+{
+    control_ret_t ret;
+    if(flag_buffer_get == false) // read equalization buffer from file and write to the device
+    {
+        ifstream rf(filter_name, ios::out | ios::binary);
+        if(!rf)
+        {
+            cerr << "Could not open a file " << filter_name << endl;
+            exit(HOST_APP_ERROR);
+        }
+
+        rf.seekg (0, rf.end);
+        streamoff size = rf.tellg();
+        rf.seekg (0, rf.beg);
+
+        if(size != (buffer_length * sizeof(float)))
+        {
+            cerr << "NLM buffer lengths don't match" << endl;
+            exit(HOST_APP_ERROR);
+        }
+
+        // Read from file into the buffer. Will need to be done byte by byte since buffer is of type cmd_param_t
+        for(int i = 0; i < buffer_length; i++)
+        {
+            rf.read(reinterpret_cast<char *>(&buffer[i].f), sizeof(float));
+        }
+
+        rf.peek(); // doing peek here to look for a character beyond file size so it will set eof
+        rf.close();
+
+        if(!rf.eof() || rf.bad())
+        {
+            cerr << "Error occurred while reading " << filter_name << endl;
+            exit(HOST_APP_ERROR);
+        }
+
+        // Write the full buffer to the device
+        ret = get_or_set_full_buffer(command, buffer, buffer_length, start_coeff_cmd_name, filter_cmd_name, flag_buffer_get);
+    }
+    else // Read equalization buffer from device and write to the file
+    {
+        // Read the full buffer from the device
+        control_ret_t ret = get_or_set_full_buffer(command, buffer, buffer_length, start_coeff_cmd_name, filter_cmd_name, flag_buffer_get);
+
+        // Write filter to file
+        ofstream wf(filter_name, ios::out | ios::binary);
+        if(!wf)
+        {
+            cerr << "Could not open a file " << filter_name << endl;
+            exit(HOST_APP_ERROR);
+        }
+
+        for(int i = 0; i < buffer_length; i++)
+        {
+            wf.write(reinterpret_cast<char *>(&buffer[i].f), sizeof(float));
+        }
+
+        wf.close();
+        if(wf.bad())
+        {
+            cerr << "Error occurred when writing to " << filter_name << endl;
+            exit(HOST_APP_ERROR);
+        }
+    }
+    return ret;
+}
+
 control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, const string filename)
 {
     cmd_param_t num_mics, num_farends;
@@ -198,7 +268,7 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
 
 
     // Get buffer length
-    int32_t NLM_buffer_length;
+    int32_t nlm_buffer_length;
     cmd_param_t nRowCol[2];
     command->init_cmd_info("SPECIAL_CMD_PP_NLMODEL_NROW_NCOL");
     control_ret_t ret = command->command_get(nRowCol);
@@ -206,8 +276,8 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
     string filter_name = filename + ".r" + to_string(nRowCol[0].i32) + ".c" + to_string(nRowCol[1].i32);
     cout << "Filename = " << filter_name << endl;
 
-    NLM_buffer_length = nRowCol[0].i32 * nRowCol[1].i32;
-    cout << "NLM_buffer_length = " << NLM_buffer_length << endl;
+    nlm_buffer_length = nRowCol[0].i32 * nRowCol[1].i32;
+    cout << "Non-Linear Model buffer length = " << nlm_buffer_length << endl;
 
     // Set start of special command sequence
     cmd_param_t start_buffer_read;
@@ -218,72 +288,13 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
     // Set filter command to get it's length and allocate memory
     cmd_t filter_cmd = {0};
     init_cmd(&filter_cmd, filter_cmd_name);
-    int32_t len = ((NLM_buffer_length + (filter_cmd.num_values - 1)) / filter_cmd.num_values) * filter_cmd.num_values;
+    int32_t len = ((nlm_buffer_length + (filter_cmd.num_values - 1)) / filter_cmd.num_values) * filter_cmd.num_values;
     cout << "len = " << len << endl;
     cmd_param_t * nlm_buffer = new cmd_param_t[len];
 
-    if(flag_buffer_get == false) // read NLModel buffer from file and write to the device
-    {
-        ifstream rf(filter_name, ios::out | ios::binary);
-        if(!rf)
-        {
-            cerr << "Could not open a file " << filter_name << endl;
-            exit(HOST_APP_ERROR);
-        }
-
-        rf.seekg (0, rf.end);
-        streamoff size = rf.tellg();
-        rf.seekg (0, rf.beg);
-
-        if(size != (NLM_buffer_length * sizeof(float)))
-        {
-            cerr << "NLM buffer lengths don't match" << endl;
-            exit(HOST_APP_ERROR);
-        }
-
-        // Read from file into the nlm_buffer buffer. Will need to be done byte by byte since nlm_buffer is of type cmd_param_t
-        for(int i = 0; i < NLM_buffer_length; i++)
-        {
-            rf.read(reinterpret_cast<char *>(&nlm_buffer[i].f), sizeof(float));
-        }
-
-        rf.peek(); // doing peek here to look for a character beyond file size so it will set eof
-        rf.close();
-
-        if(!rf.eof() || rf.bad())
-        {
-            cerr << "Error occurred while reading " << filter_name << endl;
-            exit(HOST_APP_ERROR);
-        }
-
-        // Write the full buffer to the device
-        ret = get_or_set_full_buffer(command, nlm_buffer, NLM_buffer_length, start_coeff_cmd_name, filter_cmd_name, flag_buffer_get);
-    }
-    else // Read NLModel buffer from device and write to the file
-    {
-        // Read the full buffer from the device
-        ret = get_or_set_full_buffer(command, nlm_buffer, NLM_buffer_length, start_coeff_cmd_name, filter_cmd_name, flag_buffer_get);
-
-        // Write filter to file
-        ofstream wf(filter_name, ios::out | ios::binary);
-        if(!wf)
-        {
-            cerr << "Could not open a file " << filter_name << endl;
-            exit(HOST_APP_ERROR);
-        }
-
-        for(int i = 0; i < NLM_buffer_length; i++)
-        {
-            wf.write(reinterpret_cast<char *>(&nlm_buffer[i].f), sizeof(float));
-        }
-
-        wf.close();
-        if(wf.bad())
-        {
-            cerr << "Error occurred when writing to " << filter_name << endl;
-            exit(HOST_APP_ERROR);
-        }
-    }
+    ret = read_write_buffer(flag_buffer_get, filter_name,
+                            command, start_coeff_cmd_name, filter_cmd_name,
+                            nlm_buffer_length, nlm_buffer);
     delete []nlm_buffer;
     return ret;
 }
@@ -295,15 +306,15 @@ control_ret_t special_cmd_equalization_filter(Command * command, bool flag_buffe
     const string filter_cmd_name = "SPECIAL_CMD_PP_EQUALIZATION"; // buffer cmd
 
     // Get buffer length
-    int32_t equalization_buffer_length;
+    int32_t eq_buffer_length;
     cmd_param_t num_values;
     command->init_cmd_info("SPECIAL_CMD_PP_EQUALIZATION_NUM_BANDS");
     control_ret_t ret = command->command_get(&num_values);
-    equalization_buffer_length = num_values.i32;
+    eq_buffer_length = num_values.i32;
     string filter_name = filename;
     cout << "Filename = " << filter_name << endl;
 
-    cout << "Equalization filter length = " << equalization_buffer_length << endl;
+    cout << "Equalization filter length = " << eq_buffer_length << endl;
 
     // Set start of special command sequence
     cmd_param_t start_buffer_read;
@@ -314,72 +325,13 @@ control_ret_t special_cmd_equalization_filter(Command * command, bool flag_buffe
     // Set filter command to get it's length and allocate memory
     cmd_t filter_cmd = {0};
     init_cmd(&filter_cmd, filter_cmd_name);
-    int32_t len = ((equalization_buffer_length + (filter_cmd.num_values - 1)) / filter_cmd.num_values) * filter_cmd.num_values;
+    int32_t len = ((eq_buffer_length + (filter_cmd.num_values - 1)) / filter_cmd.num_values) * filter_cmd.num_values;
     cout << "len = " << len << endl;
     cmd_param_t * eq_buffer = new cmd_param_t[len];
 
-    if(flag_buffer_get == false) // read equalization buffer from file and write to the device
-    {
-        ifstream rf(filter_name, ios::out | ios::binary);
-        if(!rf)
-        {
-            cerr << "Could not open a file " << filter_name << endl;
-            exit(HOST_APP_ERROR);
-        }
-
-        rf.seekg (0, rf.end);
-        streamoff size = rf.tellg();
-        rf.seekg (0, rf.beg);
-
-        if(size != (equalization_buffer_length * sizeof(float)))
-        {
-            cerr << "NLM buffer lengths don't match" << endl;
-            exit(HOST_APP_ERROR);
-        }
-
-        // Read from file into the eq_buffer buffer. Will need to be done byte by byte since eq_buffer is of type cmd_param_t
-        for(int i = 0; i < equalization_buffer_length; i++)
-        {
-            rf.read(reinterpret_cast<char *>(&eq_buffer[i].f), sizeof(float));
-        }
-
-        rf.peek(); // doing peek here to look for a character beyond file size so it will set eof
-        rf.close();
-
-        if(!rf.eof() || rf.bad())
-        {
-            cerr << "Error occurred while reading " << filter_name << endl;
-            exit(HOST_APP_ERROR);
-        }
-
-        // Write the full buffer to the device
-        ret = get_or_set_full_buffer(command, eq_buffer, equalization_buffer_length, start_coeff_cmd_name, filter_cmd_name, flag_buffer_get);
-    }
-    else // Read equalization buffer from device and write to the file
-    {
-        // Read the full buffer from the device
-        ret = get_or_set_full_buffer(command, eq_buffer, equalization_buffer_length, start_coeff_cmd_name, filter_cmd_name, flag_buffer_get);
-
-        // Write filter to file
-        ofstream wf(filter_name, ios::out | ios::binary);
-        if(!wf)
-        {
-            cerr << "Could not open a file " << filter_name << endl;
-            exit(HOST_APP_ERROR);
-        }
-
-        for(int i = 0; i < equalization_buffer_length; i++)
-        {
-            wf.write(reinterpret_cast<char *>(&eq_buffer[i].f), sizeof(float));
-        }
-
-        wf.close();
-        if(wf.bad())
-        {
-            cerr << "Error occurred when writing to " << filter_name << endl;
-            exit(HOST_APP_ERROR);
-        }
-    }
+    ret = read_write_buffer(flag_buffer_get, filter_name,
+                            command, start_coeff_cmd_name, filter_cmd_name,
+                            eq_buffer_length, eq_buffer);
     delete []eq_buffer;
     return ret;
 }
