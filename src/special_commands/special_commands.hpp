@@ -104,6 +104,19 @@ control_ret_t special_cmd_aec_filter(Command * command, bool flag_buffer_get, co
 control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get, uint8_t band_index, const std::string filename = "nlm_buffer.bin");
 
 /**
+ * @brief Set or get equalization filter
+ *
+ * @param command           Pointer to the Command class object
+ * @param flag_buffer_get   Boolean to specify read/write operation
+ * @param band_index        Index of the band for which the equalization filter is get/set
+ * @param filename          File name to read from/write to
+ * @note Default filename is 'nlm_buffer.bin'
+ * @note This function will get number of rows and columns from the device
+ * @note and expect filename to be 'nlm_buffer.bin.rx.cx'
+ */
+control_ret_t special_cmd_equalization_filter(Command * command, bool flag_buffer_get, uint8_t band_index, const std::string filename = "eq_buffer.bin");
+
+/**
  * @brief Function to test control interface.
  *
  * Used for stress testing the control interface during internal device testing.
