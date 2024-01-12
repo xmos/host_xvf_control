@@ -131,7 +131,7 @@ int main(int argc, char ** argv)
                 return special_cmd_nlmodel_buffer(&command, false, band_index, argv[arg_indx]);
             }
         }
-        if(opt->long_name == "--get-equalization-filter")
+        if(opt->long_name == "--get-eq-filter")
         {
             if(arg_indx >= argc)
             {
@@ -142,7 +142,7 @@ int main(int argc, char ** argv)
                 return special_cmd_equalization_filter(&command, true, band_index, argv[arg_indx]);
             }
         }
-        if(opt->long_name == "--set-equalization-filter")
+        if(opt->long_name == "--set-eq-filter")
         {
             if(arg_indx >= argc)
             {
