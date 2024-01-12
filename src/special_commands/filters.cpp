@@ -289,7 +289,6 @@ control_ret_t special_cmd_nlmodel_buffer(Command * command, bool flag_buffer_get
     cmd_t filter_cmd = {0};
     init_cmd(&filter_cmd, filter_cmd_name);
     int32_t len = ((nlm_buffer_length + (filter_cmd.num_values - 1)) / filter_cmd.num_values) * filter_cmd.num_values;
-    cout << "len = " << len << endl;
     cmd_param_t * nlm_buffer = new cmd_param_t[len];
 
     ret = read_write_buffer(flag_buffer_get, filter_name,
@@ -326,7 +325,6 @@ control_ret_t special_cmd_equalization_filter(Command * command, bool flag_buffe
     cmd_t filter_cmd = {0};
     init_cmd(&filter_cmd, filter_cmd_name);
     int32_t len = ((eq_buffer_length + (filter_cmd.num_values - 1)) / filter_cmd.num_values) * filter_cmd.num_values;
-    cout << "len = " << len << endl;
     cmd_param_t * eq_buffer = new cmd_param_t[len];
 
     ret = read_write_buffer(flag_buffer_get, filter_name,
