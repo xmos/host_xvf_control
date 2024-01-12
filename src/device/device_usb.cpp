@@ -13,11 +13,22 @@ Device::Device(int * info)
 
 control_ret_t Device::device_init()
 {
-    control_ret_t ret = CONTROL_SUCCESS;
+    control_ret_t ret = CONTROL_ERROR;
     if(!device_initialised)
     {
-        ret = control_init_usb(static_cast<int>(device_info[0]), static_cast<int>(device_info[1]), static_cast<int>(device_info[2]));
-        device_initialised = true;
+        for(int pid_idx = 0; pid_idx < 2; ++pid_idx)
+        {
+            ret = control_init_usb(static_cast<int>(device_info->vendor_id), static_cast<int>(device_info->product_id[pid_idx]), static_cast<int>(device_info->ctrl_if_num));
+            if(ret == CONTROL_SUCCESS)
+            {
+                device_initialised = true;
+                break;
+            }
+        }
+    }
+    else
+    {
+        ret = CONTROL_SUCCESS;
     }
     return ret;
 }
