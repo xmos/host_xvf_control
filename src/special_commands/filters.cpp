@@ -142,7 +142,7 @@ control_ret_t read_write_buffer(const bool flag_buffer_get, const string filter_
 
         if(size != (buffer_length * sizeof(float)))
         {
-            cerr << "NLM buffer lengths don't match" << endl;
+            cerr << "Buffer lengths don't match" << endl;
             exit(HOST_APP_ERROR);
         }
 
