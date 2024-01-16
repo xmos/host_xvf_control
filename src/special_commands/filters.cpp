@@ -127,7 +127,7 @@ control_ret_t read_write_buffer(const bool flag_buffer_get, const string filter_
                                 const int32_t buffer_length, cmd_param_t * buffer)
 {
     control_ret_t ret;
-    if(flag_buffer_get == false) // read equalization buffer from file and write to the device
+    if(flag_buffer_get == false) // read data from file and write to the device
     {
         ifstream rf(filter_name, ios::out | ios::binary);
         if(!rf)
@@ -164,10 +164,10 @@ control_ret_t read_write_buffer(const bool flag_buffer_get, const string filter_
         // Write the full buffer to the device
         ret = get_or_set_full_buffer(command, buffer, buffer_length, start_coeff_cmd_name, filter_cmd_name, flag_buffer_get);
     }
-    else // Read equalization buffer from device and write to the file
+    else // Read data from device and write to the file
     {
         // Read the full buffer from the device
-        control_ret_t ret = get_or_set_full_buffer(command, buffer, buffer_length, start_coeff_cmd_name, filter_cmd_name, flag_buffer_get);
+        ret = get_or_set_full_buffer(command, buffer, buffer_length, start_coeff_cmd_name, filter_cmd_name, flag_buffer_get);
 
         // Write filter to file
         ofstream wf(filter_name, ios::out | ios::binary);
