@@ -16,9 +16,16 @@ control_ret_t Device::device_init()
     control_ret_t ret = CONTROL_ERROR;
     if(!device_initialised)
     {
-        for(int pid_idx = 0; pid_idx < 2; ++pid_idx)
+        // The USB device information list has a peculiar structure.
+        // It consists of multiple sets.
+        // Each set has three members, a VID, a PID, and the number of the USB control interface.
+        // These three members appear in the order given above.
+        // To allow the count of sets to change in future, the zero-th element in the list holds a count of how many sets follow.
+        int info_set_count = static_cast<int>(device_info[0]);
+        for(int set_idx = 0; set_idx < info_set_count; ++set_idx)
         {
-            ret = control_init_usb(static_cast<int>(device_info->vendor_id), static_cast<int>(device_info->product_id[pid_idx]), static_cast<int>(device_info->ctrl_if_num));
+            int offset = set_idx * 3; // Three members per set
+            ret = control_init_usb(static_cast<int>(device_info[offset+1]), static_cast<int>(device_info[offset+2]), static_cast<int>(device_info[offset+3]));
             if(ret == CONTROL_SUCCESS)
             {
                 device_initialised = true;
