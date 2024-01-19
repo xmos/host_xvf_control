@@ -359,9 +359,6 @@ uint32_t status_is_idle() {
     if (getstatus(status, state) ==  CONTROL_SUCCESS)
     {
         switch(state) {
-            case DFU_STATE_appIDLE:
-                return 1;
-            break;
             case DFU_STATE_dfuERROR:
                 clearStatus();
             break;

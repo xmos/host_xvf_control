@@ -90,9 +90,9 @@ const std::string default_command_map_name = "command_map";
  *
  * @note This will have to be manually changed after the release
  */
-const std::string current_host_app_version = "2.0.1";
+const std::string current_host_app_version = "2.1.0";
 
-/** @brief Convert string to uper case */
+/** @brief Convert string to upper case */
 std::string to_upper(std::string str);
 
 /** @brief Convert string to lower case */
@@ -101,7 +101,7 @@ std::string to_lower(std::string str);
 /**
  * @brief Get information to initialise a device
  *
- * @param handle    Pointer to the comamnd_map dl
+ * @param handle    Pointer to the command_map dl
  * @param lib_name  Device dl name
  */
 int * get_device_init_info(dl_handle_t handle, std::string lib_name);

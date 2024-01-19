@@ -132,6 +132,28 @@ int main(int argc, char ** argv)
                 return special_cmd_nlmodel_buffer(&command, false, band_index, argv[arg_indx]);
             }
         }
+        if(opt->long_name == "--get-eq-filter")
+        {
+            if(arg_indx >= argc)
+            {
+                return special_cmd_equalization_filter(&command, true, band_index);
+            }
+            else
+            {
+                return special_cmd_equalization_filter(&command, true, band_index, argv[arg_indx]);
+            }
+        }
+        if(opt->long_name == "--set-eq-filter")
+        {
+            if(arg_indx >= argc)
+            {
+                return special_cmd_equalization_filter(&command, false, band_index);
+            }
+            else
+            {
+                return special_cmd_equalization_filter(&command, false, band_index, argv[arg_indx]);
+            }
+        }
         if(opt->long_name == "--test-control-interface")
         {
             return test_control_interface(&command, argv[arg_indx]);
