@@ -492,7 +492,7 @@ control_ret_t upload_operation(const string image_path)
         }
         cout << "Writing transfer block " << transfer_block_num++ << ": "<< values[0] << " bytes" <<  endl;
 
-        wf.write((const char *) values[1], values[0]);
+        wf.write((const char *) &values[1], values[0]);
     }
 
     wf.close();
