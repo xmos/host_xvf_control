@@ -75,7 +75,6 @@ static string commandList[] = {"DFU_DETACH", "DFU_DNLOAD", "DFU_UPLOAD", "DFU_GE
 
 /* device control resource IDs **/
 static int dfu_controller_servicer_resid = -1;
-static int dfu_resid = -1;
 
 const string dfu_state_to_string( int state )
 {
@@ -250,8 +249,10 @@ control_ret_t command_set(Device * device, control_resid_t res_id, std::string c
 
 opt_t options[] = {
     {"--help",                    "-h",        "display this information"                                                                       },
-    {"--version",                 "-v",        "print the current version of this application",                                                 },
+    {"--app-version",             "-av",       "print the current version of this application",                                                 },
     {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                          },
+    {"--app-version",             "-av",       "print the current version of this application",                                                 },
+    {"--version",                 "-v",        "read the version on the device",                                                                },
     {"--download",                "-d",        "download upgrade image stored in the specified path, the path is relative to the working dir"   },
     {"--upload-factory",          "-uf",       "upload factory image and save it in the specified path, the path is relative to the working dir"},
     {"--upload-upgrade",          "-uu",       "upload upgrade image and save it in the specified path, the path is relative to the working dir"},
@@ -324,7 +325,7 @@ control_ret_t getstatus(uint8_t &status, uint8_t &state)
     string command_name = "DFU_GETSTATUS";
     uint8_t values[CommandInfo[command_name]->get_num_values()];
 
-    control_ret_t cmd_ret = command_get(NULL, dfu_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), values);
+    control_ret_t cmd_ret = command_get(NULL, dfu_controller_servicer_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), values);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -344,7 +345,7 @@ control_ret_t getstatus(uint8_t &status, uint8_t &state)
 
 control_ret_t clearStatus() {
     string command_name = "DFU_CLRSTATUS";
-    control_ret_t cmd_ret = command_set(NULL, dfu_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), NULL);
+    control_ret_t cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), NULL);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -372,7 +373,7 @@ uint32_t status_is_idle() {
 control_ret_t setalternate(uint8_t alternate)
 {
     string command_name = "DFU_SETALTERNATE";
-    control_ret_t cmd_ret = command_set(NULL, dfu_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), NULL);
+    control_ret_t cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), NULL);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -400,7 +401,7 @@ control_ret_t download_operation(const string image_path)
         uint8_t num_values = CommandInfo[command_name]->get_num_values();
         uint8_t * values = new uint8_t[num_values];
         rf.read((char*) values, num_values);
-        cmd_ret = command_set(NULL, dfu_resid, command_name, CommandInfo[command_name]->get_id(), num_values, values);
+        cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandInfo[command_name]->get_id(), num_values, values);
         if (cmd_ret != CONTROL_SUCCESS) {
             cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
@@ -432,7 +433,7 @@ control_ret_t download_operation(const string image_path)
     }
     // Send empty download message. TODO: Check how to indicate the zero payload length
     string command_name = "DFU_DNLOAD";
-    cmd_ret = command_set(NULL, dfu_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), 0);
+    cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), 0);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -463,7 +464,7 @@ control_ret_t reboot_operation()
 {
     cout << "Reboot device" << endl;
     string command_name = "DFU_DETACH";
-    control_ret_t cmd_ret = command_set(NULL, dfu_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), NULL);
+    control_ret_t cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), NULL);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -473,23 +474,25 @@ control_ret_t reboot_operation()
 
 control_ret_t upload_operation(const string image_path)
 {
-    cout << "Upload image to " << image_path << endl;
+    cout << "Uploading image to " << image_path << endl;
     ofstream wf(image_path, ios::out | ios::binary);
+    string command_name = "DFU_UPLOAD";
+    uint8_t num_values = CommandInfo[command_name]->get_num_values();
+    uint8_t values[num_values];
+    uint32_t transfer_block_num = 0;
     if(!wf) {
         cout << "Cannot open file!" << endl;
         return CONTROL_ERROR;
     }
     while (1) {
-        string command_name = "DFU_UPLOAD";
-        uint8_t num_values = CommandInfo[command_name]->get_num_values();
-        uint8_t values[num_values];
-
-        control_ret_t cmd_ret = command_get(NULL, dfu_resid, command_name, CommandInfo[command_name]->get_id(), num_values, values);
+        control_ret_t cmd_ret = command_get(NULL, dfu_controller_servicer_resid, command_name, CommandInfo[command_name]->get_id(), num_values, values);
         if (cmd_ret != CONTROL_SUCCESS) {
             cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
         }
-        wf.write((const char *) values, num_values);
+        cout << "Writing transfer block " << transfer_block_num++ << ": "<< values[0] << " bytes" <<  endl;
+
+        wf.write((const char *) values[1], values[0]);
     }
 
     wf.close();
@@ -540,7 +543,6 @@ void parse_dfu_cmds_yaml(string yaml_file_full_path)
 {
     // Load YAML file
     YAML::Node config = YAML::LoadFile(yaml_file_full_path);
-    // string dfu_detach_cmd_name = config["DFU_CONTROLLER_SERVICER_RESID (0xF0)"]["dedicated_commands"][0]["cmd"].as<string>();
     YAML::Node resource_ids = config;
     for (const auto& node : config)
     {
@@ -557,11 +559,6 @@ void parse_dfu_cmds_yaml(string yaml_file_full_path)
             cout << "DFU_CONTROLLER_SERVICER_RESID is " << resource_id << endl;
             dfu_controller_servicer_resid = resource_id;
         }
-        if (resource_id_string.find("DFU_RESID") != string::npos)
-        {
-            cout << "DFU_RESID is " << resource_id << endl;
-            dfu_resid = resource_id;
-        }
         YAML::Node dedicated_commands = node.second["dedicated_commands"];
         if (dedicated_commands.IsSequence())
         {
@@ -574,11 +571,6 @@ void parse_dfu_cmds_yaml(string yaml_file_full_path)
     if (dfu_controller_servicer_resid == -1)
     {
         cerr << "Error: DFU_CONTROLLER_SERVICER_RESID not set in YAML file" << endl;
-        exit(1);
-    }
-    if (dfu_resid == -1)
-    {
-        cerr << "Error: DFU_RESID not set in YAML file" << endl;
         exit(1);
     }
 }
@@ -644,7 +636,7 @@ int main(int argc, char ** argv)
         {
             return print_help_menu();
         }
-        else if (opt->long_name == "--version")
+        else if (opt->long_name == "--app-version")
         {
             cout << current_host_app_version << endl;
             return 0;
