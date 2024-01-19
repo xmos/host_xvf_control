@@ -28,8 +28,10 @@ set(DEVICE_CONTROL_PATH ${FWK_RTOS}/modules/sw_services/device_control)
 
 include(src/host_drivers.cmake)
 include(src/host_application.cmake)
-include(src/dfu_application.cmake)
-
+# Compile the DFU host app only for Raspbian
+if((UNIX AND NOT APPLE) AND (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7l"))
+    include(src/dfu_application.cmake)
+endif()
 if(TESTING)
     include(src/low_level_test_host_drivers.cmake)
     add_subdirectory(test)

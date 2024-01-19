@@ -650,7 +650,7 @@ int main(int argc, char ** argv)
             return 0;
         }
     }
-    #if 0
+
     string device_dl_path = get_dynamic_lib_path(device_dl_name);
     dl_handle_t device_handle = get_dynamic_lib(device_dl_path);
 
@@ -663,7 +663,6 @@ int main(int argc, char ** argv)
         cerr << "Could not connect to the device" << endl;
         exit(ret);
     }
-    #endif
 
     int arg_indx = cmd_indx + 1;
     next_cmd = argv[cmd_indx];
