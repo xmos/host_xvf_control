@@ -54,23 +54,9 @@ using namespace std;
 #define DFU_ALT_FACTORY_ID 0
 #define DFU_ALT_UPGRADE_ID 1
 
+static map<std::string, int>CommandIDs;
+static map<std::string, int>CommandLengths;
 
-
-class commandValues
-{
-    int id;
-    int num_values;
-    public:
-    commandValues(int id, int num_values)
-    {
-        id = id;
-        num_values = num_values;
-    }
-    int get_num_values() {return num_values;}
-    int get_id() {return id;}
-
-};
-static map<string, commandValues*>CommandInfo;
 static string commandList[] = {"DFU_DETACH", "DFU_DNLOAD", "DFU_UPLOAD", "DFU_GETSTATUS", "DFU_CLRSTATUS", "DFU_GETSTATE", "DFU_ABORT", "DFU_SETALTERNATE", "DFU_REBOOT", "DFU_VERSION"};
 
 /* device control resource IDs **/
@@ -322,10 +308,11 @@ control_ret_t print_help_menu()
 
 control_ret_t getstatus(uint8_t &status, uint8_t &state)
 {
-    string command_name = "DFU_GETSTATUS";
-    uint8_t values[CommandInfo[command_name]->get_num_values()];
 
-    control_ret_t cmd_ret = command_get(NULL, dfu_controller_servicer_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), values);
+    const string command_name = "DFU_GETSTATUS";
+    uint8_t values[CommandLengths[command_name]];
+
+    control_ret_t cmd_ret = command_get(NULL, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -344,8 +331,12 @@ control_ret_t getstatus(uint8_t &status, uint8_t &state)
 }
 
 control_ret_t clearStatus() {
+    control_ret_t cmd_ret = CONTROL_SUCCESS;
     string command_name = "DFU_CLRSTATUS";
-    control_ret_t cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), NULL);
+    uint8_t num_values = CommandLengths[command_name];
+    uint8_t values[num_values];
+
+    cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -372,8 +363,12 @@ uint32_t status_is_idle() {
 }
 control_ret_t setalternate(uint8_t alternate)
 {
+    control_ret_t cmd_ret = CONTROL_SUCCESS;
     string command_name = "DFU_SETALTERNATE";
-    control_ret_t cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), NULL);
+    uint8_t num_values = CommandLengths[command_name];
+    uint8_t values[num_values];
+
+    cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -393,15 +388,18 @@ control_ret_t download_operation(const string image_path)
     uint8_t state;
     size_t file_size = rf.tellg();
     uint32_t total_bytes = 0;
-    control_ret_t cmd_ret;
+    control_ret_t cmd_ret = CONTROL_SUCCESS;
     uint8_t is_state_not_idle = 1;
     uint8_t is_state_not_error = 1;
+    string command_name = "DFU_DNLOAD";
+
     while (total_bytes <= file_size) {
-        string command_name = "DFU_DNLOAD";
-        uint8_t num_values = CommandInfo[command_name]->get_num_values();
+
+
+        uint8_t num_values = CommandLengths[command_name];
         uint8_t * values = new uint8_t[num_values];
         rf.read((char*) values, num_values);
-        cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandInfo[command_name]->get_id(), num_values, values);
+        cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], num_values, values);
         if (cmd_ret != CONTROL_SUCCESS) {
             cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
@@ -432,12 +430,13 @@ control_ret_t download_operation(const string image_path)
         return CONTROL_ERROR;
     }
     // Send empty download message. TODO: Check how to indicate the zero payload length
-    string command_name = "DFU_DNLOAD";
-    cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), 0);
+
+    cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], 0);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
+
     while (is_state_not_idle)
     {
         if (getstatus(status, state) ==  CONTROL_SUCCESS)
@@ -463,21 +462,28 @@ control_ret_t download_operation(const string image_path)
 control_ret_t reboot_operation()
 {
     cout << "Reboot device" << endl;
+    control_ret_t cmd_ret = CONTROL_SUCCESS;
+
     string command_name = "DFU_DETACH";
-    control_ret_t cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandInfo[command_name]->get_id(), CommandInfo[command_name]->get_num_values(), NULL);
+    uint8_t num_values = CommandLengths[command_name];
+    uint8_t values[num_values];
+
+    cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
-    return CONTROL_SUCCESS;
+
+    return cmd_ret;
 }
 
 control_ret_t upload_operation(const string image_path)
 {
     cout << "Uploading image to " << image_path << endl;
     ofstream wf(image_path, ios::out | ios::binary);
+
     string command_name = "DFU_UPLOAD";
-    uint8_t num_values = CommandInfo[command_name]->get_num_values();
+    uint8_t num_values = CommandLengths[command_name];
     uint8_t values[num_values];
     uint32_t transfer_block_num = 0;
     if(!wf) {
@@ -485,7 +491,7 @@ control_ret_t upload_operation(const string image_path)
         return CONTROL_ERROR;
     }
     while (1) {
-        control_ret_t cmd_ret = command_get(NULL, dfu_controller_servicer_resid, command_name, CommandInfo[command_name]->get_id(), num_values, values);
+        control_ret_t cmd_ret = command_get(NULL, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], num_values, values);
         if (cmd_ret != CONTROL_SUCCESS) {
             cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
@@ -529,10 +535,10 @@ void add_command(YAML::Node yaml_info, const string command_name)
         {
             int cmd_id = command["index"].as<int>();
             int cmd_num_values = command["number_of_values"].as<int>();
-            commandValues* c = new commandValues(cmd_id, cmd_num_values);
-            CommandInfo[command_name] = c;
+            CommandIDs[command_name] = cmd_id;
+            CommandLengths[command_name] = cmd_num_values;
             // TODO: Check if we should implement a verbose mode
-            // cout << "Added command " << command_name << " with ID " << cmd_id << " and number of values " << cmd_num_values << endl;
+            cout << "Added command " << command_name << " with ID " << CommandIDs[command_name] << " and number of values " << cmd_num_values << endl;
             return;
         }
     }
