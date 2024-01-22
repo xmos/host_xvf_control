@@ -383,7 +383,7 @@ control_ret_t getstatus(Device * device, uint8_t &status, uint8_t &state)
                             (0xff & values[1]);
     state = values[4];
     status = values[5];
-    cout << "DFU_GETSTATUS: Status " << dfu_status_to_string(status) << ", State " << dfu_state_to_string(state) << ",Timeout (ms) " << poll_timeout << endl;
+    cout << "DFU_GETSTATUS: Status " << dfu_status_to_string(status) << ", State " << dfu_state_to_string(state) << ", Timeout (ms) " << poll_timeout << endl;
 
     std::this_thread::sleep_for(std::chrono::milliseconds(poll_timeout));
 
@@ -420,6 +420,7 @@ control_ret_t clearStatus(Device * device) {
 uint32_t status_is_idle(Device * device) {
     uint8_t status;
     uint8_t state;
+
     if (getstatus(device, status, state) ==  CONTROL_SUCCESS)
     {
         switch(state) {
@@ -700,9 +701,6 @@ void parse_dfu_cmds_yaml(string yaml_file_full_path)
             {
                 add_command(dedicated_commands, command_name);
             }
-        } else {
-            cerr << "Error: No DFU dedicated command found. Check the YAML file: " << yaml_file_full_path << endl;
-            exit(HOST_APP_ERROR);
         }
     }
     if (dfu_controller_servicer_resid == -1)
@@ -813,6 +811,7 @@ int main(int argc, char ** argv)
         if (!status_is_idle(device)) {
             return -1;
         }
+
         opt = option_lookup(next_cmd, options, num_options);
         if (opt->long_name == "--download")
         {
