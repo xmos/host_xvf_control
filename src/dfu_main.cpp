@@ -1,4 +1,4 @@
-// Copyright 2022-2023 XMOS LIMITED.
+// Copyright 2024 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #include <fstream>
@@ -16,8 +16,10 @@
 
 using namespace std;
 
-
-/* DFU_GETSTATUS bStatus values (Section 6.1.2, DFU Rev 1.1) */
+/**
+ * @brief DFU_GETSTATUS status values
+ * @note These values are the same as section 6.1.2 of DFU Rev 1.1
+ **/
 #define DFU_STATUS_OK               0x00
 #define DFU_STATUS_errTARGET        0x01
 #define DFU_STATUS_errFILE          0x02
@@ -35,7 +37,10 @@ using namespace std;
 #define DFU_STATUS_errUNKNOWN       0x0e
 #define DFU_STATUS_errSTALLEDPKT    0x0f
 
-/* DFU state values (Section 6.1.2, DFU Rev 1.1) */
+/**
+ * @brief DFU state values
+ * @note These values are the same as section 6.1.2 of DFU Rev 1.1
+ **/
 #define DFU_STATE_appIDLE               0
 #define DFU_STATE_appDETACH             1
 #define DFU_STATE_dfuIDLE               2
@@ -48,20 +53,38 @@ using namespace std;
 #define DFU_STATE_dfuUPLOAD_IDLE        9
 #define DFU_STATE_dfuERROR              10
 
-/* XMOS values for control commands */
-
-/* alt-setting for flash partition */
+/** @brief Alt-setting values for flash partition */
 #define DFU_ALT_FACTORY_ID 0
 #define DFU_ALT_UPGRADE_ID 1
 
-static map<std::string, int>CommandIDs;
-static map<std::string, int>CommandLengths;
+/**
+ * @brief Dictionaries storing command IDs and payload lenghts of the DFU commands
+-* @note The values are read from the DFU yaml file
+ **/
+static map<string, int>CommandIDs;
+static map<string, int>CommandLengths;
 
-static string commandList[] = {"DFU_DETACH", "DFU_DNLOAD", "DFU_UPLOAD", "DFU_GETSTATUS", "DFU_CLRSTATUS", "DFU_GETSTATE", "DFU_ABORT", "DFU_SETALTERNATE", "DFU_REBOOT", "DFU_VERSION"};
+/** @brief List of supported DFU commands */
+static string commandList[] =
+{
+    "DFU_DETACH",
+    "DFU_DNLOAD",
+    "DFU_UPLOAD",
+    "DFU_GETSTATUS",
+    "DFU_CLRSTATUS",
+    "DFU_GETSTATE",
+    "DFU_ABORT",
+    "DFU_SETALTERNATE",
+    "DFU_REBOOT",
+    "DFU_VERSION"
+};
 
-/* device control resource IDs **/
+/** @brief Resource ID of DFU controller servicer
+ * @note The value is read from the DFU yaml file
+ **/
 static int dfu_controller_servicer_resid = -1;
 
+/** @brief Convert DFU state value into a string */
 const string dfu_state_to_string( int state )
 {
     const char * message;
@@ -108,6 +131,7 @@ const string dfu_state_to_string( int state )
     return string(message);
 }
 
+/** @brief List of strings for DFU statuses */
 static const char *dfu_status_names[] = {
     /* DFU_STATUS_OK */
         "No error condition is present",
@@ -143,6 +167,7 @@ static const char *dfu_status_names[] = {
         "Device stalled an unexpected request"
 };
 
+/** @brief Convert DFU status value into a string */
 const string dfu_status_to_string(int status)
 {
     if (status > DFU_STATUS_errSTALLEDPKT)
@@ -150,7 +175,19 @@ const string dfu_status_to_string(int status)
     return string(dfu_status_names[status]);
 }
 
-control_ret_t command_get(Device * device, control_resid_t res_id, std::string cmd_name, control_cmd_t cmd_id, unsigned num_values, uint8_t * values)
+/**
+ * @brief Executes a single get command
+ *
+ * @param device        Pointer to the Device class object
+ * @param res_id        Command resource ID
+ * @param cmd_name      Command Name
+ * @param cmd_id        Command ID
+ * @param num_values    Number of values the command reads
+ * @param values        Buffer storing the read values
+ *
+ * @return              device control status
+ */
+control_ret_t command_get(Device * device, control_resid_t res_id, string cmd_name, control_cmd_t cmd_id, unsigned num_values, uint8_t * values)
 {
     cmd_id = cmd_id | 0x80; // setting 8th bit for read commands
 
@@ -192,7 +229,19 @@ control_ret_t command_get(Device * device, control_resid_t res_id, std::string c
     return ret;
 }
 
-control_ret_t command_set(Device * device, control_resid_t res_id, std::string cmd_name, control_cmd_t cmd_id, unsigned num_values, uint8_t * values)
+/**
+ * @brief Executes a single set command
+ *
+ * @param device        Pointer to the Device class object
+ * @param res_id        Command resource ID
+ * @param cmd_name      Command Name
+ * @param cmd_id        Command ID
+ * @param num_values    Number of values the command writes
+ * @param values        Buffer storing the read values
+ *
+ * @return              device control status
+ */
+control_ret_t command_set(Device * device, control_resid_t res_id, string cmd_name, control_cmd_t cmd_id, unsigned num_values, uint8_t * values)
 {
     size_t data_len = num_values;
     uint8_t * data = new uint8_t[data_len];
@@ -233,6 +282,7 @@ control_ret_t command_set(Device * device, control_resid_t res_id, std::string c
     return ret;
 }
 
+/** @brief List of supported CLI options */
 opt_t options[] = {
     {"--help",                    "-h",        "display this information"                                                                       },
     {"--app-version",             "-av",       "print the current version of this application",                                                 },
@@ -244,9 +294,9 @@ opt_t options[] = {
     {"--upload-upgrade",          "-uu",       "upload upgrade image and save it in the specified path, the path is relative to the working dir"},
     {"--reboot",                  "-r",        "reboot device"                                                                                  },
 };
-
 size_t num_options = end(options) - begin(options);
 
+/** @brief Print DFU host application help menu */
 control_ret_t print_help_menu()
 {
     size_t longest_short_opt = 0;
@@ -306,6 +356,16 @@ control_ret_t print_help_menu()
     return CONTROL_SUCCESS;
 }
 
+
+/**
+ * @brief Executes a GETSTATUS request
+ *
+ * @param device        Pointer to the Device class object
+ * @param status        Status read from the device
+ * @param state         State read from the device
+ *
+ * @return              device control status
+ */
 control_ret_t getstatus(Device * device, uint8_t &status, uint8_t &state)
 {
 
@@ -330,6 +390,11 @@ control_ret_t getstatus(Device * device, uint8_t &status, uint8_t &state)
     return cmd_ret;
 }
 
+/**
+ * @brief Executes a CLRSTATUS request
+ *
+ * @return              device control status
+ */
 control_ret_t clearStatus(Device * device) {
     control_ret_t cmd_ret = CONTROL_SUCCESS;
     string command_name = "DFU_CLRSTATUS";
@@ -345,6 +410,13 @@ control_ret_t clearStatus(Device * device) {
     return cmd_ret;
 }
 
+/**
+ * @brief Checks if device is in dfuIDLE state
+ *
+ * @param device        Pointer to the Device class object
+ *
+ * @return              0 if it the state is dfuIDLE, 1 otherwise
+ */
 uint32_t status_is_idle(Device * device) {
     uint8_t status;
     uint8_t state;
@@ -354,13 +426,24 @@ uint32_t status_is_idle(Device * device) {
             case DFU_STATE_dfuERROR:
                 clearStatus(device);
             break;
+            case DFU_STATE_dfuIDLE:
+                return 0;
             default:
                 // do nothing
             break;
         }
     }
-    return 0;
+    return 1;
 }
+
+/**
+ * @brief Executes a SETALTERNATE request
+ *
+ * @param device        Pointer to the Device class object
+ * @param alternate     Alt setting to use
+ *
+ * @return              device control status
+ */
 control_ret_t setalternate(Device * device, uint8_t alternate)
 {
     control_ret_t cmd_ret = CONTROL_SUCCESS;
@@ -376,6 +459,15 @@ control_ret_t setalternate(Device * device, uint8_t alternate)
 
     return cmd_ret;
 }
+
+/**
+ * @brief Executes a download operation
+ *
+ * @param device        Pointer to the Device class object
+ * @param image_path    Path to the image to download to the device
+ *
+ * @return              device control status
+ */
 control_ret_t download_operation(Device * device, const string image_path)
 {
     cout << "Download upgrade image " << image_path << endl;
@@ -459,6 +551,11 @@ control_ret_t download_operation(Device * device, const string image_path)
     return CONTROL_SUCCESS;
 }
 
+/**
+ * @brief Executes a reboot operation
+ *
+ * @return              device control status
+ */
 control_ret_t reboot_operation(Device * device)
 {
     cout << "Reboot device" << endl;
@@ -477,6 +574,14 @@ control_ret_t reboot_operation(Device * device)
     return cmd_ret;
 }
 
+/**
+ * @brief Executes a download operation
+ *
+ * @param device        Pointer to the Device class object
+ * @param image_path    Path to the image to upload from the device
+ *
+ * @return              device control status
+ */
 control_ret_t upload_operation(Device * device, const string image_path)
 {
     cout << "Uploading image to " << image_path << endl;
@@ -509,6 +614,16 @@ control_ret_t upload_operation(Device * device, const string image_path)
     return CONTROL_SUCCESS;
 }
 
+/**
+ * @brief Check if a file given as a CLI argument exists
+ *
+ * @param argv          List of CLI argument
+ * @param arg_indx      Index of the argument with the file path
+ * @param argc          Number of CLI arguments
+ * @param path          Absolute path of the given path
+ *
+ * @return              1 if file is found, 0 otherwise
+ */
 int file_path_exists(char ** argv, const uint32_t arg_indx, const uint32_t argc, string& path)
 {
     if (arg_indx >= argc)
@@ -527,6 +642,12 @@ int file_path_exists(char ** argv, const uint32_t arg_indx, const uint32_t argc,
     }
 }
 
+/**
+ * @brief Add to a DFU command with the info found in the YAML file
+ *
+ * @param yaml_info     Information read from the YAML file
+ * @param command_name  DFU command name to be added
+ */
 void add_command(YAML::Node yaml_info, const string command_name)
 {
     for (const auto& command : yaml_info)
@@ -546,6 +667,11 @@ void add_command(YAML::Node yaml_info, const string command_name)
     exit(HOST_APP_ERROR);
 }
 
+/**
+ * @brief Parse YAML file with DFU control commands
+ *
+ * @param yaml_file_full_path     Path to the YAML file
+ */
 void parse_dfu_cmds_yaml(string yaml_file_full_path)
 {
     // Load YAML file
@@ -586,7 +712,14 @@ void parse_dfu_cmds_yaml(string yaml_file_full_path)
     }
 }
 
-string get_file_path(const string rel_path)
+/**
+ * @brief Convert file path relative to the host app binary into the absolute path
+ *
+ * @param rel_path      Relative path of the file
+ *
+ * @return              Absolute path of the file
+ */
+string get_abs_file_path(const string rel_path)
 {
 
     char path[PATH_MAX];
@@ -616,7 +749,7 @@ int main(int argc, char ** argv)
     }
 
     // Load YAML file
-    YAML::Node config = YAML::LoadFile(get_file_path("src/transport_config.yaml"));
+    YAML::Node config = YAML::LoadFile(get_abs_file_path("src/transport_config.yaml"));
 
     // Read I2C parameters from YAML file
     int* i2c_info = new int[1];
@@ -626,7 +759,7 @@ int main(int argc, char ** argv)
     spi_info[0] = config["SPI_MODE"].as<int>();
     spi_info[1] = 1024;
 
-    parse_dfu_cmds_yaml(get_file_path("src/dfu_cmds.yaml"));
+    parse_dfu_cmds_yaml(get_abs_file_path("src/dfu_cmds.yaml"));
     string device_dl_name = get_device_lib_name(&argc, argv, options, num_options);
     int * device_init_info = NULL;
     if(device_dl_name == device_i2c_dl_name)
