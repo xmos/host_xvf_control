@@ -157,7 +157,7 @@ control_ret_t command_get(Device * device, control_resid_t res_id, std::string c
     size_t data_len = num_values + 1; // one extra for the status
     uint8_t * data = new uint8_t[data_len];
 
-    control_ret_t ret = CONTROL_SUCCESS;//device->device_get(res_id, cmd_id, data, data_len);
+    control_ret_t ret = device->device_get(res_id, cmd_id, data, data_len);
     int read_attempts = 1;
 
     while(1)
@@ -202,7 +202,7 @@ control_ret_t command_set(Device * device, control_resid_t res_id, std::string c
         memcpy(data + i, &values[i], 1);
     }
 
-    control_ret_t ret = CONTROL_SUCCESS; //device->device_set(res_id, cmd_id, data, data_len);
+    control_ret_t ret = device->device_set(res_id, cmd_id, data, data_len);
     int write_attempts = 1;
 
     while(1)
@@ -306,13 +306,13 @@ control_ret_t print_help_menu()
     return CONTROL_SUCCESS;
 }
 
-control_ret_t getstatus(uint8_t &status, uint8_t &state)
+control_ret_t getstatus(Device * device, uint8_t &status, uint8_t &state)
 {
 
     const string command_name = "DFU_GETSTATUS";
     uint8_t values[CommandLengths[command_name]];
 
-    control_ret_t cmd_ret = command_get(NULL, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
+    control_ret_t cmd_ret = command_get(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -330,13 +330,13 @@ control_ret_t getstatus(uint8_t &status, uint8_t &state)
     return cmd_ret;
 }
 
-control_ret_t clearStatus() {
+control_ret_t clearStatus(Device * device) {
     control_ret_t cmd_ret = CONTROL_SUCCESS;
     string command_name = "DFU_CLRSTATUS";
     uint8_t num_values = CommandLengths[command_name];
     uint8_t values[num_values];
 
-    cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
+    cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -345,14 +345,14 @@ control_ret_t clearStatus() {
     return cmd_ret;
 }
 
-uint32_t status_is_idle() {
+uint32_t status_is_idle(Device * device) {
     uint8_t status;
     uint8_t state;
-    if (getstatus(status, state) ==  CONTROL_SUCCESS)
+    if (getstatus(device, status, state) ==  CONTROL_SUCCESS)
     {
         switch(state) {
             case DFU_STATE_dfuERROR:
-                clearStatus();
+                clearStatus(device);
             break;
             default:
                 // do nothing
@@ -361,14 +361,14 @@ uint32_t status_is_idle() {
     }
     return 0;
 }
-control_ret_t setalternate(uint8_t alternate)
+control_ret_t setalternate(Device * device, uint8_t alternate)
 {
     control_ret_t cmd_ret = CONTROL_SUCCESS;
     string command_name = "DFU_SETALTERNATE";
     uint8_t num_values = CommandLengths[command_name];
     uint8_t values[num_values];
 
-    cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
+    cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -376,7 +376,7 @@ control_ret_t setalternate(uint8_t alternate)
 
     return cmd_ret;
 }
-control_ret_t download_operation(const string image_path)
+control_ret_t download_operation(Device * device, const string image_path)
 {
     cout << "Download upgrade image " << image_path << endl;
     ifstream rf(image_path, ios::out | ios::binary);
@@ -399,21 +399,21 @@ control_ret_t download_operation(const string image_path)
         uint8_t num_values = CommandLengths[command_name];
         uint8_t * values = new uint8_t[num_values];
         rf.read((char*) values, num_values);
-        cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], num_values, values);
+        cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], num_values, values);
         if (cmd_ret != CONTROL_SUCCESS) {
             cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
         }
         while (is_state_not_idle && is_state_not_error)
         {
-            if (getstatus(status, state) ==  CONTROL_SUCCESS)
+            if (getstatus(device, status, state) ==  CONTROL_SUCCESS)
             {
                 switch(state) {
                     case DFU_STATE_dfuDNLOAD_IDLE:
                         is_state_not_idle = 0;
                     break;
                     case DFU_STATE_dfuERROR:
-                        clearStatus();
+                        clearStatus(device);
                         is_state_not_error = 0;
                     break;
                     default:
@@ -431,7 +431,7 @@ control_ret_t download_operation(const string image_path)
     }
     // Send empty download message. TODO: Check how to indicate the zero payload length
 
-    cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], 0);
+    cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], 0);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -439,7 +439,7 @@ control_ret_t download_operation(const string image_path)
 
     while (is_state_not_idle)
     {
-        if (getstatus(status, state) ==  CONTROL_SUCCESS)
+        if (getstatus(device, status, state) ==  CONTROL_SUCCESS)
         {
             switch(state) {
                 case DFU_STATE_dfuIDLE:
@@ -459,7 +459,7 @@ control_ret_t download_operation(const string image_path)
     return CONTROL_SUCCESS;
 }
 
-control_ret_t reboot_operation()
+control_ret_t reboot_operation(Device * device)
 {
     cout << "Reboot device" << endl;
     control_ret_t cmd_ret = CONTROL_SUCCESS;
@@ -468,7 +468,7 @@ control_ret_t reboot_operation()
     uint8_t num_values = CommandLengths[command_name];
     uint8_t values[num_values];
 
-    cmd_ret = command_set(NULL, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
+    cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
@@ -477,7 +477,7 @@ control_ret_t reboot_operation()
     return cmd_ret;
 }
 
-control_ret_t upload_operation(const string image_path)
+control_ret_t upload_operation(Device * device, const string image_path)
 {
     cout << "Uploading image to " << image_path << endl;
     ofstream wf(image_path, ios::out | ios::binary);
@@ -491,7 +491,7 @@ control_ret_t upload_operation(const string image_path)
         return CONTROL_ERROR;
     }
     while (1) {
-        control_ret_t cmd_ret = command_get(NULL, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], num_values, values);
+        control_ret_t cmd_ret = command_get(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], num_values, values);
         if (cmd_ret != CONTROL_SUCCESS) {
             cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
@@ -669,11 +669,11 @@ int main(int argc, char ** argv)
     {
         if (opt->long_name == "--upload-factory")
         {
-            setalternate(DFU_ALT_FACTORY_ID);
+            setalternate(device, DFU_ALT_FACTORY_ID);
         } else {
-            setalternate(DFU_ALT_UPGRADE_ID);
+            setalternate(device, DFU_ALT_UPGRADE_ID);
         }
-        if (!status_is_idle()) {
+        if (!status_is_idle(device)) {
             return -1;
         }
         opt = option_lookup(next_cmd, options, num_options);
@@ -681,7 +681,7 @@ int main(int argc, char ** argv)
         {
             string image_path = "";
             if (file_path_exists(argv, arg_indx, argc, image_path)) {
-                download_operation(image_path);
+                download_operation(device, image_path);
             } else {
                 cout << "Error: File at path \'" << argv[arg_indx] << "\' not found" << endl;
                 return -1;
@@ -689,13 +689,13 @@ int main(int argc, char ** argv)
         }
         if (opt->long_name == "--reboot")
         {
-            reboot_operation();
+            reboot_operation(device);
         }
         if (opt->long_name == "--upload-factory" || opt->long_name == "--upload-upgrade")
         {
             string image_path = "";
             if (!file_path_exists(argv, arg_indx, argc, image_path)) {
-                upload_operation(image_path);
+                upload_operation(device, image_path);
             } else {
                 cout << "Error: File at path \'" << argv[arg_indx] << "\' already exists" << endl;
                 return -1;
