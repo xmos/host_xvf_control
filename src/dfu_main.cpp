@@ -531,7 +531,8 @@ void add_command(YAML::Node yaml_info, const string command_name)
             int cmd_num_values = command["number_of_values"].as<int>();
             commandValues* c = new commandValues(cmd_id, cmd_num_values);
             CommandInfo[command_name] = c;
-            cout << "Added command " << command_name << " with ID " << cmd_id << " and number of values " << cmd_num_values << endl;
+            // TODO: Check if we should implement a verbose mode
+            // cout << "Added command " << command_name << " with ID " << cmd_id << " and number of values " << cmd_num_values << endl;
             return;
         }
     }
