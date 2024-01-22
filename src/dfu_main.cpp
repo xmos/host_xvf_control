@@ -178,7 +178,7 @@ control_ret_t command_get(Device * device, control_resid_t res_id, std::string c
         }
         else if(data[0] == SERVICER_COMMAND_RETRY)
         {
-            ret = CONTROL_SUCCESS;// device->device_get(res_id, cmd_id, data, data_len);
+            ret = device->device_get(res_id, cmd_id, data, data_len);
             read_attempts++;
         }
         else
@@ -542,8 +542,8 @@ void add_command(YAML::Node yaml_info, const string command_name)
             return;
         }
     }
-    cerr << "Warning: command " << command_name << " not found on yaml file" << endl;
-    exit(1);
+    cerr << "Error: command " << command_name << " not found on yaml file" << endl;
+    exit(HOST_APP_ERROR);
 }
 
 void parse_dfu_cmds_yaml(string yaml_file_full_path)
@@ -551,6 +551,7 @@ void parse_dfu_cmds_yaml(string yaml_file_full_path)
     // Load YAML file
     YAML::Node config = YAML::LoadFile(yaml_file_full_path);
     YAML::Node resource_ids = config;
+
     for (const auto& node : config)
     {
         string resource_id_string = node.first.as<string>();
@@ -573,12 +574,15 @@ void parse_dfu_cmds_yaml(string yaml_file_full_path)
             {
                 add_command(dedicated_commands, command_name);
             }
+        } else {
+            cerr << "Error: No DFU dedicated command found. Check the YAML file: " << yaml_file_full_path << endl;
+            exit(HOST_APP_ERROR);
         }
     }
     if (dfu_controller_servicer_resid == -1)
     {
-        cerr << "Error: DFU_CONTROLLER_SERVICER_RESID not set in YAML file" << endl;
-        exit(1);
+        cerr << "Error: DFU_CONTROLLER_SERVICER_RESID not set. Check the YAML file: " << yaml_file_full_path << endl;
+        exit(HOST_APP_ERROR);
     }
 }
 
@@ -590,7 +594,7 @@ string get_file_path(const string rel_path)
     if (count == -1)
     {
         cerr << "Could not read /proc/self/exe into " << PATH_MAX << " string" << endl;
-        exit(1);
+        exit(HOST_APP_ERROR);
     }
     path[count] = '\0'; // readlink doesn't always add NULL for some reason
 
@@ -659,8 +663,8 @@ int main(int argc, char ** argv)
     control_ret_t ret = device->device_init();
     if (ret != CONTROL_SUCCESS)
     {
-        cerr << "Could not connect to the device" << endl;
-        exit(ret);
+        cerr << "Could not connect to the device: error " << ret << endl;
+        exit(HOST_APP_ERROR);
     }
 
     int arg_indx = cmd_indx + 1;
