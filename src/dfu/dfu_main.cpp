@@ -492,7 +492,7 @@ control_ret_t download_operation(Device * device, const string image_path)
     string command_name = "DFU_DNLOAD";
     uint8_t num_values = CommandLengths[command_name];
     uint8_t * values = new uint8_t[num_values];
-    while (total_bytes <= file_size) {
+    while (rf.good()) {
 
         values[0] = DFU_DATA_BUFFER_SIZE;
         rf.read((char*) &values[1], DFU_DATA_BUFFER_SIZE);
@@ -525,12 +525,10 @@ control_ret_t download_operation(Device * device, const string image_path)
     }
 
     rf.close();
-    if(!rf.good()) {
-        cout << "Error: Reading from file " << image_path << " failed" << endl;
-        return CONTROL_ERROR;
-    }
-    // Send empty download message. TODO: Check how to indicate the zero payload length
-    values[0] = 0;
+
+    // Send empty download message
+    cout << "Download completed. Send DNLOAD message with size zero" << endl;
+    memset(values, 0, CommandLengths[command_name]);
     cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
@@ -600,6 +598,7 @@ control_ret_t upload_operation(Device * device, const string image_path)
     uint8_t values[num_values];
     uint32_t transfer_block_num = 0;
     uint32_t transfer_ongoing = 1;
+    uint32_t transfer_block_size = 0;
     if(!wf) {
         cout << "Cannot open file!" << endl;
         return CONTROL_ERROR;
@@ -610,11 +609,13 @@ control_ret_t upload_operation(Device * device, const string image_path)
             cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
         }
-        if (values[0]) {
-            cout << "Writing transfer block " << transfer_block_num++ << ": "<< unsigned(values[0]) << " bytes" <<  endl;
+        transfer_block_size = values[0];
+        if (transfer_block_size) {
+            cout << "Writing transfer block " << transfer_block_num++ << ": "<< transfer_block_size << " bytes" <<  endl;
             wf.write((const char *) &values[1], values[0]);
-        } else {
-            cout << "Received transport block with size 0: upload complete" << endl;
+        }
+        if (transfer_block_size < DFU_DATA_BUFFER_SIZE) {
+            cout << "Received transport block with size " << transfer_block_size << " (smaller than "<< DFU_DATA_BUFFER_SIZE << "): upload complete" << endl;
             transfer_ongoing = 0;
         }
     }
