@@ -599,19 +599,24 @@ control_ret_t upload_operation(Device * device, const string image_path)
     uint8_t num_values = CommandLengths[command_name];
     uint8_t values[num_values];
     uint32_t transfer_block_num = 0;
+    uint32_t transfer_ongoing = 1;
     if(!wf) {
         cout << "Cannot open file!" << endl;
         return CONTROL_ERROR;
     }
-    while (1) {
+    while (transfer_ongoing) {
         control_ret_t cmd_ret = command_get(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], num_values, values);
         if (cmd_ret != CONTROL_SUCCESS) {
             cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
         }
-        cout << "Writing transfer block " << transfer_block_num++ << ": "<< unsigned(values[0]) << " bytes" <<  endl;
-
-        wf.write((const char *) &values[1], values[0]);
+        if (values[0]) {
+            cout << "Writing transfer block " << transfer_block_num++ << ": "<< unsigned(values[0]) << " bytes" <<  endl;
+            wf.write((const char *) &values[1], values[0]);
+        } else {
+            cout << "Received transport block with size 0: upload complete" << endl;
+            transfer_ongoing = 0;
+        }
     }
 
     wf.close();
