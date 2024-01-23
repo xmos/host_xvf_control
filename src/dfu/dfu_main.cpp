@@ -78,8 +78,9 @@ static string commandList[] =
     "DFU_GETSTATE",
     "DFU_ABORT",
     "DFU_SETALTERNATE",
-    "DFU_REBOOT",
-    "DFU_VERSION"
+    "DFU_TRANSFERBLOCK",
+    "DFU_GETVERSION",
+    "DFU_REBOOT"
 };
 
 /** @brief Resource ID of DFU controller servicer
@@ -290,7 +291,7 @@ opt_t options[] = {
     {"--help",                    "-h",        "display this information"                                                                       },
     {"--app-version",             "-av",       "print the current version of this application",                                                 },
     {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                          },
-    {"--app-version",             "-av",       "print the current version of this application",                                                 },
+    {"--verbose",                 "-vvv",      "enable debug prints"                                                                            },
     {"--version",                 "-v",        "read the version on the device",                                                                },
     {"--download",                "-d",        "download upgrade image stored in the specified path, the path is relative to the working dir"   },
     {"--upload-factory",          "-uf",       "upload factory image and save it in the specified path, the path is relative to the working dir"},
@@ -298,6 +299,8 @@ opt_t options[] = {
     {"--reboot",                  "-r",        "reboot device"                                                                                  },
 };
 size_t num_options = end(options) - begin(options);
+
+static uint32_t verbose_mode = 0;
 
 /** @brief Print DFU host application help menu */
 control_ret_t print_help_menu()
@@ -317,8 +320,7 @@ control_ret_t print_help_menu()
     const size_t hard_stop = get_term_width();
 
     // Please avoid lines which have more than 80 characters
-    cout << "usage: xvf_host [ command | option ]" << endl
-    << setw(78) << "[ -u <protocol> ] [ -cmp <path> ] [ -br ] [ command | option ]" << endl
+    cout << "usage: xvf_dfu [ -u <protocol> ] [ --verbose ] command" << endl
     << endl << "Current application version is " << current_host_app_version << "."
     << endl << "You can use --use or -u option to specify protocol you want to use."
     << endl << "Default control protocol is I2C."
@@ -374,10 +376,12 @@ control_ret_t getstatus(Device * device, uint8_t &status, uint8_t &state)
 
     const string command_name = "DFU_GETSTATUS";
     uint8_t values[CommandLengths[command_name]];
-
+    if (verbose_mode) {
+        cout << "Send DFU_GETSTATUS message" << endl;
+    }
     control_ret_t cmd_ret = command_get(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
     cout << unsigned(values[0]) << " " << unsigned(values[1]) << " " << unsigned(values[2]) << " " << unsigned(values[3]) << endl;
@@ -386,7 +390,9 @@ control_ret_t getstatus(Device * device, uint8_t &status, uint8_t &state)
                             ((0xff & values[2]) << 8)  |
                             (0xff & values[1]);
     state = values[4];
-    cout << "DFU_GETSTATUS: Status " << dfu_status_to_string(status) << ", State " << dfu_state_to_string(state) << ", Timeout (ms) " << poll_timeout << endl;
+    if (verbose_mode) {
+        cout << "DFU_GETSTATUS: Status " << dfu_status_to_string(status) << ", State " << dfu_state_to_string(state) << ", Timeout (ms) " << poll_timeout << endl;
+    }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(poll_timeout));
 
@@ -403,10 +409,12 @@ control_ret_t clearStatus(Device * device) {
     string command_name = "DFU_CLRSTATUS";
     uint8_t num_values = CommandLengths[command_name];
     uint8_t values[num_values];
-
+    if (verbose_mode) {
+        cout << "Send DFU_CLRSTATUS message" << endl;
+    }
     cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
 
@@ -456,9 +464,12 @@ control_ret_t setalternate(Device * device, uint8_t alternate)
     uint8_t num_values = CommandLengths[command_name];
     uint8_t values[num_values];
     values[0] = alternate;
+    if (verbose_mode) {
+        cout << "Send DFU_SETALTERNATE message with value " << unsigned(alternate) << endl;
+    }
     cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
 
@@ -497,9 +508,12 @@ control_ret_t download_operation(Device * device, const string image_path)
         values[0] = DFU_DATA_BUFFER_SIZE;
         rf.read((char*) &values[1], DFU_DATA_BUFFER_SIZE);
         is_state_not_idle = 1;
+        if (verbose_mode) {
+            cout << "Send DFU_DNLOAD message with " << num_values << "bytes" << endl;
+        }
         cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], num_values, values);
         if (cmd_ret != CONTROL_SUCCESS) {
-            cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+            cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
         }
 
@@ -527,11 +541,11 @@ control_ret_t download_operation(Device * device, const string image_path)
     rf.close();
 
     // Send empty download message
-    cout << "Download completed. Send DNLOAD message with size zero" << endl;
+    cout << "Download completed. Send DFU_DNLOAD message with size zero" << endl;
     memset(values, 0, CommandLengths[command_name]);
     cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
     is_state_not_idle = 1;
@@ -548,7 +562,7 @@ control_ret_t download_operation(Device * device, const string image_path)
                     continue;
                 break;
                 default:
-                    cout << "Error: Invalid state: " << dfu_state_to_string(state) << endl;
+                    cerr << "Error: Invalid state: " << dfu_state_to_string(state) << endl;
                     return CONTROL_ERROR;
                 break;
             }
@@ -570,10 +584,12 @@ control_ret_t reboot_operation(Device * device)
     string command_name = "DFU_DETACH";
     uint8_t num_values = CommandLengths[command_name];
     uint8_t values[num_values];
-
+    if (verbose_mode) {
+        cout << "Send DFU_DETACH message" << endl;
+    }
     cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
 
@@ -604,14 +620,19 @@ control_ret_t upload_operation(Device * device, const string image_path)
         return CONTROL_ERROR;
     }
     while (transfer_ongoing) {
+        if (verbose_mode) {
+            cout << "Send DFU_UPLOAD message" << endl;
+        }
         control_ret_t cmd_ret = command_get(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], num_values, values);
         if (cmd_ret != CONTROL_SUCCESS) {
-            cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+            cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
         }
         transfer_block_size = values[0];
         if (transfer_block_size) {
-            cout << "Writing transfer block " << transfer_block_num++ << ": "<< transfer_block_size << " bytes" <<  endl;
+            if (verbose_mode) {
+                cout << "Writing transfer block " << transfer_block_num++ << ": "<< transfer_block_size << " bytes" <<  endl;
+            }
             wf.write((const char *) &values[1], values[0]);
         }
         if (transfer_block_size < DFU_DATA_BUFFER_SIZE) {
@@ -622,7 +643,7 @@ control_ret_t upload_operation(Device * device, const string image_path)
 
     wf.close();
     if(!wf.good()) {
-        cout << "Error: Writing to file " << image_path << " failed" << endl;
+        cerr << "Error: Writing to file " << image_path << " failed" << endl;
         return CONTROL_ERROR;
     }
     return CONTROL_SUCCESS;
@@ -631,15 +652,17 @@ control_ret_t upload_operation(Device * device, const string image_path)
 control_ret_t getversion(Device * device)
 {
 
-    const string command_name = "DFU_VERSION";
+    const string command_name = "DFU_GETVERSION";
     uint8_t values[CommandLengths[command_name]];
-
+    if (verbose_mode) {
+        cout << "Send DFU_GETVERSION message" << endl;
+    }
     control_ret_t cmd_ret = command_get(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
-    cout << "DFU_VERSION: ";
+    cout << "DFU_GETVERSION: ";
     for (int i=0; i<CommandLengths[command_name]; i++) {
         cout << unsigned(values[i]) << " ";
     }
@@ -662,7 +685,7 @@ int file_path_exists(char ** argv, const uint32_t arg_indx, const uint32_t argc,
 {
     if (arg_indx >= argc)
     {
-        cout << "Error: missing file path" << endl;
+        cerr << "Error: missing file path" << endl;
 
         return -1;
     }
@@ -692,12 +715,13 @@ void add_command(YAML::Node yaml_info, const string command_name)
             int cmd_num_values = command["number_of_values"].as<int>();
             CommandIDs[command_name] = cmd_id;
             CommandLengths[command_name] = cmd_num_values;
-            // TODO: Check if we should implement a verbose mode
-            cout << "Added command " << command_name << " with ID " << CommandIDs[command_name] << " and number of values " << cmd_num_values << endl;
+            if (verbose_mode) {
+                cout << "Added command " << command_name << " with ID " << CommandIDs[command_name] << " and number of values " << cmd_num_values << endl;
+            }
             return;
         }
     }
-    cerr << "Error: command " << command_name << " not found on yaml file" << endl;
+    cerr << "Error: command " << command_name << " not found in yaml file" << endl;
     exit(HOST_APP_ERROR);
 }
 
@@ -724,7 +748,9 @@ void parse_dfu_cmds_yaml(string yaml_file_full_path)
         }
         if (resource_id_string.find("DFU_CONTROLLER_SERVICER_RESID") != string::npos)
         {
-            cout << "DFU_CONTROLLER_SERVICER_RESID is " << resource_id << endl;
+            if (verbose_mode) {
+                cout << "DFU_CONTROLLER_SERVICER_RESID is " << resource_id << endl;
+            }
             dfu_controller_servicer_resid = resource_id;
         }
         YAML::Node dedicated_commands = node.second["dedicated_commands"];
@@ -835,6 +861,18 @@ int main(int argc, char ** argv)
     next_cmd = argv[cmd_indx];
     if(next_cmd[0] == '-')
     {
+        opt = option_lookup(next_cmd, options, num_options);
+
+        if (opt->long_name == "--verbose")
+        {
+            cout << "Verbose mode enabled" << endl;
+            verbose_mode = 1;
+            cmd_indx++;
+            next_cmd = argv[cmd_indx];
+        }
+
+        opt = option_lookup(next_cmd, options, num_options);
+
         if (opt->long_name == "--version")
         {
             getversion(device);
@@ -850,14 +888,13 @@ int main(int argc, char ** argv)
             return -1;
         }
 
-        opt = option_lookup(next_cmd, options, num_options);
         if (opt->long_name == "--download")
         {
             string image_path = "";
             if (file_path_exists(argv, arg_indx, argc, image_path)) {
                 download_operation(device, image_path);
             } else {
-                cout << "Error: File at path \'" << argv[arg_indx] << "\' not found" << endl;
+                cerr << "Error: File at path \'" << argv[arg_indx] << "\' not found" << endl;
                 return -1;
             }
         }
@@ -871,7 +908,7 @@ int main(int argc, char ** argv)
             if (!file_path_exists(argv, arg_indx, argc, image_path)) {
                 upload_operation(device, image_path);
             } else {
-                cout << "Error: File at path \'" << argv[arg_indx] << "\' already exists" << endl;
+                cerr << "Error: File at path \'" << argv[arg_indx] << "\' already exists" << endl;
                 return -1;
             }
         }
