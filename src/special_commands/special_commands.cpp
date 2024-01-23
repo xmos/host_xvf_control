@@ -18,7 +18,7 @@ string get_cmd_map_abs_path(int * argc, char ** argv)
 {
     string cmd_map_rel_path = default_command_map_name;
     string cmd_map_abs_path = "";
-    const opt_t * cmp_opt = option_lookup("--command-map-path", options, num_options);
+    opt_t * cmp_opt = option_lookup("--command-map-path", options, num_options);
     size_t index = argv_option_lookup(*argc, argv, cmp_opt);
     if(index != 0)
     {
@@ -36,7 +36,7 @@ string get_cmd_map_abs_path(int * argc, char ** argv)
 
 bool get_bypass_range_check(int * argc, char ** argv)
 {
-    const opt_t * bp_opt = option_lookup("--bypass-range-check", options, num_options);
+    opt_t * bp_opt = option_lookup("--bypass-range-check", options, num_options);
     size_t index = argv_option_lookup(*argc, argv, bp_opt);
     if(index == 0)
     {
@@ -52,7 +52,7 @@ bool get_bypass_range_check(int * argc, char ** argv)
 
 uint8_t get_band_option(int * argc, char ** argv)
 {
-    const opt_t *band_opt = option_lookup("--band", options, num_options);
+    opt_t *band_opt = option_lookup("--band", options, num_options);
     size_t index = argv_option_lookup(*argc, argv, band_opt);
     if (index == 0) // --band not provided. Default to band 0
     {
@@ -148,7 +148,6 @@ control_ret_t print_command_list()
     size_t longest_rw = 10; // READ/WRITE
     size_t longest_args = 2; // double digits
     size_t longest_type = 7; // radians
-    size_t longest_info = 0;
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t cmd = {0};
@@ -159,9 +158,7 @@ control_ret_t print_command_list()
             continue;
         }
         size_t name_len = cmd.cmd_name.length();
-        size_t info_len = cmd.info.length();
         longest_command = (longest_command < name_len) ? name_len : longest_command;
-        longest_info = (longest_info < info_len) ? info_len : longest_info;
     }
     size_t rw_offset = longest_command + 2;
     size_t args_offset = rw_offset + longest_rw + 2;

@@ -5,7 +5,6 @@ set( APP_NAME  xvf_host )
 set(COMMON_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/main.cpp
     ${CMAKE_CURRENT_LIST_DIR}/utils/utils.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/utils/types_support.cpp
     ${CMAKE_CURRENT_LIST_DIR}/utils/platform_support.cpp
     ${CMAKE_CURRENT_LIST_DIR}/command/command.cpp
     ${CMAKE_CURRENT_LIST_DIR}/special_commands/special_commands.cpp

@@ -6,7 +6,7 @@
 
 #include "command.hpp"
 
-const static opt_t options[] = {
+static opt_t options[] = {
     {"--help",                    "-h",        "display this information"                                                                       },
     {"--version",                 "-v",        "print the current version of this application",                                                 },
     {"--list-commands",           "-l",        "print list of the available commands"                                                           },

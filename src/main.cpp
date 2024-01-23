@@ -1,7 +1,6 @@
 // Copyright 2022-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
-#include "utils.hpp"
 #include "special_commands.hpp"
 
 using namespace std;
@@ -21,7 +20,7 @@ int main(int argc, char ** argv)
 
     uint8_t band_index = get_band_option(&argc, argv); // band_index can be present anywhere on the cmd line. Get it first
 
-    const opt_t * opt = nullptr;
+    opt_t * opt = nullptr;
     int cmd_indx = 1;
     string next_cmd = argv[cmd_indx];
 

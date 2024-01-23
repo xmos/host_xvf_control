@@ -6,6 +6,8 @@
 
 #include "utils.hpp"
 
+using namespace std;
+
 /**
  * @brief Class for executing a single command
  */
@@ -60,7 +62,7 @@ class Command
         control_ret_t do_command(const std::string cmd_name, char ** argv, int argc, int arg_indx);
 
         /**
-         * @brief Executes a single get comamnd
+         * @brief Executes a single get command
          *
          * @param values        Pointer to store values read from the device
          */
@@ -97,14 +99,41 @@ class Command
          */
         control_ret_t command_set_low_level(uint8_t *data, size_t payload_len);
 
-        /** @brief Convert single value from bytes to cmd_param_t */
+        /**
+         * @brief Convert single value from bytes to cmd_param_t
+         *
+         * @param data          Byte array containing the data to read
+         * @param index         Position of the first byte to use
+         */
         cmd_param_t command_bytes_to_value(const uint8_t * data, unsigned index);
 
-        /** @brief Convert single value from cmd_param_t to bytes */
+        /**
+         * @brief Convert single value from cmd_param_t to bytes
+         *
+         * @param data          Byte array containing the data to write
+         * @param index         Position of the first byte to use
+         * @param value         Value to convert
+         */
         void command_bytes_from_value(uint8_t * data, unsigned index, const cmd_param_t value);
+
+        /**
+         * @brief Get number of bytes for the particular param type
+         */
+        size_t get_num_bytes_from_type();
+
+        /**
+         * @brief Convert command line argument from string to cmd_param_t
+         *
+         * @param str           String storing the command line argument to convert
+         */
+        cmd_param_t cmd_arg_str_to_val(const char * str);
 };
 
-/** @brief Get number of bytes for the particular param type */
-size_t get_num_bytes_from_type(const cmd_param_type_t type);
+/**
+ * @brief Get string with type name for the particular param type
+ *
+ * @param type          Command type
+ */
+string command_param_type_name(cmd_param_type_t type);
 
 #endif

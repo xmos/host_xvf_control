@@ -77,25 +77,6 @@ dl_handle_t load_command_map_dll(const string cmd_map_abs_path)
     return handle;
 }
 
-void calc_Levenshtein_and_error(const string str)
-{
-    int shortest_dist = 100;
-    size_t indx  = 0;
-    for(size_t i = 0; i < num_commands; i++)
-    {
-        string comp_name = get_cmd_name(i);
-        int dist = Levenshtein_distance(str, comp_name);
-        if(dist < shortest_dist)
-        {
-            shortest_dist = dist;
-            indx = i;
-        }
-    }
-    cerr << "Command " << str << " does not exist." << endl
-    << "Maybe you meant " << get_cmd_name(indx) <<  "." << endl;
-    exit(HOST_APP_ERROR);
-}
-
 bool check_if_cmd_exists(const string cmd_name)
 {
     const string up_str = to_upper(cmd_name);
@@ -107,31 +88,7 @@ bool check_if_cmd_exists(const string cmd_name)
     return true;
 }
 
-void init_cmd(cmd_t * cmd, const std::string cmd_name, size_t index)
-{
-    const string up_str = to_upper(cmd_name);
-
-    if(index == UINT32_MAX)
-    {
-        index = get_cmd_index(up_str);
-        if(index == UINT32_MAX)
-        {
-            calc_Levenshtein_and_error(up_str);
-        }
-        cmd->cmd_name = up_str;
-    }
-    else
-    {
-        cmd->cmd_name = get_cmd_name(index);
-    }
-
-    get_cmd_id_info(&cmd->res_id, &cmd->cmd_id, index);
-    get_cmd_val_info(&cmd->type, &cmd->rw, &cmd->num_values, index);
-    cmd->info = get_cmd_info(index);
-    cmd->hidden_cmd = get_cmd_hidden(index);
-}
-
-size_t argv_option_lookup(int argc, char ** argv, const opt_t * opt_lookup)
+size_t argv_option_lookup(int argc, char ** argv, opt_t * opt_lookup)
 {
     for(int i = 1; i < argc; i++)
     {
@@ -221,7 +178,7 @@ control_ret_t check_num_args(const cmd_t * cmd, const size_t args_left)
 
 // Taken from:
 // https://www.talkativeman.com/levenshtein-distance-algorithm-string-comparison/
-int Levenshtein_distance(const string source, const string target)
+static int Levenshtein_distance(const string source, const string target)
 {
 
     const int n = source.length();
@@ -303,10 +260,53 @@ int Levenshtein_distance(const string source, const string target)
     return matrix[n][m];
 }
 
-string get_device_lib_name(int * argc, char ** argv, const opt_t* options, const size_t num_options)
+static void calc_Levenshtein_and_error(const string str)
+{
+    int shortest_dist = 100;
+    size_t indx  = 0;
+    for(size_t i = 0; i < num_commands; i++)
+    {
+        string comp_name = get_cmd_name(i);
+        int dist = Levenshtein_distance(str, comp_name);
+        if(dist < shortest_dist)
+        {
+            shortest_dist = dist;
+            indx = i;
+        }
+    }
+    cerr << "Command " << str << " does not exist." << endl
+    << "Maybe you meant " << get_cmd_name(indx) <<  "." << endl;
+    exit(HOST_APP_ERROR);
+}
+
+void init_cmd(cmd_t * cmd, const std::string cmd_name, size_t index)
+{
+    const string up_str = to_upper(cmd_name);
+
+    if(index == UINT32_MAX)
+    {
+        index = get_cmd_index(up_str);
+        if(index == UINT32_MAX)
+        {
+            calc_Levenshtein_and_error(up_str);
+        }
+        cmd->cmd_name = up_str;
+    }
+    else
+    {
+        cmd->cmd_name = get_cmd_name(index);
+    }
+
+    get_cmd_id_info(&cmd->res_id, &cmd->cmd_id, index);
+    get_cmd_val_info(&cmd->type, &cmd->rw, &cmd->num_values, index);
+    cmd->info = get_cmd_info(index);
+    cmd->hidden_cmd = get_cmd_hidden(index);
+}
+
+string get_device_lib_name(int * argc, char ** argv, opt_t* options, const size_t num_options)
 {
     string lib_name = default_driver_name;
-    const opt_t * use_opt = option_lookup("--use", options, num_options);
+    opt_t * use_opt = option_lookup("--use", options, num_options);
     size_t index = argv_option_lookup(*argc, argv, use_opt);
     if(index == 0)
     {
@@ -330,21 +330,21 @@ string get_device_lib_name(int * argc, char ** argv, const opt_t* options, const
         }
         else
         {
-            // Using I2C by default for now as USB is currently not supported
+            // Using USB by default
             cout << "Could not find " << to_upper(protocol_name) << " in supported protocols"
-            << endl << "Will use I2C by default" << endl;
+            << endl << "Will use USB by default" << endl;
         }
         remove_opt(argc, argv, index, 2);
         return lib_name;
     }
 }
 
-const opt_t * option_lookup(const string str, const opt_t* options, const size_t num_options)
+opt_t * option_lookup(const string str, opt_t* options, const size_t num_options)
 {
     string low_str = to_lower(str);
     for(size_t i = 0; i < num_options; i++)
     {
-        const opt_t * opt = &options[i];
+        opt_t * opt = &options[i];
         if ((low_str == opt->long_name) || (low_str == opt->short_name))
         {
             return opt;
@@ -355,7 +355,7 @@ const opt_t * option_lookup(const string str, const opt_t* options, const size_t
     int indx  = 0;
     for(size_t i = 0; i < num_options; i++)
     {
-        const opt_t * opt = &options[i];
+        opt_t * opt = &options[i];
         int dist_long = Levenshtein_distance(low_str, opt->long_name);
         int dist_short = Levenshtein_distance(low_str, opt->short_name);
         int dist = (dist_short < dist_long) ? dist_short : dist_long;
