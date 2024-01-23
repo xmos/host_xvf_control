@@ -508,7 +508,7 @@ control_ret_t download_operation(Device * device, const string image_path)
         rf.read((char*) &values[1], DFU_DATA_BUFFER_SIZE);
         is_state_not_idle = 1;
         if (verbose_mode) {
-            cout << "Send DFU_DNLOAD message with " << num_values << "bytes" << endl;
+            cout << "Send DFU_DNLOAD message with " << DFU_DATA_BUFFER_SIZE << " bytes" << endl;
         }
         cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], num_values, values);
         if (cmd_ret != CONTROL_SUCCESS) {
@@ -536,6 +536,9 @@ control_ret_t download_operation(Device * device, const string image_path)
         }
         cout << setprecision(2) << fixed;
         cout << "\rDownloaded " << (float) total_bytes / file_size * 100 << "% of the image" << std::flush;
+        if (verbose_mode) {
+            cout << endl;
+        }
         total_bytes += DFU_DATA_BUFFER_SIZE;
     }
     cout << endl;
@@ -866,7 +869,6 @@ int main(int argc, char ** argv)
         exit(HOST_APP_ERROR);
     }
 
-    int arg_indx = cmd_indx + 1;
     next_cmd = argv[cmd_indx];
     if(next_cmd[0] == '-')
     {
@@ -879,7 +881,7 @@ int main(int argc, char ** argv)
             cmd_indx++;
             next_cmd = argv[cmd_indx];
         }
-
+        int arg_indx = cmd_indx + 1;
         opt = option_lookup(next_cmd, options, num_options);
 
         if (opt->long_name == "--version")
