@@ -774,7 +774,7 @@ int main(int argc, char ** argv)
     }
 
     // Load YAML file
-    YAML::Node config = YAML::LoadFile(get_abs_file_path("src/transport_config.yaml"));
+    YAML::Node config = YAML::LoadFile(get_abs_file_path("src/dfu/transport_config.yaml"));
 
     // Read I2C parameters from YAML file
     int* i2c_info = new int[1];
