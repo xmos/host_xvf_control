@@ -384,7 +384,6 @@ control_ret_t getstatus(Device * device, uint8_t &status, uint8_t &state)
         cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
-    cout << unsigned(values[0]) << " " << unsigned(values[1]) << " " << unsigned(values[2]) << " " << unsigned(values[3]) << endl;
     status = values[0];
     uint32_t poll_timeout = ((0xff & values[3]) << 16) |
                             ((0xff & values[2]) << 8)  |
@@ -535,8 +534,12 @@ control_ret_t download_operation(Device * device, const string image_path)
                 }
             }
         }
+        cout << setprecision(2) << fixed;
+        cout << "\rDownloaded " << (float) total_bytes / file_size * 100 << "% of the image" << std::flush;
         total_bytes += DFU_DATA_BUFFER_SIZE;
     }
+    cout << endl;
+
 
     rf.close();
 
@@ -629,9 +632,15 @@ control_ret_t upload_operation(Device * device, const string image_path)
             return cmd_ret;
         }
         transfer_block_size = values[0];
+        transfer_block_num++;
         if (transfer_block_size) {
             if (verbose_mode) {
-                cout << "Writing transfer block " << transfer_block_num++ << ": "<< transfer_block_size << " bytes" <<  endl;
+                cout << "Writing transfer block " << transfer_block_num << ": "<< transfer_block_size << " bytes" <<  endl;
+            } else {
+                if ( transfer_block_num%500 == 0)
+                {
+                    cout << "Uploaded " << transfer_block_num << " blocks of " << DFU_DATA_BUFFER_SIZE << " bytes" << endl;
+                }
             }
             wf.write((const char *) &values[1], values[0]);
         }
