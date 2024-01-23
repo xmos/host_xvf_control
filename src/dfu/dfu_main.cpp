@@ -455,7 +455,7 @@ control_ret_t setalternate(Device * device, uint8_t alternate)
     string command_name = "DFU_SETALTERNATE";
     uint8_t num_values = CommandLengths[command_name];
     uint8_t values[num_values];
-
+    values[0] = alternate;
     cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
         cout << "Error: Command " << command_name << " returned error " << cmd_ret << endl;

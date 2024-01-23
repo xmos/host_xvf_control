@@ -50,11 +50,11 @@ target_compile_definitions( ${APP_NAME}
 )
 
 if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-target_link_libraries(xvf_host
+target_link_libraries( ${APP_NAME}
     PUBLIC
         dl
 )
-target_link_options(xvf_host
+target_link_options( ${APP_NAME}
     PRIVATE
         -rdynamic
 )
