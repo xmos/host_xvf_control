@@ -784,7 +784,7 @@ int main(int argc, char ** argv)
     spi_info[0] = config["SPI_MODE"].as<int>();
     spi_info[1] = 1024;
 
-    parse_dfu_cmds_yaml(get_abs_file_path("src/dfu_cmds.yaml"));
+    parse_dfu_cmds_yaml(get_abs_file_path("src/dfu/dfu_cmds.yaml"));
     string device_dl_name = get_device_lib_name(&argc, argv, options, num_options);
     int * device_init_info = NULL;
     if(device_dl_name == device_i2c_dl_name)
