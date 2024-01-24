@@ -12,7 +12,6 @@
 #include <yaml-cpp/yaml.h>
 #include <unistd.h>         // readlink
 #include <sys/ioctl.h>      // ioctl
-#include <linux/limits.h>   // PATH_MAX#include <sys/stat.h>
 
 using namespace std;
 
@@ -170,6 +169,24 @@ static const char *dfu_status_names[] = {
     /* DFU_STATUS_errSTALLEDPKT */
         "Device stalled an unexpected request"
 };
+
+/**
+ * @brief Check if file exists
+ *
+ * @param path          path of the given file
+ *
+ * @return              absolute path if file is found, NULL otherwise
+ */
+uint32_t is_file_found(string path)
+{
+    struct stat buffer;
+    if (stat(path.c_str(), &buffer) == 0)
+    {
+        return 1;
+    } else {
+        return 0;
+    }
+}
 
 /** @brief Convert DFU status value into a string */
 const string dfu_status_to_string(int status)
@@ -658,6 +675,13 @@ control_ret_t upload_operation(Device * device, const string image_path)
     return CONTROL_SUCCESS;
 }
 
+/**
+ * @brief Print version of the device
+ *
+ * @param device        Pointer to the Device class object
+ *
+ * @return              device control status
+ */
 control_ret_t getversion(Device * device)
 {
 
@@ -681,35 +705,7 @@ control_ret_t getversion(Device * device)
 }
 
 /**
- * @brief Check if a file given as a CLI argument exists
- *
- * @param argv          List of CLI argument
- * @param arg_indx      Index of the argument with the file path
- * @param argc          Number of CLI arguments
- * @param path          Absolute path of the given path
- *
- * @return              1 if file is found, 0 otherwise
- */
-int file_path_exists(char ** argv, const uint32_t arg_indx, const uint32_t argc, string& path)
-{
-    if (arg_indx >= argc)
-    {
-        cerr << "Error: missing file path" << endl;
-
-        return -1;
-    }
-    path = convert_to_abs_path(argv[arg_indx]);
-    struct stat buffer;
-    if (stat(path.c_str(), &buffer) == 0)
-    {
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-/**
- * @brief Add to a DFU command with the info found in the YAML file
+ * @brief Add a DFU command using the info found in the YAML file
  *
  * @param yaml_info     Information read from the YAML file
  * @param command_name  DFU command name to be added
@@ -778,33 +774,6 @@ void parse_dfu_cmds_yaml(string yaml_file_full_path)
     }
 }
 
-/**
- * @brief Convert file path relative to the host app binary into the absolute path
- *
- * @param rel_path      Relative path of the file
- *
- * @return              Absolute path of the file
- */
-string get_abs_file_path(const string rel_path)
-{
-
-    char path[PATH_MAX];
-    ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
-    if (count == -1)
-    {
-        cerr << "Could not read /proc/self/exe into " << PATH_MAX << " string" << endl;
-        exit(HOST_APP_ERROR);
-    }
-    path[count] = '\0'; // readlink doesn't always add NULL for some reason
-
-    string full_path = path;
-    size_t found = full_path.find_last_of("/\\"); // works for both unix and windows
-    string dir_path_str = full_path.substr(0, found);
-    string file_path_str = dir_path_str + "/" + rel_path;
-
-    return file_path_str;
-}
-
 int main(int argc, char ** argv)
 {
     if(argc == 1)
@@ -813,19 +782,30 @@ int main(int argc, char ** argv)
         << "Or use --list-commands to print the list of commands and their info." << endl;
         return 0;
     }
-
-    // Load YAML file
-    YAML::Node config = YAML::LoadFile(get_abs_file_path("src/dfu/transport_config.yaml"));
-
-    // Read I2C parameters from YAML file
+    YAML::Node config;
     int* i2c_info = new int[1];
     int* spi_info = new int[2];
 
-    i2c_info[0] = config["I2C_ADDRESS"].as<int>();
-    spi_info[0] = config["SPI_MODE"].as<int>();
-    spi_info[1] = 1024;
+    // Load YAML files
+    string file_name = "transport_config.yaml";
+    if (is_file_found(file_name)) {
+        config = YAML::LoadFile("transport_config.yaml");
+        // Read I2C parameters from YAML file
+        i2c_info[0] = config["I2C_ADDRESS"].as<int>();
+        spi_info[0] = config["SPI_MODE"].as<int>();
+        spi_info[1] = 1024;
+    } else {
+        cerr << "Error: File \'" << file_name << "\' not found" << endl;
+        exit(HOST_APP_ERROR);
+    }
 
-    parse_dfu_cmds_yaml(get_abs_file_path("src/dfu/dfu_cmds.yaml"));
+    file_name = "dfu_cmds.yaml";
+    if (is_file_found(file_name)) {
+        parse_dfu_cmds_yaml("dfu_cmds.yaml");
+    } else {
+        cerr << "Error: File \'" << file_name << "\' not found" << endl;
+        exit(HOST_APP_ERROR);
+    }
     string device_dl_name = get_device_lib_name(&argc, argv, options, num_options);
     int * device_init_info = NULL;
     if(device_dl_name == device_i2c_dl_name)
@@ -899,7 +879,14 @@ int main(int argc, char ** argv)
         if (opt->long_name == "--download")
         {
             string image_path = "";
-            if (file_path_exists(argv, arg_indx, argc, image_path)) {
+            if (arg_indx >= argc)
+            {
+                cerr << "Error: missing file path" << endl;
+                exit(HOST_APP_ERROR);
+            } else {
+                image_path = convert_to_abs_path(argv[arg_indx]);
+            }
+            if (is_file_found(image_path)) {
                 download_operation(device, image_path);
             } else {
                 cerr << "Error: File at path \'" << argv[arg_indx] << "\' not found" << endl;
@@ -913,7 +900,14 @@ int main(int argc, char ** argv)
         if (opt->long_name == "--upload-factory" || opt->long_name == "--upload-upgrade")
         {
             string image_path = "";
-            if (!file_path_exists(argv, arg_indx, argc, image_path)) {
+            if (arg_indx >= argc)
+            {
+                cerr << "Error: missing file path" << endl;
+                exit(HOST_APP_ERROR);
+            } else {
+                image_path = convert_to_abs_path(argv[arg_indx]);
+            }
+            if (!is_file_found(image_path)) {
                 upload_operation(device, image_path);
             } else {
                 cerr << "Error: File at path \'" << argv[arg_indx] << "\' already exists" << endl;

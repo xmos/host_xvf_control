@@ -58,3 +58,12 @@ target_link_options( ${APP_NAME}
     PRIVATE
         -rdynamic
 )
+
+add_custom_target(compile_commands ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_CURRENT_LIST_DIR}/dfu_cmds.yaml
+    ${CMAKE_CURRENT_LIST_DIR}/transport_config.yaml
+    $<TARGET_FILE_DIR:${APP_NAME}>
+    COMMENT "Copy YAML files"
+    VERBATIM
+)
