@@ -6,8 +6,6 @@
 
 #include "utils.hpp"
 
-using namespace std;
-
 /**
  * @brief Class for executing a single command
  */
@@ -134,6 +132,6 @@ class Command
  *
  * @param type          Command type
  */
-string command_param_type_name(cmd_param_type_t type);
+std::string command_param_type_name(cmd_param_type_t type);
 
 #endif

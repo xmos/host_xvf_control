@@ -59,6 +59,7 @@ target_link_options( ${APP_NAME}
         -rdynamic
 )
 
+# Copy YAML file to folder with app binary
 add_custom_target(compile_commands ALL
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     ${CMAKE_CURRENT_LIST_DIR}/dfu_cmds.yaml
