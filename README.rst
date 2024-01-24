@@ -3,13 +3,13 @@ HOST_XVF_CONTROL Repository
 ===========================
 
 HOST_XVF_CONTROL is a host control and DFU reference application.
-It can be used with products in the XVF38xx product family.
+It can be used with products in the XVF38xx family.
 
 *******
 Cloning
 *******
 
-Some dependent components are included as git sub modules. These can be obtained by cloning this repository with the following command:
+Some dependent components are included as git submodules. These can be obtained by cloning this repository with the following command:
 
 .. code-block:: console
 
@@ -73,10 +73,10 @@ The DFU host application is only supported on Raspbian, and it needs the followi
 
 - xvf_dfu
 - libdevice_{protocol}.so
- - dfu_cmds.yaml
- - transport_config.yaml
+- dfu_cmds.yaml
+- transport_config.yaml
 
-If the user needs change the settings of the I2C and SPI transport protocol, they can find all the configurable values in *src/dfu/transport_config.yaml*.
+If the user needs change the settings of the I2C and SPI transport protocols, they can find all the configurable values in *src/dfu/transport_config.yaml*.
 
 *****************************************
 Supported platforms and control protocols
