@@ -635,22 +635,19 @@ control_ret_t upload_operation(Device * device, const string image_path)
             return cmd_ret;
         }
         transfer_block_size = values[0];
-        transfer_block_num++;
         if (transfer_block_size) {
-            if (verbose_mode) {
-                cout << "Writing transfer block " << transfer_block_num << ": "<< transfer_block_size << " bytes" <<  endl;
-            } else {
-                if ( transfer_block_num%500 == 0)
-                {
-                    cout << "Uploaded " << transfer_block_num << " blocks of " << DFU_DATA_BUFFER_SIZE << " bytes" << endl;
-                }
-            }
+            cout << "\rUploaded " << transfer_block_num << " blocks of " << DFU_DATA_BUFFER_SIZE << " bytes" << std::flush;
             wf.write((const char *) &values[1], values[0]);
+        }
+        if (verbose_mode) {
+            cout << endl;
         }
         if (transfer_block_size < DFU_DATA_BUFFER_SIZE) {
             cout << "Received transport block with size " << transfer_block_size << " (smaller than "<< DFU_DATA_BUFFER_SIZE << "): upload complete" << endl;
             transfer_ongoing = 0;
         }
+        transfer_block_num++;
+
     }
 
     wf.close();
