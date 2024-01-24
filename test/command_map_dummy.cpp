@@ -59,6 +59,8 @@ struct val_range_t
     size_t num_intervals;
 };
 
+#define PI_VALUE 3.14159265358979323846f
+
 static cmd_t commands[] = {
                         {0, "CMD_FLOAT",   TYPE_FLOAT,   0,  CMD_RW, 20, "This is a test command for testing multiple float reads and writes. Need to keep command descriprion large to test -l option.",   false  },
                         {0, "CMD_INT32",   TYPE_INT32,   1,  CMD_RW, 20, "This is a test command for testing multiple int32 reads and writes. Need to keep command descriprion large to test -l option.",   false  },
