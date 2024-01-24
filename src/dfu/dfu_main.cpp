@@ -305,15 +305,16 @@ control_ret_t command_set(Device * device, control_resid_t res_id, string cmd_na
 
 /** @brief List of supported CLI options */
 opt_t options[] = {
-    {"--help",                    "-h",        "display this information"                                                                       },
-    {"--app-version",             "-av",       "print the version of this application",                                                 },
-    {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                          },
-    {"--verbose",                 "-vvv",      "enable debug prints"                                                                            },
-    {"--version",                 "-v",        "read the version on the device",                                                                },
-    {"--download",                "-d",        "download upgrade image stored in the specified path, the path is relative to the working dir"   },
-    {"--upload-factory",          "-uf",       "upload factory image and save it in the specified path, the path is relative to the working dir"},
-    {"--upload-upgrade",          "-uu",       "upload upgrade image and save it in the specified path, the path is relative to the working dir"},
-    {"--reboot",                  "-r",        "reboot device"                                                                                  },
+    {"--help",                    "-h",        "display this information"                                                                                  },
+    {"--app-version",             "-av",       "print the version of this application",                                                                    },
+    {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                                     },
+    {"--verbose",                 "-vvv",      "enable debug prints"                                                                                       },
+    {"--upload-start",            "-us",       "set the first block transport number for the upload operation. Default is 0"                               },
+    {"--version",                 "-v",        "command to read the version on the device",                                                                },
+    {"--download",                "-d",        "command to download upgrade image stored in the specified path, the path is relative to the working dir"   },
+    {"--upload-factory",          "-uf",       "command to upload factory image and save it in the specified path, the path is relative to the working dir"},
+    {"--upload-upgrade",          "-uu",       "command to upload upgrade image and save it in the specified path, the path is relative to the working dir"},
+    {"--reboot",                  "-r",        "command to reboot device"                                                                                  },
 };
 size_t num_options = end(options) - begin(options);
 
@@ -337,7 +338,7 @@ control_ret_t print_help_menu()
     const size_t hard_stop = get_term_width();
 
     // Please avoid lines which have more than 80 characters
-    cout << "usage: xvf_dfu [ -u <protocol> ] [ --verbose ] command" << endl
+    cout << "usage: xvf_dfu [ -u <protocol> ] [ --verbose ] [ --upload-start <block_num> ] command" << endl
     << endl << "Current application version is " << current_host_app_version << "."
     << endl << "You can use --use or -u option to specify protocol you want to use."
     << endl << "Default control protocol is I2C."
@@ -583,6 +584,8 @@ control_ret_t download_operation(Device * device, const string image_path)
 /**
  * @brief Executes a reboot operation
  *
+ * @param device        Pointer to the Device class object
+ *
  * @return              device control status
  */
 control_ret_t reboot_operation(Device * device)
@@ -687,6 +690,37 @@ control_ret_t getversion(Device * device)
         cout << unsigned(values[i]) << " ";
     }
     cout << endl;
+
+    return cmd_ret;
+}
+
+/**
+ * @brief Set a transport block number
+ *
+ * @param device        Pointer to the Device class object
+ * @param block_number  Transport block number to set
+ *
+ * @return              device control status
+ */
+control_ret_t set_transport_block(Device * device, uint16_t block_number)
+{
+    cout << "Set transport block number " << block_number << endl;
+    control_ret_t cmd_ret = CONTROL_SUCCESS;
+
+    string command_name = "DFU_TRANSFERBLOCK";
+    uint8_t num_values = CommandLengths[command_name];
+    uint8_t values[num_values];
+    values[0] = block_number&0xFF;
+    values[1] = block_number>>8;
+
+    if (verbose_mode) {
+        cout << "Send DFU_TRANSFERBLOCK message" << endl;
+    }
+    cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
+    if (cmd_ret != CONTROL_SUCCESS) {
+        cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+        return cmd_ret;
+    }
 
     return cmd_ret;
 }
@@ -849,6 +883,7 @@ int main(int argc, char ** argv)
             cmd_indx++;
             next_cmd = argv[cmd_indx];
         }
+
         int arg_indx = cmd_indx + 1;
         opt = option_lookup(next_cmd, options, num_options);
 
@@ -857,6 +892,36 @@ int main(int argc, char ** argv)
             getversion(device);
             exit(0);
         }
+
+        if (opt->long_name == "--upload-start")
+        {
+            uint16_t block_number = 0;
+            if (arg_indx >= argc)
+            {
+                cerr << "Error: missing block number" << endl;
+                exit(HOST_APP_ERROR);
+            } else {
+
+                if (stoi(argv[arg_indx]) > 0xFFFF)
+                {
+                    cerr << "Error: Max value for transport block is " << 0xFFFF << ". Given value: " << block_number << endl;
+                    exit(HOST_APP_ERROR);
+                }
+                block_number = stoi(argv[arg_indx]);
+
+                set_transport_block(device, block_number);
+            }
+            cmd_indx = cmd_indx+2;arg_indx = cmd_indx + 1;
+            arg_indx = cmd_indx + 1;
+            next_cmd = argv[cmd_indx];
+            opt = option_lookup(next_cmd, options, num_options);
+            if (opt->long_name != "--upload-factory" && opt->long_name != "--upload-upgrade")
+            {
+                cerr << "Error: --upload-start option is valid only with upload commands" << endl;
+                exit(HOST_APP_ERROR);
+            }
+        }
+
         // Set appropriate ALT-SETTING
         if (opt->long_name == "--upload-factory")
         {
