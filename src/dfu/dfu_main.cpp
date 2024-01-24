@@ -175,7 +175,7 @@ static const char *dfu_status_names[] = {
  *
  * @param path          path of the given file
  *
- * @return              absolute path if file is found, NULL otherwise
+ * @return              1 if file is found, 0 otherwise
  */
 uint32_t is_file_found(string path)
 {
@@ -258,7 +258,7 @@ control_ret_t command_get(Device * device, control_resid_t res_id, string cmd_na
  * @param cmd_name      Command Name
  * @param cmd_id        Command ID
  * @param num_values    Number of values the command writes
- * @param values        Buffer storing the read values
+ * @param values        Buffer storing the values to write
  *
  * @return              device control status
  */
@@ -306,7 +306,7 @@ control_ret_t command_set(Device * device, control_resid_t res_id, string cmd_na
 /** @brief List of supported CLI options */
 opt_t options[] = {
     {"--help",                    "-h",        "display this information"                                                                       },
-    {"--app-version",             "-av",       "print the current version of this application",                                                 },
+    {"--app-version",             "-av",       "print the version of this application",                                                 },
     {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                          },
     {"--verbose",                 "-vvv",      "enable debug prints"                                                                            },
     {"--version",                 "-v",        "read the version on the device",                                                                },
@@ -442,7 +442,7 @@ control_ret_t clearStatus(Device * device) {
  *
  * @param device        Pointer to the Device class object
  *
- * @return              0 if it the state is dfuIDLE, 1 otherwise
+ * @return              1 if it the state is dfuIDLE, 0 otherwise
  */
 uint32_t status_is_idle(Device * device) {
     uint8_t status;
@@ -510,12 +510,14 @@ control_ret_t download_operation(Device * device, const string image_path)
     }
     uint8_t status;
     uint8_t state;
+    // Read file size
     rf.seekg (0, ios::end);
     size_t file_size = rf.tellg();
+    // Set position to the beginning of the file
     rf.seekg (0, ios::beg);
     uint32_t total_bytes = 0;
     control_ret_t cmd_ret = CONTROL_SUCCESS;
-    uint8_t is_state_not_idle = 1;
+    uint8_t is_state_not_dn_idle = 1;
     string command_name = "DFU_DNLOAD";
     uint8_t num_values = CommandLengths[command_name];
     uint8_t * values = new uint8_t[num_values];
@@ -523,7 +525,7 @@ control_ret_t download_operation(Device * device, const string image_path)
 
         values[0] = DFU_DATA_BUFFER_SIZE;
         rf.read((char*) &values[1], DFU_DATA_BUFFER_SIZE);
-        is_state_not_idle = 1;
+        is_state_not_dn_idle = 1;
         if (verbose_mode) {
             cout << "Send DFU_DNLOAD message with " << DFU_DATA_BUFFER_SIZE << " bytes" << endl;
         }
@@ -532,14 +534,14 @@ control_ret_t download_operation(Device * device, const string image_path)
             cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
         }
-
-        while (is_state_not_idle)
+        // Wait till device is in state dfuDNLOAD_IDLE
+        while (is_state_not_dn_idle)
         {
             if (getstatus(device, status, state) ==  CONTROL_SUCCESS)
             {
                 switch(state) {
                     case DFU_STATE_dfuDNLOAD_IDLE:
-                        is_state_not_idle = 0;
+                        is_state_not_dn_idle = 0;
                     break;
                     case DFU_STATE_dfuERROR:
                         clearStatus(device);
@@ -571,26 +573,10 @@ control_ret_t download_operation(Device * device, const string image_path)
         cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
-    is_state_not_idle = 1;
-    while (is_state_not_idle)
-    {
-        if (getstatus(device, status, state) ==  CONTROL_SUCCESS)
-        {
-            switch(state) {
-                case DFU_STATE_dfuIDLE:
-                    is_state_not_idle = 0;
-                break;
-                case DFU_STATE_dfuMANIFEST_SYNC:
-                case DFU_STATE_dfuMANIFEST:
-                    continue;
-                break;
-                default:
-                    cerr << "Error: Invalid state: " << dfu_state_to_string(state) << endl;
-                    return CONTROL_ERROR;
-                break;
-            }
-        }
-    }
+
+    // Wait till device is in state dfuIDLE
+    is_state_not_dn_idle = 1;
+    while (!status_is_idle(device)) { }
     return CONTROL_SUCCESS;
 }
 
@@ -659,6 +645,7 @@ control_ret_t upload_operation(Device * device, const string image_path)
         if (verbose_mode) {
             cout << endl;
         }
+        // Wait till we receive a DFU_UPLOAD with no data
         if (transfer_block_size < DFU_DATA_BUFFER_SIZE) {
             cout << "Received transport block with size " << transfer_block_size << " (smaller than "<< DFU_DATA_BUFFER_SIZE << "): upload complete" << endl;
             transfer_ongoing = 0;
@@ -786,7 +773,7 @@ int main(int argc, char ** argv)
     int* i2c_info = new int[1];
     int* spi_info = new int[2];
 
-    // Load YAML files
+    // Load YAML file with transport settings
     string file_name = "transport_config.yaml";
     if (is_file_found(file_name)) {
         config = YAML::LoadFile("transport_config.yaml");
@@ -799,6 +786,7 @@ int main(int argc, char ** argv)
         exit(HOST_APP_ERROR);
     }
 
+    // Load YAML file with DFU commands info
     file_name = "dfu_cmds.yaml";
     if (is_file_found(file_name)) {
         parse_dfu_cmds_yaml("dfu_cmds.yaml");
@@ -806,16 +794,8 @@ int main(int argc, char ** argv)
         cerr << "Error: File \'" << file_name << "\' not found" << endl;
         exit(HOST_APP_ERROR);
     }
-    string device_dl_name = get_device_lib_name(&argc, argv, options, num_options);
-    int * device_init_info = NULL;
-    if(device_dl_name == device_i2c_dl_name)
-    {
-        device_init_info = i2c_info;
-    } else if(device_dl_name == device_spi_dl_name)
-    {
-        device_init_info = spi_info;
-    }
 
+    // Check first CLI options which don't require access to the device
     const opt_t * opt = nullptr;
     int cmd_indx = 1;
     string next_cmd = argv[cmd_indx];
@@ -833,6 +813,16 @@ int main(int argc, char ** argv)
         }
     }
 
+    // Load dynamic library with transport drivers
+    string device_dl_name = get_device_lib_name(&argc, argv, options, num_options);
+    int * device_init_info = NULL;
+    if(device_dl_name == device_i2c_dl_name)
+    {
+        device_init_info = i2c_info;
+    } else if(device_dl_name == device_spi_dl_name)
+    {
+        device_init_info = spi_info;
+    }
     string device_dl_path = get_dynamic_lib_path(device_dl_name);
     dl_handle_t device_handle = get_dynamic_lib(device_dl_path);
 
@@ -846,11 +836,12 @@ int main(int argc, char ** argv)
         exit(HOST_APP_ERROR);
     }
 
+    // Check CLI options which require access to the device
     next_cmd = argv[cmd_indx];
     if(next_cmd[0] == '-')
     {
         opt = option_lookup(next_cmd, options, num_options);
-
+        // Check if verbose mode is set
         if (opt->long_name == "--verbose")
         {
             cout << "Verbose mode enabled" << endl;
@@ -866,6 +857,7 @@ int main(int argc, char ** argv)
             getversion(device);
             exit(0);
         }
+        // Set appropriate ALT-SETTING
         if (opt->long_name == "--upload-factory")
         {
             setalternate(device, DFU_ALT_FACTORY_ID);
