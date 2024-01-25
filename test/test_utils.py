@@ -82,8 +82,10 @@ def execute_command(host_bin, control_protocol, cwd, cmd_name, cmd_map_path = No
     if cmd_vals != None:
         cmd_write = command + " " + ' '.join(str(val) for val in cmd_vals)
         run_cmd(cmd_write, cwd, True, expect_success)
+        expect_success = True # Set this to true so that the next run_cmd will not fail
 
-    stdout = run_cmd(command, cwd, True,expect_success)
+
+    stdout = run_cmd(command, cwd, True, expect_success)
     words = str(stdout, 'utf-8').strip().split(' ')
 
     # This will check that the right command is returned
