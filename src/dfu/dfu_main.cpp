@@ -308,16 +308,16 @@ control_ret_t command_set(Device * device, control_resid_t res_id, string cmd_na
 
 /** @brief List of supported CLI options */
 opt_t options[] = {
-    {"--help",                    "-h",        "display this information"                                                                       },
-    {"--app-version",             "-av",       "print the version of this application",                                                         },
-    {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                          },
-    {"--verbose",                 "-vvv",      "enable debug prints"                                                                            },
+    {"--help",                    "-h",        "display this information"                                                                                           },
+    {"--app-version",             "-av",       "print the version of this application",                                                                             },
+    {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                                              },
+    {"--verbose",                 "-vvv",      "enable debug prints"                                                                                                },
     {"--upload-start",            "-us",       "set the first block transport number for the upload operation. Default is 0. Option valid only with upload commands"},
-    {"--version",                 "-v",        "read the version on the device",                                                                },
-    {"--download",                "-d",        "download upgrade image stored in the specified path, the path is relative to the working dir"   },
-    {"--upload-factory",          "-uf",       "upload factory image and save it in the specified path, the path is relative to the working dir"},
-    {"--upload-upgrade",          "-uu",       "upload upgrade image and save it in the specified path, the path is relative to the working dir"},
-    {"--reboot",                  "-r",        "reboot device"                                                                                  },
+    {"--version",                 "-v",        "read the version on the device",                                                                                    },
+    {"--download",                "-d",        "download upgrade image stored in the specified path"                                                                },
+    {"--upload-factory",          "-uf",       "upload factory image and save it in the specified path."                                                            },
+    {"--upload-upgrade",          "-uu",       "upload upgrade image and save it in the specified path."                                                            },
+    {"--reboot",                  "-r",        "reboot device"                                                                                                      },
 };
 size_t num_options = end(options) - begin(options);
 
