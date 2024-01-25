@@ -822,6 +822,10 @@ uint16_t check_upload_start(int * argc, char ** argv){
         exit(HOST_APP_ERROR);
     }
     string block_number_str = argv[index + 1];
+    if (!isdigit(block_number_str[0])) {
+        cerr << "Error: Value for transport block is not an integer. Given value: " << block_number_str << endl;
+        exit(HOST_APP_ERROR);
+    }
     if (stoi(block_number_str) >= INVALID_TRANSPORT_BLOCK_NUM)
     {
         cerr << "Error: Max value for transport block is " << INVALID_TRANSPORT_BLOCK_NUM-1 << ". Given value: " << block_number_str << endl;
@@ -848,24 +852,6 @@ int main(int argc, char ** argv)
     check_verbose_mode(&argc, argv);
     uint16_t start_block_number = check_upload_start(&argc, argv);
 
-    // Check first CLI options which don't require access to the device
-    const opt_t * opt = nullptr;
-    int cmd_indx = 1;
-    string next_cmd = argv[cmd_indx];
-    if(next_cmd[0] == '-')
-    {
-        opt = option_lookup(next_cmd, options, num_options);
-        if (opt->long_name == "--help")
-        {
-            return print_help_menu();
-        }
-        else if (opt->long_name == "--app-version")
-        {
-            cout << current_host_app_version << endl;
-            return 0;
-        }
-    }
-
     // Load YAML file with transport settings
     yaml_file_name = get_executable_path() + "/transport_config.yaml";
     if (verbose_mode) {
@@ -877,18 +863,6 @@ int main(int argc, char ** argv)
         i2c_info[0] = config["I2C_ADDRESS"].as<int>();
         spi_info[0] = config["SPI_MODE"].as<int>();
         spi_info[1] = 1024;
-    } else {
-        cerr << "Error: File \'" << yaml_file_name << "\' not found" << endl;
-        exit(HOST_APP_ERROR);
-    }
-
-    // Load YAML file with DFU commands info
-    yaml_file_name = get_executable_path() + "/dfu_cmds.yaml";
-    if (verbose_mode) {
-        cout << "Parsing YAML file " << yaml_file_name << endl;
-    }
-    if (is_file_found(yaml_file_name)) {
-        parse_dfu_cmds_yaml(yaml_file_name);
     } else {
         cerr << "Error: File \'" << yaml_file_name << "\' not found" << endl;
         exit(HOST_APP_ERROR);
@@ -914,6 +888,36 @@ int main(int argc, char ** argv)
     if (ret != CONTROL_SUCCESS)
     {
         cerr << "Could not connect to the device: error " << ret << endl;
+        exit(HOST_APP_ERROR);
+    }
+
+    // Check first CLI options which don't require access to the device
+    const opt_t * opt = nullptr;
+    int cmd_indx = 1;
+    string next_cmd = argv[cmd_indx];
+    if(next_cmd[0] == '-')
+    {
+        opt = option_lookup(next_cmd, options, num_options);
+        if (opt->long_name == "--help")
+        {
+            return print_help_menu();
+        }
+        else if (opt->long_name == "--app-version")
+        {
+            cout << current_host_app_version << endl;
+            return 0;
+        }
+    }
+
+    // Load YAML file with DFU commands info
+    yaml_file_name = get_executable_path() + "/dfu_cmds.yaml";
+    if (verbose_mode) {
+        cout << "Parsing YAML file " << yaml_file_name << endl;
+    }
+    if (is_file_found(yaml_file_name)) {
+        parse_dfu_cmds_yaml(yaml_file_name);
+    } else {
+        cerr << "Error: File \'" << yaml_file_name << "\' not found" << endl;
         exit(HOST_APP_ERROR);
     }
 
@@ -958,7 +962,7 @@ int main(int argc, char ** argv)
                 cerr << "Error: missing file path" << endl;
                 exit(HOST_APP_ERROR);
             } else {
-                image_path = convert_to_abs_path(argv[arg_indx]);
+                image_path = argv[arg_indx];
             }
             if (is_file_found(image_path)) {
                 download_operation(device, image_path);
@@ -979,7 +983,7 @@ int main(int argc, char ** argv)
                 cerr << "Error: missing file path" << endl;
                 exit(HOST_APP_ERROR);
             } else {
-                image_path = convert_to_abs_path(argv[arg_indx]);
+                image_path = argv[arg_indx];
             }
             if (start_block_number>=0) {
                 set_transport_block(device, start_block_number);
