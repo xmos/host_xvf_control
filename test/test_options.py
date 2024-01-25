@@ -3,6 +3,7 @@
 
 import test_utils
 import os
+import platform
 import shutil
 from pathlib import Path
 
@@ -44,7 +45,7 @@ def test_version():
     assert changelog.is_file(), f"Could not find {changelog}"
     assert str(version[0]) == open(changelog, 'rt').readlines()[3].strip()
 
-if os.uname()[1] == "raspberrypi":
+if platform.uname()[1] == "raspberrypi":
     def test_dfu_app():
         test_dir, _, control_protocol, _ = test_utils.get_dummy_files()
 
