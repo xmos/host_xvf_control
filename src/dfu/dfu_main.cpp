@@ -59,6 +59,9 @@ using namespace std;
 /** @brief Size of transfer buffer for upload and download operations */
 #define DFU_DATA_BUFFER_SIZE 64
 
+/** @brief Invalid value for transport block number */
+#define INVALID_TRANSPORT_BLOCK_NUM 0xFFFF
+
 /**
  * @brief Dictionaries storing command IDs and payload lenghts of the DFU commands
 -* @note The values are read from the DFU yaml file
@@ -305,16 +308,16 @@ control_ret_t command_set(Device * device, control_resid_t res_id, string cmd_na
 
 /** @brief List of supported CLI options */
 opt_t options[] = {
-    {"--help",                    "-h",        "display this information"                                                                                  },
-    {"--app-version",             "-av",       "print the version of this application",                                                                    },
-    {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                                     },
-    {"--verbose",                 "-vvv",      "enable debug prints"                                                                                       },
-    {"--upload-start",            "-us",       "set the first block transport number for the upload operation. Default is 0"                               },
-    {"--version",                 "-v",        "command to read the version on the device",                                                                },
-    {"--download",                "-d",        "command to download upgrade image stored in the specified path, the path is relative to the working dir"   },
-    {"--upload-factory",          "-uf",       "command to upload factory image and save it in the specified path, the path is relative to the working dir"},
-    {"--upload-upgrade",          "-uu",       "command to upload upgrade image and save it in the specified path, the path is relative to the working dir"},
-    {"--reboot",                  "-r",        "command to reboot device"                                                                                  },
+    {"--help",                    "-h",        "display this information"                                                                       },
+    {"--app-version",             "-av",       "print the version of this application",                                                         },
+    {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                          },
+    {"--verbose",                 "-vvv",      "enable debug prints"                                                                            },
+    {"--upload-start",            "-us",       "set the first block transport number for the upload operation. Default is 0. Option valid only with upload commands"},
+    {"--version",                 "-v",        "read the version on the device",                                                                },
+    {"--download",                "-d",        "download upgrade image stored in the specified path, the path is relative to the working dir"   },
+    {"--upload-factory",          "-uf",       "upload factory image and save it in the specified path, the path is relative to the working dir"},
+    {"--upload-upgrade",          "-uu",       "upload upgrade image and save it in the specified path, the path is relative to the working dir"},
+    {"--reboot",                  "-r",        "reboot device"                                                                                  },
 };
 size_t num_options = end(options) - begin(options);
 
@@ -338,7 +341,7 @@ control_ret_t print_help_menu()
     const size_t hard_stop = get_term_width();
 
     // Please avoid lines which have more than 80 characters
-    cout << "usage: xvf_dfu [ -u <protocol> ] [ --verbose ] [ --upload-start <block_num> ] command" << endl
+    cout << "usage: xvf_dfu [ -u <protocol> ] command" << endl
     << endl << "Current application version is " << current_host_app_version << "."
     << endl << "You can use --use or -u option to specify protocol you want to use."
     << endl << "Default control protocol is I2C."
@@ -795,6 +798,39 @@ void parse_dfu_cmds_yaml(string yaml_file_full_path)
     }
 }
 
+void check_verbose_mode(int * argc, char ** argv){
+    opt_t * use_opt = option_lookup("--verbose", options, num_options);
+    size_t index = argv_option_lookup(*argc, argv, use_opt);
+    if(index != 0)
+    {
+        cout << "Verbose mode enabled" << endl;
+        verbose_mode = 1;
+        remove_opt(argc, argv, index, 1);
+    }
+}
+
+uint16_t check_upload_start(int * argc, char ** argv){
+    opt_t * use_opt = option_lookup("--upload-start", options, num_options);
+    size_t index = argv_option_lookup(*argc, argv, use_opt);
+    // return -1 if the upload-start option is not found
+    if (index == 0) {
+        return INVALID_TRANSPORT_BLOCK_NUM;
+    }
+    if (index + 1 >= *argc)
+    {
+        cerr << "Error: missing block number" << endl;
+        exit(HOST_APP_ERROR);
+    }
+    string block_number_str = argv[index + 1];
+    if (stoi(block_number_str) >= INVALID_TRANSPORT_BLOCK_NUM)
+    {
+        cerr << "Error: Max value for transport block is " << INVALID_TRANSPORT_BLOCK_NUM-1 << ". Given value: " << block_number_str << endl;
+        exit(HOST_APP_ERROR);
+    }
+    remove_opt(argc, argv, index, 2);
+
+    return stoi(block_number_str);
+}
 int main(int argc, char ** argv)
 {
     if(argc == 1)
@@ -807,6 +843,10 @@ int main(int argc, char ** argv)
     int* i2c_info = new int[1];
     int* spi_info = new int[2];
     string yaml_file_name;
+
+    // Check optional arguments
+    check_verbose_mode(&argc, argv);
+    uint16_t start_block_number = check_upload_start(&argc, argv);
 
     // Check first CLI options which don't require access to the device
     const opt_t * opt = nullptr;
@@ -823,21 +863,6 @@ int main(int argc, char ** argv)
         {
             cout << current_host_app_version << endl;
             return 0;
-        }
-    }
-
-    // Check CLI options which require access to the device
-    next_cmd = argv[cmd_indx];
-    if(next_cmd[0] == '-')
-    {
-        opt = option_lookup(next_cmd, options, num_options);
-        // Check if verbose mode is set
-        if (opt->long_name == "--verbose")
-        {
-            cout << "Verbose mode enabled" << endl;
-            verbose_mode = 1;
-            cmd_indx++;
-            next_cmd = argv[cmd_indx];
         }
     }
 
@@ -899,39 +924,19 @@ int main(int argc, char ** argv)
         opt = option_lookup(next_cmd, options, num_options);
         int arg_indx = cmd_indx + 1;
 
-        if (opt->long_name == "--version")
-        {
-            getversion(device);
-            exit(0);
-        }
-
-        if (opt->long_name == "--upload-start")
-        {
-            uint16_t block_number = 0;
-            if (arg_indx >= argc)
-            {
-                cerr << "Error: missing block number" << endl;
-                exit(HOST_APP_ERROR);
-            } else {
-
-                if (stoi(argv[arg_indx]) > 0xFFFF)
-                {
-                    cerr << "Error: Max value for transport block is " << 0xFFFF << ". Given value: " << block_number << endl;
-                    exit(HOST_APP_ERROR);
-                }
-                block_number = stoi(argv[arg_indx]);
-
-                set_transport_block(device, block_number);
-            }
-            cmd_indx = cmd_indx+2;arg_indx = cmd_indx + 1;
-            arg_indx = cmd_indx + 1;
-            next_cmd = argv[cmd_indx];
-            opt = option_lookup(next_cmd, options, num_options);
+        // Check if upload-start is used in combination with upload commands
+        if (start_block_number != INVALID_TRANSPORT_BLOCK_NUM) {
             if (opt->long_name != "--upload-factory" && opt->long_name != "--upload-upgrade")
             {
                 cerr << "Error: --upload-start option is valid only with upload commands" << endl;
                 exit(HOST_APP_ERROR);
             }
+        }
+
+        if (opt->long_name == "--version")
+        {
+            getversion(device);
+            exit(0);
         }
 
         // Set appropriate ALT-SETTING
@@ -975,6 +980,9 @@ int main(int argc, char ** argv)
                 exit(HOST_APP_ERROR);
             } else {
                 image_path = convert_to_abs_path(argv[arg_indx]);
+            }
+            if (start_block_number>=0) {
+                set_transport_block(device, start_block_number);
             }
             if (!is_file_found(image_path)) {
                 upload_operation(device, image_path);
