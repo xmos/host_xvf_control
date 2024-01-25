@@ -806,28 +806,7 @@ int main(int argc, char ** argv)
     YAML::Node config;
     int* i2c_info = new int[1];
     int* spi_info = new int[2];
-
-    // Load YAML file with transport settings
-    string file_name = "transport_config.yaml";
-    if (is_file_found(file_name)) {
-        config = YAML::LoadFile("transport_config.yaml");
-        // Read I2C parameters from YAML file
-        i2c_info[0] = config["I2C_ADDRESS"].as<int>();
-        spi_info[0] = config["SPI_MODE"].as<int>();
-        spi_info[1] = 1024;
-    } else {
-        cerr << "Error: File \'" << file_name << "\' not found" << endl;
-        exit(HOST_APP_ERROR);
-    }
-
-    // Load YAML file with DFU commands info
-    file_name = "dfu_cmds.yaml";
-    if (is_file_found(file_name)) {
-        parse_dfu_cmds_yaml("dfu_cmds.yaml");
-    } else {
-        cerr << "Error: File \'" << file_name << "\' not found" << endl;
-        exit(HOST_APP_ERROR);
-    }
+    string yaml_file_name;
 
     // Check first CLI options which don't require access to the device
     const opt_t * opt = nullptr;
@@ -845,6 +824,49 @@ int main(int argc, char ** argv)
             cout << current_host_app_version << endl;
             return 0;
         }
+    }
+
+    // Check CLI options which require access to the device
+    next_cmd = argv[cmd_indx];
+    if(next_cmd[0] == '-')
+    {
+        opt = option_lookup(next_cmd, options, num_options);
+        // Check if verbose mode is set
+        if (opt->long_name == "--verbose")
+        {
+            cout << "Verbose mode enabled" << endl;
+            verbose_mode = 1;
+            cmd_indx++;
+            next_cmd = argv[cmd_indx];
+        }
+    }
+
+    // Load YAML file with transport settings
+    yaml_file_name = get_executable_path() + "/transport_config.yaml";
+    if (verbose_mode) {
+        cout << "Parsing YAML file " << yaml_file_name << endl;
+    }
+    if (is_file_found(yaml_file_name)) {
+        config = YAML::LoadFile(yaml_file_name);
+        // Read I2C parameters from YAML file
+        i2c_info[0] = config["I2C_ADDRESS"].as<int>();
+        spi_info[0] = config["SPI_MODE"].as<int>();
+        spi_info[1] = 1024;
+    } else {
+        cerr << "Error: File \'" << yaml_file_name << "\' not found" << endl;
+        exit(HOST_APP_ERROR);
+    }
+
+    // Load YAML file with DFU commands info
+    yaml_file_name = get_executable_path() + "/dfu_cmds.yaml";
+    if (verbose_mode) {
+        cout << "Parsing YAML file " << yaml_file_name << endl;
+    }
+    if (is_file_found(yaml_file_name)) {
+        parse_dfu_cmds_yaml(yaml_file_name);
+    } else {
+        cerr << "Error: File \'" << yaml_file_name << "\' not found" << endl;
+        exit(HOST_APP_ERROR);
     }
 
     // Load dynamic library with transport drivers
@@ -875,17 +897,7 @@ int main(int argc, char ** argv)
     if(next_cmd[0] == '-')
     {
         opt = option_lookup(next_cmd, options, num_options);
-        // Check if verbose mode is set
-        if (opt->long_name == "--verbose")
-        {
-            cout << "Verbose mode enabled" << endl;
-            verbose_mode = 1;
-            cmd_indx++;
-            next_cmd = argv[cmd_indx];
-        }
-
         int arg_indx = cmd_indx + 1;
-        opt = option_lookup(next_cmd, options, num_options);
 
         if (opt->long_name == "--version")
         {

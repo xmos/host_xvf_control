@@ -272,6 +272,11 @@ bool check_if_cmd_exists(const std::string cmd_name);
  */
 std::string get_device_lib_name(int * argc, char ** argv, opt_t* options, const size_t num_options);
 
+/** @brief Get path of executable
+ * @return string with path with no slash at the end
+*/
+std::string get_executable_path();
+
 /** @brief Look up the string in the option list.
  * @note If the string is not found, will suggest a possible match and exit.
  * @note Function is case insensitive
