@@ -747,7 +747,7 @@ void add_command(YAML::Node yaml_info, const string command_name)
             return;
         }
     }
-    cerr << "Error: command " << command_name << " not found in yaml file" << endl;
+    cerr << "Error: command " << command_name << " not found in YAML file" << endl;
     exit(HOST_APP_ERROR);
 }
 
