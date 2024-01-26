@@ -6,6 +6,7 @@ from platform import system
 import os
 import shutil
 import subprocess
+import platform
 from random import randint, random
 
 def get_dummy_files():
