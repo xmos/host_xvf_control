@@ -28,6 +28,7 @@ def get_dummy_files():
         assert 0, "Unsupported operating system"
 
     host_bin = "xvf_host" + bin_suffix
+    dfu_app_bin = "xvf_dfu"
     cmd_map_so = dl_prefix + "command_map"
     device_so = dl_prefix + "device_"
     local_build_folder = Path(__file__).parents[1] / "build"
@@ -35,12 +36,14 @@ def get_dummy_files():
     test_dir = build_dir / "test"
     host_bin_path = build_dir / host_bin
     host_bin_copy = test_dir / host_bin
+    dfu_app_bin_path = build_dir / dfu_app_bin
+    dfu_app_bin_copy = test_dir / dfu_app_bin
     cmd_map_dummy_path = test_dir / (cmd_map_so + "_dummy" + dl_suffix)
     cmd_map_path = test_dir / (cmd_map_so + dl_suffix)
     device_dummy_path = test_dir / (device_so + "dummy" + dl_suffix)
     device_path = test_dir / (device_so + control_protocol + dl_suffix)
 
-    assert host_bin_path.is_file() or host_bin_copy.is_file(), f"host app binary not found here {host_bin}"
+    assert host_bin_path.is_file() or host_bin_copy.is_file(), f"host app binary not found here: {host_bin}"
     if (not host_bin_copy.is_file()) or (host_bin_path.is_file() and host_bin_copy.is_file()):
         shutil.copy2(host_bin_path,  host_bin_copy)
 
@@ -55,7 +58,12 @@ def get_dummy_files():
         if device_path.is_file():
             os.remove(device_path)
         os.rename(device_dummy_path, device_path)
-    return test_dir, host_bin_copy, control_protocol, cmd_map_so + dl_suffix
+
+    if platform.machine() == "armv7l":
+        assert dfu_app_bin_path.is_file() or dfu_app_bin_copy.is_file(), f"DFU app binary not found here: {dfu_app_bin}"
+    if (not dfu_app_bin_copy.is_file()) or (dfu_app_bin_copy.is_file() and dfu_app_bin_copy.is_file()):
+        shutil.copy2(dfu_app_bin_copy,  dfu_app_bin_copy)
+    return test_dir, host_bin_copy, control_protocol, cmd_map_so + dl_suffix, dfu_app_bin_copy
 
 def run_cmd(command, cwd, verbose = False, expect_success = True):
     result = subprocess.run(command, capture_output=True, cwd=cwd, shell=True)
