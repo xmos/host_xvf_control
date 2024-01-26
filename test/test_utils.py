@@ -62,7 +62,7 @@ def get_dummy_files():
 
     if platform.machine() == "armv7l":
         assert dfu_app_bin_path.is_file() or dfu_app_bin_copy.is_file(), f"DFU app binary not found here: {dfu_app_bin}"
-        if (not dfu_app_bin_copy.is_file()) or (dfu_app_bin_copy.is_file() and dfu_app_bin_copy.is_file()):
+        if (not dfu_app_bin_copy.is_file()) or (dfu_app_bin_path.is_file() and dfu_app_bin_copy.is_file()):
             shutil.copy2(dfu_app_bin_copy,  dfu_app_bin_copy)
     else:
         dfu_app_bin_copy = None
