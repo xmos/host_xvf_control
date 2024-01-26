@@ -28,8 +28,10 @@ def get_dummy_files():
     else:
         assert 0, "Unsupported operating system"
 
-    host_bin = "xvf_host" + bin_suffix
+    host_bin = "xvf_host" + bin_suffi
     dfu_app_bin = "xvf_dfu"
+    dfu_yaml_file1 = "transport_config.yaml"
+    dfu_yaml_file2 = "dfu_cmds.yaml"
     cmd_map_so = dl_prefix + "command_map"
     device_so = dl_prefix + "device_"
     local_build_folder = Path(__file__).parents[1] / "build"
@@ -39,6 +41,10 @@ def get_dummy_files():
     host_bin_copy = test_dir / host_bin
     dfu_app_bin_path = build_dir / dfu_app_bin
     dfu_app_bin_copy = test_dir / dfu_app_bin
+    dfu_yaml_file1_path = build_dir / dfu_yaml_file1
+    dfu_yaml_file1_copy = test_dir / dfu_yaml_file1
+    dfu_yaml_file2_path = build_dir / dfu_yaml_file2
+    dfu_yaml_file2_copy = test_dir / dfu_yaml_file2
     cmd_map_dummy_path = test_dir / (cmd_map_so + "_dummy" + dl_suffix)
     cmd_map_path = test_dir / (cmd_map_so + dl_suffix)
     device_dummy_path = test_dir / (device_so + "dummy" + dl_suffix)
@@ -64,6 +70,12 @@ def get_dummy_files():
         assert dfu_app_bin_path.is_file() or dfu_app_bin_copy.is_file(), f"DFU app binary not found here: {dfu_app_bin}"
         if (not dfu_app_bin_copy.is_file()) or (dfu_app_bin_path.is_file() and dfu_app_bin_copy.is_file()):
             shutil.copy2(dfu_app_bin_path,  dfu_app_bin_copy)
+        assert dfu_yaml_file1_path.is_file() or dfu_yaml_file1_copy.is_file(), f"DFU YAML file not found here: {dfu_yaml_file1}"
+        if (not dfu_yaml_file1_copy.is_file()) or (dfu_yaml_file1_path.is_file() and dfu_yaml_file1_copy.is_file()):
+            shutil.copy2(dfu_yaml_file1_path,  dfu_yaml_file1_copy)
+        assert dfu_yaml_file2_path.is_file() or dfu_yaml_file2_copy.is_file(), f"DFU YAML file not found here: {dfu_yaml_file2}"
+        if (not dfu_yaml_file2_copy.is_file()) or (dfu_yaml_file2_path.is_file() and dfu_yaml_file2_copy.is_file()):
+            shutil.copy2(dfu_yaml_file2_path,  dfu_yaml_file2_copy)
     else:
         dfu_app_bin_copy = None
     return test_dir, host_bin_copy, control_protocol, cmd_map_so + dl_suffix, dfu_app_bin_copy
