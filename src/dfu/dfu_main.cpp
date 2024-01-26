@@ -56,21 +56,21 @@ using namespace std;
 #define DFU_ALT_FACTORY_ID 0
 #define DFU_ALT_UPGRADE_ID 1
 
-/** @brief Number of bytes used to indicate the length of the transfer block length */
-#define DFU_TRANSFER_BLOCK_LENGTH_BYTES 1
+/** @brief Number of bytes used to store the size of the transfer block length */
+#define DFU_TRANSFER_BLOCK_LENGTH_BYTES 2
 
 /** @brief Invalid value for transport block number */
 #define INVALID_TRANSPORT_BLOCK_NUM 0xFFFF
 
 /**
- * @brief Dictionaries storing command IDs and payload lenghts of the DFU commands
+ * @brief Dictionaries storing command IDs and payload lengths of the DFU commands
 -* @note The values are read from the DFU yaml file
  **/
 static map<string, int>CommandIDs;
 static map<string, int>CommandLengths;
 
 /** @brief List of supported DFU commands */
-static string commandList[] =
+static string commandList[] =length
 {
     "DFU_DETACH",
     "DFU_DNLOAD",
