@@ -56,8 +56,8 @@ using namespace std;
 #define DFU_ALT_FACTORY_ID 0
 #define DFU_ALT_UPGRADE_ID 1
 
-/** @brief Size of transfer buffer for upload and download operations */
-#define DFU_DATA_BUFFER_SIZE 64
+/** @brief Number of bytes used to indicate the length of the transfer block length */
+#define DFU_TRANSFER_BLOCK_LENGTH_BYTES 1
 
 /** @brief Invalid value for transport block number */
 #define INVALID_TRANSPORT_BLOCK_NUM 0xFFFF
@@ -525,13 +525,14 @@ control_ret_t download_operation(Device * device, const string image_path)
     string command_name = "DFU_DNLOAD";
     uint8_t num_values = CommandLengths[command_name];
     uint8_t * values = new uint8_t[num_values];
+    const uint8_t dfu_data_buffer_size = num_values - DFU_TRANSFER_BLOCK_LENGTH_BYTES;
     while (rf.good()) {
 
-        values[0] = DFU_DATA_BUFFER_SIZE;
-        rf.read((char*) &values[1], DFU_DATA_BUFFER_SIZE);
+        values[0] = dfu_data_buffer_size;
+        rf.read((char*) &values[1], dfu_data_buffer_size);
         is_state_not_dn_idle = 1;
         if (verbose_mode) {
-            cout << "Send DFU_DNLOAD message with " << DFU_DATA_BUFFER_SIZE << " bytes" << endl;
+            cout << "Send DFU_DNLOAD message with " << dfu_data_buffer_size << " bytes" << endl;
         }
         cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], num_values, values);
         if (cmd_ret != CONTROL_SUCCESS) {
@@ -562,7 +563,7 @@ control_ret_t download_operation(Device * device, const string image_path)
         if (verbose_mode) {
             cout << endl;
         }
-        total_bytes += DFU_DATA_BUFFER_SIZE;
+        total_bytes += dfu_data_buffer_size;
     }
     cout << endl;
 
@@ -630,6 +631,8 @@ control_ret_t upload_operation(Device * device, const string image_path)
     uint32_t transfer_block_num = 0;
     uint32_t transfer_ongoing = 1;
     uint32_t transfer_block_size = 0;
+    const uint8_t dfu_data_buffer_size = num_values - DFU_TRANSFER_BLOCK_LENGTH_BYTES;
+
     if(!wf) {
         cout << "Cannot open file!" << endl;
         return CONTROL_ERROR;
@@ -645,15 +648,15 @@ control_ret_t upload_operation(Device * device, const string image_path)
         }
         transfer_block_size = values[0];
         if (transfer_block_size) {
-            cout << "\rUploaded " << transfer_block_num << " blocks of " << DFU_DATA_BUFFER_SIZE << " bytes" << std::flush;
+            cout << "\rUploaded " << transfer_block_num << " blocks of " << unsigned(dfu_data_buffer_size) << " bytes" << std::flush;
             wf.write((const char *) &values[1], values[0]);
         }
         if (verbose_mode) {
             cout << endl;
         }
         // Wait till we receive a DFU_UPLOAD with no data
-        if (transfer_block_size < DFU_DATA_BUFFER_SIZE) {
-            cout << "Received transport block with size " << transfer_block_size << " (smaller than "<< DFU_DATA_BUFFER_SIZE << "): upload complete" << endl;
+        if (transfer_block_size < dfu_data_buffer_size) {
+            cout << "Received transport block with size " << transfer_block_size << " (smaller than "<< unsigned(dfu_data_buffer_size) << "): upload complete" << endl;
             transfer_ongoing = 0;
         }
         transfer_block_num++;
@@ -985,7 +988,7 @@ int main(int argc, char ** argv)
             } else {
                 image_path = argv[arg_indx];
             }
-            if (start_block_number>=0) {
+            if (start_block_number!=INVALID_TRANSPORT_BLOCK_NUM) {
                 set_transport_block(device, start_block_number);
             }
             if (!is_file_found(image_path)) {
