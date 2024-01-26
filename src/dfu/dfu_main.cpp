@@ -315,8 +315,8 @@ opt_t options[] = {
     {"--upload-start",            "-us",       "set the first block transport number for the upload operation. Default is 0. Option valid only with upload commands"},
     {"--version",                 "-v",        "read the version on the device",                                                                                    },
     {"--download",                "-d",        "download upgrade image stored in the specified path"                                                                },
-    {"--upload-factory",          "-uf",       "upload factory image and save it in the specified path."                                                            },
-    {"--upload-upgrade",          "-uu",       "upload upgrade image and save it in the specified path."                                                            },
+    {"--upload-factory",          "-uf",       "upload factory image and save it in the specified path"                                                             },
+    {"--upload-upgrade",          "-uu",       "upload upgrade image and save it in the specified path"                                                             },
     {"--reboot",                  "-r",        "reboot device"                                                                                                      },
 };
 size_t num_options = end(options) - begin(options);
@@ -402,7 +402,7 @@ control_ret_t getstatus(Device * device, uint8_t &status, uint8_t &state)
     }
     control_ret_t cmd_ret = command_get(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
     status = values[0];
@@ -434,7 +434,7 @@ control_ret_t clearStatus(Device * device) {
     }
     cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
 
@@ -489,7 +489,7 @@ control_ret_t setalternate(Device * device, uint8_t alternate)
     }
     cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
 
@@ -536,7 +536,7 @@ control_ret_t download_operation(Device * device, const string image_path)
         }
         cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], num_values, values);
         if (cmd_ret != CONTROL_SUCCESS) {
-            cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+            cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
         }
         // Wait till device is in state dfuDNLOAD_IDLE
@@ -575,7 +575,7 @@ control_ret_t download_operation(Device * device, const string image_path)
     memset(values, 0, CommandLengths[command_name]);
     cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
 
@@ -605,7 +605,7 @@ control_ret_t reboot_operation(Device * device)
     }
     cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
 
@@ -643,7 +643,7 @@ control_ret_t upload_operation(Device * device, const string image_path)
         }
         control_ret_t cmd_ret = command_get(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], num_values, values);
         if (cmd_ret != CONTROL_SUCCESS) {
-            cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+            cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
         }
         transfer_block_size = values[0];
@@ -665,7 +665,7 @@ control_ret_t upload_operation(Device * device, const string image_path)
 
     wf.close();
     if(!wf.good()) {
-        cerr << "Error: Writing to file " << image_path << " failed" << endl;
+        cerr << "Writing to file " << image_path << " failed" << endl;
         return CONTROL_ERROR;
     }
     return CONTROL_SUCCESS;
@@ -688,7 +688,7 @@ control_ret_t getversion(Device * device)
     }
     control_ret_t cmd_ret = command_get(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
     cout << "DFU_GETVERSION: ";
@@ -724,7 +724,7 @@ control_ret_t set_transport_block(Device * device, uint16_t block_number)
     }
     cmd_ret = command_set(device, dfu_controller_servicer_resid, command_name, CommandIDs[command_name], CommandLengths[command_name], values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cerr << "Error: Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
 
@@ -753,7 +753,7 @@ void add_command(YAML::Node yaml_info, const string command_name)
             return;
         }
     }
-    cerr << "Error: command " << command_name << " not found in YAML file" << endl;
+    cerr << "command " << command_name << " not found in YAML file" << endl;
     exit(HOST_APP_ERROR);
 }
 
@@ -796,7 +796,7 @@ void parse_dfu_cmds_yaml(string yaml_file_full_path)
     }
     if (dfu_controller_servicer_resid == -1)
     {
-        cerr << "Error: DFU_CONTROLLER_SERVICER_RESID not set. Check the YAML file: " << yaml_file_full_path << endl;
+        cerr << "DFU_CONTROLLER_SERVICER_RESID not set. Check the YAML file: " << yaml_file_full_path << endl;
         exit(HOST_APP_ERROR);
     }
 }
@@ -821,17 +821,17 @@ uint16_t check_upload_start(int * argc, char ** argv){
     }
     if (index + 1 >= *argc)
     {
-        cerr << "Error: missing block number" << endl;
+        cerr << "Missing block number" << endl;
         exit(HOST_APP_ERROR);
     }
     string block_number_str = argv[index + 1];
     if (!isdigit(block_number_str[0])) {
-        cerr << "Error: Value for transport block is not an integer. Given value: " << block_number_str << endl;
+        cerr << "Value for transport block is not an integer. Given value: " << block_number_str << endl;
         exit(HOST_APP_ERROR);
     }
     if (stoi(block_number_str) >= INVALID_TRANSPORT_BLOCK_NUM)
     {
-        cerr << "Error: Max value for transport block is " << INVALID_TRANSPORT_BLOCK_NUM-1 << ". Given value: " << block_number_str << endl;
+        cerr << "Max value for transport block is " << INVALID_TRANSPORT_BLOCK_NUM-1 << ". Given value: " << block_number_str << endl;
         exit(HOST_APP_ERROR);
     }
     remove_opt(argc, argv, index, 2);
@@ -842,8 +842,7 @@ int main(int argc, char ** argv)
 {
     if(argc == 1)
     {
-        cout << "Use --help to get the list of options for this application." << endl
-        << "Or use --list-commands to print the list of commands and their info." << endl;
+        cout << "Use --help to get the list of options for this application." << endl;
         return 0;
     }
     YAML::Node config;
@@ -867,8 +866,26 @@ int main(int argc, char ** argv)
         spi_info[0] = config["SPI_MODE"].as<int>();
         spi_info[1] = 1024;
     } else {
-        cerr << "Error: File \'" << yaml_file_name << "\' not found" << endl;
+        cerr << "File \'" << yaml_file_name << "\' not found" << endl;
         exit(HOST_APP_ERROR);
+    }
+
+    // Check first CLI options which don't require access to the device
+    const opt_t * opt = nullptr;
+    int cmd_indx = 1;
+    string next_cmd = argv[cmd_indx];
+    if(next_cmd[0] == '-')
+    {
+        opt = option_lookup(next_cmd, options, num_options);
+        if (opt->long_name == "--help")
+        {
+            return print_help_menu();
+        }
+        else if (opt->long_name == "--app-version")
+        {
+            cout << current_host_app_version << endl;
+            return 0;
+        }
     }
 
     // Load dynamic library with transport drivers
@@ -894,24 +911,6 @@ int main(int argc, char ** argv)
         exit(HOST_APP_ERROR);
     }
 
-    // Check first CLI options which don't require access to the device
-    const opt_t * opt = nullptr;
-    int cmd_indx = 1;
-    string next_cmd = argv[cmd_indx];
-    if(next_cmd[0] == '-')
-    {
-        opt = option_lookup(next_cmd, options, num_options);
-        if (opt->long_name == "--help")
-        {
-            return print_help_menu();
-        }
-        else if (opt->long_name == "--app-version")
-        {
-            cout << current_host_app_version << endl;
-            return 0;
-        }
-    }
-
     // Load YAML file with DFU commands info
     yaml_file_name = get_executable_path() + "/dfu_cmds.yaml";
     if (verbose_mode) {
@@ -920,7 +919,7 @@ int main(int argc, char ** argv)
     if (is_file_found(yaml_file_name)) {
         parse_dfu_cmds_yaml(yaml_file_name);
     } else {
-        cerr << "Error: File \'" << yaml_file_name << "\' not found" << endl;
+        cerr << "File \'" << yaml_file_name << "\' not found" << endl;
         exit(HOST_APP_ERROR);
     }
 
@@ -935,7 +934,7 @@ int main(int argc, char ** argv)
         if (start_block_number != INVALID_TRANSPORT_BLOCK_NUM) {
             if (opt->long_name != "--upload-factory" && opt->long_name != "--upload-upgrade")
             {
-                cerr << "Error: --upload-start option is valid only with upload commands" << endl;
+                cerr << "Option--upload-start is valid only with upload commands" << endl;
                 exit(HOST_APP_ERROR);
             }
         }
@@ -962,7 +961,7 @@ int main(int argc, char ** argv)
             string image_path = "";
             if (arg_indx >= argc)
             {
-                cerr << "Error: missing file path" << endl;
+                cerr << "Missing file path" << endl;
                 exit(HOST_APP_ERROR);
             } else {
                 image_path = argv[arg_indx];
@@ -970,7 +969,7 @@ int main(int argc, char ** argv)
             if (is_file_found(image_path)) {
                 download_operation(device, image_path);
             } else {
-                cerr << "Error: File at path \'" << argv[arg_indx] << "\' not found" << endl;
+                cerr << "File at path \'" << argv[arg_indx] << "\' not found" << endl;
                 return -1;
             }
         }
@@ -983,7 +982,7 @@ int main(int argc, char ** argv)
             string image_path = "";
             if (arg_indx >= argc)
             {
-                cerr << "Error: missing file path" << endl;
+                cerr << "Missing file path" << endl;
                 exit(HOST_APP_ERROR);
             } else {
                 image_path = argv[arg_indx];
@@ -994,7 +993,7 @@ int main(int argc, char ** argv)
             if (!is_file_found(image_path)) {
                 upload_operation(device, image_path);
             } else {
-                cerr << "Error: File at path \'" << argv[arg_indx] << "\' already exists" << endl;
+                cerr << "File at path \'" << argv[arg_indx] << "\' already exists" << endl;
                 return -1;
             }
         }
