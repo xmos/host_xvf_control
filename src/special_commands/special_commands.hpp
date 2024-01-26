@@ -19,6 +19,8 @@ static opt_t options[] = {
     {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"                                },
     {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"                                   },
     {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"                                   },
+    {"--get-eq-filter",           "-ge",       "get equalization filter into .bin file, default is eq_filter.bin"                               },
+    {"--set-eq-filter",           "-se",       "set equalization filter from .bin file, default is eq_filter.bin"                               },
     {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                                             },
     {"--test-bytestream",         "-tb",       "test device by writing a user defined stream of bytes to it"                                    },
     {"--band",                    "-b",        "NL model band to set/get (0: low-band, 1: high-band), default is 0 if unspecified"              }
