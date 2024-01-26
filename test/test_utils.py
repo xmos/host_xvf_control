@@ -28,7 +28,7 @@ def get_dummy_files():
     else:
         assert 0, "Unsupported operating system"
 
-    host_bin = "xvf_host" + bin_suffi
+    host_bin = "xvf_host" + bin_suffix
     dfu_app_bin = "xvf_dfu"
     dfu_yaml_file1 = "transport_config.yaml"
     dfu_yaml_file2 = "dfu_cmds.yaml"
