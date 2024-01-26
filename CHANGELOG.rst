@@ -5,6 +5,7 @@ Host XVF Control change log
 -----
 
   * ADDED: Options to read and write the equalization filter
+  * ADDED: Host application to perform DFU operations over I2C and SPI
 
 2.0.1
 -----
