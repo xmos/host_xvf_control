@@ -330,9 +330,9 @@ string get_device_lib_name(int * argc, char ** argv, opt_t* options, const size_
         }
         else
         {
-            // Using USB by default
+            // Using default driver
             cout << "Could not find " << to_upper(protocol_name) << " in supported protocols"
-            << endl << "Will use USB by default" << endl;
+            << endl << "Will use default driver: " << default_driver_name << endl;
         }
         remove_opt(argc, argv, index, 2);
         return lib_name;
