@@ -70,7 +70,7 @@ static map<string, int>CommandIDs;
 static map<string, int>CommandLengths;
 
 /** @brief List of supported DFU commands */
-static string commandList[] =length
+static string commandList[] =
 {
     "DFU_DETACH",
     "DFU_DNLOAD",
