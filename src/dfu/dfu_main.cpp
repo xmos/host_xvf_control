@@ -663,7 +663,7 @@ control_ret_t upload_operation(Device * device, const string image_path)
         }
         // Wait till we receive a DFU_UPLOAD with no data
         if (transfer_block_size < dfu_data_buffer_size) {
-            cout << "Received transport block with size " << transfer_block_size << " (smaller than "<< dfu_data_buffer_size << "): upload complete" << endl;
+            cout << "\nReceived transport block with size " << transfer_block_size << " (smaller than "<< dfu_data_buffer_size << "): upload complete" << endl;
             transfer_ongoing = 0;
         }
         transfer_block_num++;
@@ -809,8 +809,8 @@ void parse_dfu_cmds_yaml(string yaml_file_full_path)
 }
 
 void check_verbose_mode(int * argc, char ** argv){
-    opt_t * use_opt = option_lookup("--verbose", options, num_options);
-    size_t index = argv_option_lookup(*argc, argv, use_opt);
+    opt_t * opt = option_lookup("--verbose", options, num_options);
+    size_t index = argv_option_lookup(*argc, argv, opt);
     if(index != 0)
     {
         cout << "Verbose mode enabled" << endl;
@@ -820,8 +820,8 @@ void check_verbose_mode(int * argc, char ** argv){
 }
 
 uint16_t check_upload_start(int * argc, char ** argv){
-    opt_t * use_opt = option_lookup("--upload-start", options, num_options);
-    size_t index = argv_option_lookup(*argc, argv, use_opt);
+    opt_t * opt = option_lookup("--upload-start", options, num_options);
+    size_t index = argv_option_lookup(*argc, argv, opt);
     // return -1 if the upload-start option is not found
     if (index == 0) {
         return INVALID_TRANSPORT_BLOCK_NUM;
@@ -857,7 +857,10 @@ int main(int argc, char ** argv)
     int* spi_info = new int[2];
     string yaml_file_name;
 
-    // Check optional arguments
+    // Check if --use option is used
+    string device_dl_name = get_device_lib_name(&argc, argv, options, num_options);
+
+    // Check other optional arguments
     check_verbose_mode(&argc, argv);
     uint16_t start_block_number = check_upload_start(&argc, argv);
 
@@ -877,7 +880,7 @@ int main(int argc, char ** argv)
         exit(HOST_APP_ERROR);
     }
 
-    // Check first CLI options which don't require access to the device
+    // Check first CLI commands which don't require access to the device
     const opt_t * opt = nullptr;
     int cmd_indx = 1;
     string next_cmd = argv[cmd_indx];
@@ -896,7 +899,6 @@ int main(int argc, char ** argv)
     }
 
     // Load dynamic library with transport drivers
-    string device_dl_name = get_device_lib_name(&argc, argv, options, num_options);
     int * device_init_info = NULL;
     if(device_dl_name == device_i2c_dl_name)
     {
