@@ -18,6 +18,8 @@ set( APP_NAME  xvf_dfu )
 
 set(COMMON_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/dfu_main.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/dfu_commands.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/dfu_operations.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../utils/utils.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../utils/platform_support.cpp
 )

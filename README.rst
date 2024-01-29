@@ -76,7 +76,7 @@ The DFU host application is only supported on Raspbian, and it needs the followi
 - dfu_cmds.yaml
 - transport_config.yaml
 
-If the user needs change the settings of the I2C and SPI transport protocols, they can find all the configurable values in *src/dfu/transport_config.yaml*.
+If you need to change the settings of the I2C and SPI transport protocols, all the configurable values are listed in *src/dfu/transport_config.yaml*.
 
 *****************************************
 Supported platforms and control protocols
