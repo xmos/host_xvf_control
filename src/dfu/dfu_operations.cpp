@@ -1,6 +1,11 @@
 // Copyright 2024 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
+#include <chrono>
+#include <thread>
+#include <fstream>
+#include <unistd.h>         // readlink
+#include <sys/ioctl.h>      // ioctl
 #include "dfu_operations.hpp"
 
 using namespace std;
@@ -58,17 +63,17 @@ const string dfu_status_to_string(int status)
     return string(dfu_status_names[status]);
 }
 
-control_ret_t getstatus(Device * device, CommandList* command_list, uint8_t &status, uint8_t &state, uint8_t is_verbose)
+control_ret_t get_status(Device * device, CommandList* command_list, uint8_t &status, uint8_t &state, uint8_t is_verbose)
 {
 
-    const string command_name = "DFU_GETSTATUS";
-    uint8_t values[command_list->get_cmd_length(command_name)];
+    const string cmd_name = "DFU_GETSTATUS";
+    uint8_t values[command_list->get_cmd_length(cmd_name)];
     if (is_verbose) {
         cout << "Send DFU_GETSTATUS message" << endl;
     }
-    control_ret_t cmd_ret = command_list->command_get(device, command_name, values);
+    control_ret_t cmd_ret = command_list->command_get(device, cmd_name, values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Command " << cmd_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
     status = values[0];
@@ -85,34 +90,34 @@ control_ret_t getstatus(Device * device, CommandList* command_list, uint8_t &sta
     return cmd_ret;
 }
 
-control_ret_t clearStatus(Device * device, CommandList* command_list, uint8_t is_verbose)
+control_ret_t clear_status(Device * device, CommandList* command_list, uint8_t is_verbose)
 {
     control_ret_t cmd_ret = CONTROL_SUCCESS;
-    string command_name = "DFU_CLRSTATUS";
-    uint8_t num_values = command_list->get_cmd_length(command_name);
+    string cmd_name = "DFU_CLRSTATUS";
+    uint8_t num_values = command_list->get_cmd_length(cmd_name);
     uint8_t values[num_values];
     if (is_verbose) {
         cout << "Send DFU_CLRSTATUS message" << endl;
     }
-    cmd_ret = command_list->command_set(device, command_name, values);
+    cmd_ret = command_list->command_set(device, cmd_name, values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Command " << cmd_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
 
     return cmd_ret;
 }
 
-uint32_t status_is_idle(Device * device, CommandList* command_list, uint8_t is_verbose)
+uint32_t state_is_idle(Device * device, CommandList* command_list, uint8_t is_verbose)
 {
     uint8_t status;
     uint8_t state;
 
-    if (getstatus(device, command_list, status, state, is_verbose) ==  CONTROL_SUCCESS)
+    if (get_status(device, command_list, status, state, is_verbose) ==  CONTROL_SUCCESS)
     {
         switch(state) {
             case DFU_STATE_dfuERROR:
-                clearStatus(device, command_list, is_verbose);
+                clear_status(device, command_list, is_verbose);
                 exit(HOST_APP_ERROR);
             break;
             case DFU_STATE_dfuIDLE:
@@ -125,19 +130,19 @@ uint32_t status_is_idle(Device * device, CommandList* command_list, uint8_t is_v
     return 0;
 }
 
-control_ret_t setalternate(Device * device, CommandList* command_list, uint8_t alternate, uint8_t is_verbose)
+control_ret_t set_alternate(Device * device, CommandList* command_list, uint8_t alternate, uint8_t is_verbose)
 {
     control_ret_t cmd_ret = CONTROL_SUCCESS;
-    string command_name = "DFU_SETALTERNATE";
-    uint8_t num_values = command_list->get_cmd_length(command_name);
+    string cmd_name = "DFU_SETALTERNATE";
+    uint8_t num_values = command_list->get_cmd_length(cmd_name);
     uint8_t values[num_values];
     values[0] = alternate;
     if (is_verbose) {
         cout << "Send DFU_SETALTERNATE message with value " << unsigned(alternate) << endl;
     }
-    cmd_ret = command_list->command_set(device, command_name, values);
+    cmd_ret = command_list->command_set(device, cmd_name, values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Command " << cmd_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
 
@@ -162,8 +167,8 @@ control_ret_t download_operation(Device * device, CommandList* command_list, con
     uint32_t total_bytes = 0;
     control_ret_t cmd_ret = CONTROL_SUCCESS;
     uint8_t is_state_not_dn_idle = 1;
-    string command_name = "DFU_DNLOAD";
-    uint8_t num_values = command_list->get_cmd_length(command_name);
+    string cmd_name = "DFU_DNLOAD";
+    uint8_t num_values = command_list->get_cmd_length(cmd_name);
     uint8_t * values = new uint8_t[num_values];
     const uint32_t transfer_block_size = num_values - DFU_TRANSFER_BLOCK_LENGTH_BYTES;
     while (rf.good()) {
@@ -177,22 +182,22 @@ control_ret_t download_operation(Device * device, CommandList* command_list, con
         if (is_verbose) {
             cout << "Send DFU_DNLOAD message with " << transfer_block_size << " bytes" << endl;
         }
-        cmd_ret = command_list->command_set(device, command_name, values);
+        cmd_ret = command_list->command_set(device, cmd_name, values);
         if (cmd_ret != CONTROL_SUCCESS) {
-            cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
+            cerr << "Command " << cmd_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
         }
         // Wait till device is in state dfuDNLOAD_IDLE
         while (is_state_not_dn_idle)
         {
-            if (getstatus(device, command_list, status, state, is_verbose) ==  CONTROL_SUCCESS)
+            if (get_status(device, command_list, status, state, is_verbose) ==  CONTROL_SUCCESS)
             {
                 switch(state) {
                     case DFU_STATE_dfuDNLOAD_IDLE:
                         is_state_not_dn_idle = 0;
                     break;
                     case DFU_STATE_dfuERROR:
-                        clearStatus(device, command_list, is_verbose);
+                        clear_status(device, command_list, is_verbose);
                         exit(HOST_APP_ERROR);
                     break;
                     default:
@@ -215,37 +220,17 @@ control_ret_t download_operation(Device * device, CommandList* command_list, con
 
     // Send empty download message
     cout << "Download completed. Send DFU_DNLOAD message with size zero" << endl;
-    memset(values, 0, command_list->get_cmd_length(command_name));
-    cmd_ret = command_list->command_set(device, command_name, values);
+    memset(values, 0, command_list->get_cmd_length(cmd_name));
+    cmd_ret = command_list->command_set(device, cmd_name, values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Command " << cmd_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
 
     // Wait till device is in state dfuIDLE
     is_state_not_dn_idle = 1;
-    while (!status_is_idle(device, command_list, is_verbose)) { }
+    while (!state_is_idle(device, command_list, is_verbose)) { }
     return CONTROL_SUCCESS;
-}
-
-control_ret_t reboot_operation(Device * device, CommandList* command_list, uint8_t is_verbose)
-{
-    cout << "Reboot device" << endl;
-    control_ret_t cmd_ret = CONTROL_SUCCESS;
-
-    string command_name = "DFU_DETACH";
-    uint8_t num_values = command_list->get_cmd_length(command_name);
-    uint8_t values[num_values];
-    if (is_verbose) {
-        cout << "Send DFU_DETACH message" << endl;
-    }
-    cmd_ret = command_list->command_set(device, command_name, values);
-    if (cmd_ret != CONTROL_SUCCESS) {
-        cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
-        return cmd_ret;
-    }
-
-    return cmd_ret;
 }
 
 control_ret_t upload_operation(Device * device, CommandList* command_list, const string image_path, uint8_t is_verbose)
@@ -253,8 +238,8 @@ control_ret_t upload_operation(Device * device, CommandList* command_list, const
     cout << "Uploading image to " << image_path << endl;
     ofstream wf(image_path, ios::out | ios::binary);
 
-    string command_name = "DFU_UPLOAD";
-    uint8_t num_values = command_list->get_cmd_length(command_name);
+    string cmd_name = "DFU_UPLOAD";
+    uint8_t num_values = command_list->get_cmd_length(cmd_name);
     uint8_t values[num_values];
     uint32_t transfer_block_num = 0;
     uint32_t transfer_ongoing = 1;
@@ -270,9 +255,9 @@ control_ret_t upload_operation(Device * device, CommandList* command_list, const
         if (is_verbose) {
             cout << "Send DFU_UPLOAD message" << endl;
         }
-        control_ret_t cmd_ret = command_list->command_get(device, command_name, values);
+        control_ret_t cmd_ret = command_list->command_get(device, cmd_name, values);
         if (cmd_ret != CONTROL_SUCCESS) {
-            cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
+            cerr << "Command " << cmd_name << " returned error " << cmd_ret << endl;
             return cmd_ret;
         }
         for (int i=0; i<DFU_TRANSFER_BLOCK_LENGTH_BYTES; i++)
@@ -303,24 +288,22 @@ control_ret_t upload_operation(Device * device, CommandList* command_list, const
     return CONTROL_SUCCESS;
 }
 
-control_ret_t getversion(Device * device, CommandList* command_list, uint8_t is_verbose)
+control_ret_t reboot_operation(Device * device, CommandList* command_list, uint8_t is_verbose)
 {
+    cout << "Reboot device" << endl;
+    control_ret_t cmd_ret = CONTROL_SUCCESS;
 
-    const string command_name = "DFU_GETVERSION";
-    uint8_t values[command_list->get_cmd_length(command_name)];
+    string cmd_name = "DFU_DETACH";
+    uint8_t num_values = command_list->get_cmd_length(cmd_name);
+    uint8_t values[num_values];
     if (is_verbose) {
-        cout << "Send DFU_GETVERSION message" << endl;
+        cout << "Send DFU_DETACH message" << endl;
     }
-    control_ret_t cmd_ret = command_list->command_get(device, command_name, values);
+    cmd_ret = command_list->command_set(device, cmd_name, values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Command " << cmd_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
-    cout << "DFU_GETVERSION: ";
-    for (int i=0; i<command_list->get_cmd_length(command_name); i++) {
-        cout << unsigned(values[i]) << " ";
-    }
-    cout << endl;
 
     return cmd_ret;
 }
@@ -330,8 +313,8 @@ control_ret_t set_transport_block(Device * device, CommandList* command_list, ui
     cout << "Set transport block number " << block_number << endl;
     control_ret_t cmd_ret = CONTROL_SUCCESS;
 
-    string command_name = "DFU_TRANSFERBLOCK";
-    uint8_t num_values = command_list->get_cmd_length(command_name);
+    string cmd_name = "DFU_TRANSFERBLOCK";
+    uint8_t num_values = command_list->get_cmd_length(cmd_name);
     uint8_t values[num_values];
     values[0] = block_number&0xFF;
     values[1] = block_number>>8;
@@ -339,11 +322,33 @@ control_ret_t set_transport_block(Device * device, CommandList* command_list, ui
     if (is_verbose) {
         cout << "Send DFU_TRANSFERBLOCK message" << endl;
     }
-    cmd_ret = command_list->command_set(device, command_name, values);
+    cmd_ret = command_list->command_set(device, cmd_name, values);
     if (cmd_ret != CONTROL_SUCCESS) {
-        cerr << "Command " << command_name << " returned error " << cmd_ret << endl;
+        cerr << "Command " << cmd_name << " returned error " << cmd_ret << endl;
         return cmd_ret;
     }
+
+    return cmd_ret;
+}
+
+control_ret_t get_version(Device * device, CommandList* command_list, uint8_t is_verbose)
+{
+
+    const string cmd_name = "DFU_GETVERSION";
+    uint8_t values[command_list->get_cmd_length(cmd_name)];
+    if (is_verbose) {
+        cout << "Send DFU_GETVERSION message" << endl;
+    }
+    control_ret_t cmd_ret = command_list->command_get(device, cmd_name, values);
+    if (cmd_ret != CONTROL_SUCCESS) {
+        cerr << "Command " << cmd_name << " returned error " << cmd_ret << endl;
+        return cmd_ret;
+    }
+    cout << "DFU_GETVERSION: ";
+    for (int i=0; i<command_list->get_cmd_length(cmd_name); i++) {
+        cout << unsigned(values[i]) << " ";
+    }
+    cout << endl;
 
     return cmd_ret;
 }

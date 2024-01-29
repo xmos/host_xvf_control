@@ -5,7 +5,6 @@
 
 using namespace std;
 
-
 control_ret_t CommandList::command_get(Device * device, string cmd_name, uint8_t * values)
 {
     int cmd_id = get_cmd_id(cmd_name) | 0x80; // setting 8th bit for read commands
@@ -50,7 +49,7 @@ control_ret_t CommandList::command_get(Device * device, string cmd_name, uint8_t
 
 control_ret_t CommandList::command_set(Device * device, string cmd_name, uint8_t * values)
 {
-    int cmd_id = get_cmd_id(cmd_name) | 0x80; // setting 8th bit for read commands
+    int cmd_id = get_cmd_id(cmd_name); // setting 8th bit for read commands
     size_t num_values = get_cmd_length(cmd_name);
     size_t data_len = num_values;
     uint8_t * data = new uint8_t[data_len];
@@ -91,23 +90,23 @@ control_ret_t CommandList::command_set(Device * device, string cmd_name, uint8_t
     return ret;
 };
 
-void CommandList::add_command(YAML::Node yaml_info, const string command_name, uint8_t is_verbose)
+void CommandList::add_command(YAML::Node yaml_info, const string cmd_name, uint8_t is_verbose)
 {
     for (const auto& command : yaml_info)
     {
-        if (command["cmd"].as<string>().find(command_name) != string::npos)
+        if (command["cmd"].as<string>().find(cmd_name) != string::npos)
         {
             int cmd_id = command["index"].as<int>();
             int cmd_num_values = command["number_of_values"].as<int>();
-            set_cmd_id(command_name, cmd_id);
-            set_cmd_length(command_name, cmd_num_values);
+            set_cmd_id(cmd_name, cmd_id);
+            set_cmd_length(cmd_name, cmd_num_values);
             if (is_verbose) {
-                cout << "Added command " << command_name << " with ID " << CommandIDs[command_name] << " and number of values " << cmd_num_values << endl;
+                cout << "Added command " << cmd_name << " with ID " << CommandIDs[cmd_name] << " and number of values " << cmd_num_values << endl;
             }
             return;
         }
     }
-    cerr << "command " << command_name << " not found in YAML file" << endl;
+    cerr << "command " << cmd_name << " not found in YAML file" << endl;
     exit(HOST_APP_ERROR);
 };
 
@@ -137,9 +136,9 @@ void CommandList::parse_dfu_cmds_yaml(string yaml_file_full_path, uint8_t is_ver
         YAML::Node dedicated_commands = node.second["dedicated_commands"];
         if (dedicated_commands.IsSequence())
         {
-            for (const auto& command_name : commandNames)
+            for (const auto& cmd_name : commandNames)
             {
-                add_command(dedicated_commands, command_name);
+                add_command(dedicated_commands, cmd_name, is_verbose);
             }
         }
     }

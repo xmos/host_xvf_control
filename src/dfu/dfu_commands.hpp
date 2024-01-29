@@ -47,7 +47,7 @@
 #define DFU_ALT_UPGRADE_ID 1
 
 /** @brief Number of bytes used to indicate the length of the transfer block length */
-#define DFU_TRANSFER_BLOCK_LENGTH_BYTES 1
+#define DFU_TRANSFER_BLOCK_LENGTH_BYTES 2
 
 /** @brief Invalid value for transport block number */
 #define INVALID_TRANSPORT_BLOCK_NUM 0xFFFF
@@ -120,24 +120,29 @@ class CommandList
     * @note The value is read from the DFU yaml file
     **/
     uint16_t dfu_controller_servicer_resid;
+
     public:
+
     /**
     * @brief Set function for command ID
     * @param cmd_name      Command name
     * @param id            Command ID
     **/
     void set_cmd_id(std::string cmd_name, int id) {CommandIDs[cmd_name] = id;};
+
     /**
     * @brief Set function for command length
     * @param cmd_name      Command name
     * @param length        Command length
     **/
     void set_cmd_length(std::string cmd_name, int length) {CommandLengths[cmd_name] = length;};
+
     /**
     * @brief Set function for DFU controller servicer resource ID
     * @param id            Resource ID
     **/
     void set_dfu_controller_servicer_resid(uint16_t res_id) {dfu_controller_servicer_resid = res_id;};
+
     /**
     * @brief Get function for command ID
     * @param cmd_name      Command name
@@ -145,6 +150,7 @@ class CommandList
     * @return              Command ID
     **/
     int get_cmd_id(std::string cmd_name) {return CommandIDs[cmd_name];};
+
     /**
     * @brief Get function for command length
     * @param cmd_name      Command name
@@ -169,6 +175,7 @@ class CommandList
     * @return              device control status
     */
     control_ret_t command_get(Device * device, std::string cmd_name, uint8_t * values);
+
     /**
     * @brief Executes a single set command
      *
@@ -179,6 +186,21 @@ class CommandList
     */
     control_ret_t command_set(Device * device, std::string cmd_name, uint8_t * values);
 
-    void add_command(YAML::Node yaml_info, const std::string command_name, uint8_t is_verbose=0);
+    /**
+    * @brief Parse a YAML file with the list of DFU commands
+     *
+    * @param yaml_file_full_path    Path to the YAML file
+    * @param is_verbose             Flag to indicate if verbose mode is enabled
+    */
     void parse_dfu_cmds_yaml(std::string yaml_file_full_path, uint8_t is_verbose=0);
+
+    /**
+    * @brief Add a command with a given name to the list of commands
+     *
+    * @param yaml_info     Data read from YAML file
+    * @param cmd_name      Command name
+    * @param is_verbose    Flag to indicate if verbose mode is enabled
+    */
+    void add_command(YAML::Node yaml_info, const std::string cmd_name, uint8_t is_verbose=0);
+
 };

@@ -1,8 +1,8 @@
 // Copyright 2024 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
-#include <iostream>
 #include "dfu_operations.hpp"
+#include <sys/stat.h> // stat
 
 using namespace std;
 
@@ -98,7 +98,8 @@ control_ret_t print_help_menu()
     return CONTROL_SUCCESS;
 }
 
-uint8_t check_verbose(int * argc, char ** argv){
+uint8_t check_verbose(int * argc, char ** argv)
+{
     opt_t * opt = option_lookup("--verbose", options, num_options);
     size_t index = argv_option_lookup(*argc, argv, opt);
     if(index != 0)
@@ -110,7 +111,8 @@ uint8_t check_verbose(int * argc, char ** argv){
     return 0;
 }
 
-uint16_t check_upload_start(int * argc, char ** argv){
+uint16_t check_upload_start(int * argc, char ** argv)
+{
     opt_t * opt = option_lookup("--upload-start", options, num_options);
     size_t index = argv_option_lookup(*argc, argv, opt);
     // return -1 if the upload-start option is not found
@@ -217,7 +219,7 @@ int main(int argc, char ** argv)
         cout << "Parsing YAML file " << yaml_file_name << endl;
     }
     if (is_file_found(yaml_file_name)) {
-        command_list->parse_dfu_cmds_yaml(yaml_file_name);
+        command_list->parse_dfu_cmds_yaml(yaml_file_name, is_verbose);
     } else {
         cerr << "File \'" << yaml_file_name << "\' not found" << endl;
         exit(HOST_APP_ERROR);
@@ -241,18 +243,18 @@ int main(int argc, char ** argv)
 
         if (opt->long_name == "--version")
         {
-            getversion(device, command_list, is_verbose);
+            get_version(device, command_list, is_verbose);
             exit(0);
         }
 
         // Set appropriate ALT-SETTING
         if (opt->long_name == "--upload-factory")
         {
-            setalternate(device, command_list, DFU_ALT_FACTORY_ID, is_verbose);
+            set_alternate(device, command_list, DFU_ALT_FACTORY_ID, is_verbose);
         } else {
-            setalternate(device, command_list, DFU_ALT_UPGRADE_ID, is_verbose);
+            set_alternate(device, command_list, DFU_ALT_UPGRADE_ID, is_verbose);
         }
-        if (!status_is_idle(device, command_list, is_verbose)) {
+        if (!state_is_idle(device, command_list, is_verbose)) {
             return -1;
         }
 
