@@ -202,5 +202,4 @@ class CommandList
     * @param is_verbose    Flag to indicate if verbose mode is enabled
     */
     void add_command(YAML::Node yaml_info, const std::string cmd_name, uint8_t is_verbose=0);
-
 };
