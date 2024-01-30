@@ -1,4 +1,4 @@
-// Copyright 2022-2023 XMOS LIMITED.
+// Copyright 2022-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #include "command.hpp"
@@ -23,11 +23,86 @@ void Command::init_cmd_info(const string cmd_name)
     init_cmd(&cmd, cmd_name);
 }
 
+size_t Command::get_num_bytes_from_type()
+{
+    size_t num_bytes;
+    switch(cmd.type)
+    {
+    case TYPE_CHAR:
+    case TYPE_UINT8:
+        num_bytes = 1;
+        break;
+    case TYPE_INT32:
+    case TYPE_UINT32:
+    case TYPE_FLOAT:
+    case TYPE_RADIANS:
+        num_bytes = 4;
+        break;
+    default:
+        cerr << "Unsupported parameter type" << endl;
+        exit(HOST_APP_ERROR);
+    }
+    return num_bytes;
+}
+
+cmd_param_t Command::cmd_arg_str_to_val(const char * str)
+{
+    cmd_param_t val;
+    try{
+        switch(cmd.type)
+        {
+        case TYPE_CHAR:
+            cerr << "TYPE_CHAR commands can only be READ_ONLY" << endl;
+            exit(HOST_APP_ERROR);
+
+        case TYPE_UINT8:
+        {
+            int32_t tmp = stoi(str, nullptr, 0);
+            if ((tmp > UINT8_MAX) || (tmp < 0))
+            {
+                throw out_of_range("");
+            }
+            val.ui8 = static_cast<uint8_t>(tmp);
+            break;
+        }
+        case TYPE_INT32:
+            val.i32 = stoi(str, nullptr, 0);
+            break;
+
+        case TYPE_UINT32:
+            val.ui32 = stoul(str, nullptr, 0);
+            break;
+
+        case TYPE_FLOAT:
+        case TYPE_RADIANS:
+            val.f = stof(str);
+            break;
+
+        default:
+            cerr << "Unsupported parameter type" << endl;
+            exit(HOST_APP_ERROR);
+        }
+    }
+    catch(const out_of_range & ex)
+    {
+        static_cast<void>(ex);
+        cerr << "Value " << str << " is out of range of " << command_param_type_name(cmd.type) << " type"<< endl;
+        exit(HOST_APP_ERROR);
+    }
+    catch(const invalid_argument & ex)
+    {
+        static_cast<void>(ex);
+        cerr << "Argument " << str << " is invalid" << endl;
+        exit(HOST_APP_ERROR);
+    }
+    return val;
+}
+
 control_ret_t Command::command_get(cmd_param_t * values)
 {
     control_cmd_t cmd_id = cmd.cmd_id | 0x80; // setting 8th bit for read commands
 
-    size_t data_len = get_num_bytes_from_type(cmd.type) * cmd.num_values + 1; // one extra for the status
+    size_t data_len = get_num_bytes_from_type()*cmd.num_values + 1; // one extra for the status
     uint8_t * data = new uint8_t[data_len];
 
     control_ret_t ret = device->device_get(cmd.res_id, cmd_id, data, data_len);
@@ -45,7 +120,7 @@ control_ret_t Command::command_get(cmd_param_t * values)
         {
             for (unsigned i = 0; i < cmd.num_values; i++)
             {
-                values[i] = command_bytes_to_value(cmd.type, &data[1], i);
+                values[i] = command_bytes_to_value(&data[1], i);
             }
             break;
         }
@@ -71,13 +146,13 @@ control_ret_t Command::command_set(const cmd_param_t * values)
     {
         check_range(cmd.cmd_name, values);
     }
-    
-    size_t data_len = get_num_bytes_from_type(cmd.type) * cmd.num_values;
+
+    size_t data_len = get_num_bytes_from_type() * cmd.num_values;
     uint8_t * data = new uint8_t[data_len];
 
     for (unsigned i = 0; i < cmd.num_values; i++)
     {
-        command_bytes_from_value(cmd.type, data, i, values[i]);
+        command_bytes_from_value(data, i, values[i]);
     }
 
     control_ret_t ret = device->device_set(cmd.res_id, cmd.cmd_id, data, data_len);
@@ -181,7 +256,7 @@ control_ret_t Command::do_command(const string cmd_name, char ** argv, int argc,
     {
         for(size_t i = arg_indx; i < arg_indx + args_left; i++)
         {
-            cmd_values[i - arg_indx] = cmd_arg_str_to_val(cmd.type, argv[i]);
+            cmd_values[i - arg_indx] = cmd_arg_str_to_val(argv[i]);
         }
         ret = command_set(cmd_values);
     }
@@ -189,4 +264,80 @@ control_ret_t Command::do_command(const string cmd_name, char ** argv, int argc,
     delete []cmd_values;
 
     return ret;
+}
+
+cmd_param_t Command::command_bytes_to_value(const uint8_t * data, unsigned index)
+{
+    cmd_param_t value;
+    size_t size_bytes = get_num_bytes_from_type();
+
+    switch(size_bytes)
+    {
+    case 1:
+        memcpy(&value.ui8, data + index * size_bytes, size_bytes);
+        break;
+    case 4:
+        memcpy(&value.i32, data + index * size_bytes, size_bytes);
+        break;
+    default:
+        cerr << "Unsupported parameter type" << endl;
+        exit(HOST_APP_ERROR);
+    }
+
+    return value;
+}
+
+void Command::command_bytes_from_value(uint8_t * data, unsigned index, const cmd_param_t value)
+{
+    size_t num_bytes = get_num_bytes_from_type();
+    switch(num_bytes)
+    {
+    case 1:
+        memcpy(data + index * num_bytes, &value.ui8, num_bytes);
+        break;
+    case 4:
+        memcpy(data + index * num_bytes, &value.i32, num_bytes);
+        break;
+    default:
+        cerr << "Unsupported parameter type" << endl;
+        exit(HOST_APP_ERROR);
+    }
+}
+
+string command_param_type_name(cmd_param_type_t type)
+{
+    string tstr;
+
+    switch (type)
+    {
+    case TYPE_CHAR:
+        tstr = "char";
+        break;
+
+    case TYPE_UINT8:
+        tstr = "uint8";
+        break;
+
+    case TYPE_INT32:
+        tstr = "int32";
+        break;
+
+    case TYPE_UINT32:
+        tstr = "uint32";
+        break;
+
+    case TYPE_FLOAT:
+        tstr = "float";
+        break;
+
+    case TYPE_RADIANS:
+        tstr = "radians";
+        break;
+
+    default:
+        cerr << "Unsupported parameter type" << endl;
+        exit(HOST_APP_ERROR);
+    }
+
+    return tstr;
 }

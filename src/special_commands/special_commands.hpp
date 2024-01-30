@@ -1,10 +1,32 @@
-// Copyright 2022-2023 XMOS LIMITED.
+// Copyright 2022-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #ifndef SPECIAL_COMMANDS_H_
 #define SPECIAL_COMMANDS_H_
 
 #include "command.hpp"
+
+static opt_t options[] = {
+    {"--help",                    "-h",        "display this information"                                                                       },
+    {"--version",                 "-v",        "print the current version of this application",                                                 },
+    {"--list-commands",           "-l",        "print list of the available commands"                                                           },
+    {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                          },
+    {"--command-map-path",        "-cmp",      "use specific command map path, the path is relative to the working dir"                         },
+    {"--bypass-range-check",      "-br",       "bypass parameter range check",                                                                  },
+    {"--dump-params",             "-d",        "print all readable parameters"                                                                  },
+    {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u * in the .txt file"        },
+    {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files, default is aec_filter.bin.fx.mx"                                },
+    {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"                                },
+    {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"                                   },
+    {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"                                   },
+    {"--get-eq-filter",           "-ge",       "get equalization filter into .bin file, default is eq_filter.bin"                               },
+    {"--set-eq-filter",           "-se",       "set equalization filter from .bin file, default is eq_filter.bin"                               },
+    {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                                             },
+    {"--test-bytestream",         "-tb",       "test device by writing a user defined stream of bytes to it"                                    },
+    {"--band",                    "-b",        "NL model band to set/get (0: low-band, 1: high-band), default is 0 if unspecified"              }
+};
+
+static const size_t num_options = std::end(options) - std::begin(options);
 
 /**
  * @brief Return the absolute path to the command map file
@@ -15,23 +37,6 @@
  * @note Will decrement argc, if option is present
  */
 std::string get_cmd_map_abs_path(int * argc, char ** argv);
-
-/**
- * @brief Look up the string in the option list.
- *
- * If the string is not found, will suggest a possible match and exit.
- *
- * @param str   String sequence to look up
- * @note Function is case insensitive
- */
-opt_t * option_lookup(const std::string str);
-
-/**
- * @brief Gets device driver name to load by looking for --use
- *
- * @note Will decrement argc, if option is present
- */
-std::string get_device_lib_name(int * argc, char ** argv);
 
 /**
  * @brief Gets bypass range check state by looking for --bypass-range-check in argv
