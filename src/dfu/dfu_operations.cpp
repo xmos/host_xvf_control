@@ -82,7 +82,7 @@ control_ret_t get_status(Device * device, CommandList* command_list, uint8_t &st
                             (0xff & values[1]);
     state = values[4];
     if (is_verbose) {
-        cout << "DFU_GETSTATUS: Status " << dfu_status_to_string(status) << ", State " << dfu_state_to_string(state) << ", Timeout (ms) " << poll_timeout << endl;
+        cout << "DFU_GETSTATUS: Status: " << dfu_status_to_string(status) << ", State: " << dfu_state_to_string(state) << ", Timeout (ms) " << poll_timeout << endl;
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(poll_timeout));
@@ -96,9 +96,7 @@ control_ret_t clear_status(Device * device, CommandList* command_list, uint8_t i
     string cmd_name = "DFU_CLRSTATUS";
     uint8_t num_values = command_list->get_cmd_length(cmd_name);
     uint8_t values[num_values];
-    if (is_verbose) {
-        cout << "Send DFU_CLRSTATUS message" << endl;
-    }
+    cout << "Send DFU_CLRSTATUS message" << endl;
     cmd_ret = command_list->command_set(device, cmd_name, values);
     if (cmd_ret != CONTROL_SUCCESS) {
         cerr << "Command " << cmd_name << " returned error " << cmd_ret << endl;
@@ -117,6 +115,7 @@ uint32_t state_is_idle(Device * device, CommandList* command_list, uint8_t is_ve
     {
         switch(state) {
             case DFU_STATE_dfuERROR:
+                cerr << "DFU_GETSTATUS returned: Status: " << dfu_status_to_string(status) << ", State: " << dfu_state_to_string(state) << endl;
                 clear_status(device, command_list, is_verbose);
                 exit(HOST_APP_ERROR);
             break;
@@ -197,6 +196,7 @@ control_ret_t download_operation(Device * device, CommandList* command_list, con
                         is_state_not_dn_idle = 0;
                     break;
                     case DFU_STATE_dfuERROR:
+                        cerr << "DFU_GETSTATUS returned: Status: " << dfu_status_to_string(status) << ", State: " << dfu_state_to_string(state) << endl;
                         clear_status(device, command_list, is_verbose);
                         exit(HOST_APP_ERROR);
                     break;
