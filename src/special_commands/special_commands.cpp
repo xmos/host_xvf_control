@@ -1,4 +1,4 @@
-// Copyright 2022-2023 XMOS LIMITED.
+// Copyright 2022-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #include "special_commands.hpp"
@@ -12,32 +12,13 @@
 
 using namespace std;
 
-opt_t options[] = {
-    {"--help",                    "-h",        "display this information"                                                                       },
-    {"--version",                 "-v",        "print the current version of this application",                                                 },
-    {"--list-commands",           "-l",        "print list of the available commands"                                                           },
-    {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                          },
-    {"--command-map-path",        "-cmp",      "use specific command map path, the path is relative to the working dir"                         },
-    {"--bypass-range-check",      "-br",       "bypass parameter range check",                                                                  },
-    {"--dump-params",             "-d",        "print all readable parameters"                                                                  },
-    {"--execute-command-list",    "-e",        "execute commands from .txt file, one command per line, don't need -u * in the .txt file"        },
-    {"--get-aec-filter",          "-gf",       "get AEC filter into .bin files, default is aec_filter.bin.fx.mx"                                },
-    {"--set-aec-filter",          "-sf",       "set AEC filter from .bin files, default is aec_filter.bin.fx.mx"                                },
-    {"--get-nlmodel-buffer",      "-gn",       "get NLModel filter into .bin file, default is nlm_buffer.bin"                                   },
-    {"--set-nlmodel-buffer",      "-sn",       "set NLModel filter from .bin file, default is nlm_buffer.bin"                                   },
-    {"--test-control-interface",  "-tc",       "test control interface, default is test_buffer.bin"                                             },
-    {"--test-bytestream",         "-tb",       "test device by writing a user defined stream of bytes to it"                                    },
-    {"--band",                    "-b",        "NL model band to set/get (0: low-band, 1: high-band), default is 0 if unspecified"              }
-};
-size_t num_options = end(options) - begin(options);
-
 extern size_t num_commands;
 
 string get_cmd_map_abs_path(int * argc, char ** argv)
 {
     string cmd_map_rel_path = default_command_map_name;
     string cmd_map_abs_path = "";
-    opt_t * cmp_opt = option_lookup("--command-map-path");
+    opt_t * cmp_opt = option_lookup("--command-map-path", options, num_options);
     size_t index = argv_option_lookup(*argc, argv, cmp_opt);
     if(index != 0)
     {
@@ -53,78 +34,9 @@ string get_cmd_map_abs_path(int * argc, char ** argv)
     return cmd_map_abs_path;
 }
 
-opt_t * option_lookup(const string str)
-{
-    string low_str = to_lower(str);
-    for(size_t i = 0; i < num_options; i++)
-    {
-        opt_t * opt = &options[i];
-        if ((low_str == opt->long_name) || (low_str == opt->short_name))
-        {
-            return opt;
-        }
-    }
-
-    int shortest_dist = 100;
-    int indx  = 0;
-    for(size_t i = 0; i < num_options; i++)
-    {
-        opt_t * opt = &options[i];
-        int dist_long = Levenshtein_distance(low_str, opt->long_name);
-        int dist_short = Levenshtein_distance(low_str, opt->short_name);
-        int dist = (dist_short < dist_long) ? dist_short : dist_long;
-        if(dist < shortest_dist)
-        {
-            shortest_dist = dist;
-            indx = i;
-        }
-    }
-    cerr << "Option " << str << " does not exist." << endl
-    << "Maybe you meant " << options[indx].short_name
-    << " or " << options[indx].long_name << "." << endl;
-    exit(HOST_APP_ERROR);
-    return nullptr;
-}
-
-string get_device_lib_name(int * argc, char ** argv)
-{
-    string lib_name = default_driver_name;
-    opt_t * use_opt = option_lookup("--use");
-    size_t index = argv_option_lookup(*argc, argv, use_opt);
-    if(index == 0)
-    {
-        // could not find --use, using default driver name
-        return lib_name;
-    }
-    else
-    {
-        string protocol_name = argv[index + 1];
-        if (to_upper(protocol_name) == "I2C")
-        {
-            lib_name = device_i2c_dl_name;
-        }
-        else if (to_upper(protocol_name) == "SPI")
-        {
-            lib_name = device_spi_dl_name;
-        }
-        else if (to_upper(protocol_name) == "USB")
-        {
-            lib_name = device_usb_dl_name;
-        }
-        else
-        {
-            // Using I2C by default for now as USB is currently not supported
-            cout << "Could not find " << to_upper(protocol_name) << " in supported protocols"
-            << endl << "Will use I2C by default" << endl;
-        }
-        remove_opt(argc, argv, index, 2);
-        return lib_name;
-    }
-}
-
 bool get_bypass_range_check(int * argc, char ** argv)
 {
-    opt_t * bp_opt = option_lookup("--bypass-range-check");
+    opt_t * bp_opt = option_lookup("--bypass-range-check", options, num_options);
     size_t index = argv_option_lookup(*argc, argv, bp_opt);
     if(index == 0)
     {
@@ -140,7 +52,7 @@ bool get_bypass_range_check(int * argc, char ** argv)
 
 uint8_t get_band_option(int * argc, char ** argv)
 {
-    opt_t *band_opt = option_lookup("--band");
+    opt_t *band_opt = option_lookup("--band", options, num_options);
     size_t index = argv_option_lookup(*argc, argv, band_opt);
     if (index == 0) // --band not provided. Default to band 0
     {
@@ -202,7 +114,7 @@ control_ret_t print_help_menu()
         size_t first_word_len = opt.info.find_first_of(' ');
         int first_space = long_opt_offset - short_len + long_len;
         int second_space = info_offset - long_len - long_opt_offset + first_word_len;
-        int num_spaces = 2; // adding two black spaces at the beggining to make it look nicer
+        int num_spaces = 2; // adding two black spaces at the beginning to make it look nicer
 
         cout << setw(num_spaces) << " " << opt.short_name << setw(first_space)
         << opt.long_name << setw(second_space);
@@ -236,7 +148,6 @@ control_ret_t print_command_list()
     size_t longest_rw = 10; // READ/WRITE
     size_t longest_args = 2; // double digits
     size_t longest_type = 7; // radians
-    size_t longest_info = 0;
     for(size_t i = 0; i < num_commands; i ++)
     {
         cmd_t cmd = {0};
@@ -247,9 +158,7 @@ control_ret_t print_command_list()
             continue;
         }
         size_t name_len = cmd.cmd_name.length();
-        size_t info_len = cmd.info.length();
         longest_command = (longest_command < name_len) ? name_len : longest_command;
-        longest_info = (longest_info < info_len) ? info_len : longest_info;
     }
     size_t rw_offset = longest_command + 2;
     size_t args_offset = rw_offset + longest_rw + 2;

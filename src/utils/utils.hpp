@@ -1,4 +1,4 @@
-// Copyright 2022-2023 XMOS LIMITED.
+// Copyright 2022-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #ifndef COMMAND_UTILS_H_
@@ -81,7 +81,7 @@ const std::string device_spi_dl_name = "device_spi";
 const std::string device_usb_dl_name = "device_usb";
 
 /** @brief Default driver name to use */
-const std::string default_driver_name = device_usb_dl_name;
+const std::string default_driver_name = DEFAULT_DRIVER_NAME;
 
 /** @brief Default command_map dl name to use */
 const std::string default_command_map_name = "command_map";
@@ -90,9 +90,9 @@ const std::string default_command_map_name = "command_map";
  *
  * @note This will have to be manually changed after the release
  */
-const std::string current_host_app_version = "2.0.1";
+const std::string current_host_app_version = "2.1.0";
 
-/** @brief Convert string to uper case */
+/** @brief Convert string to upper case */
 std::string to_upper(std::string str);
 
 /** @brief Convert string to lower case */
@@ -101,7 +101,7 @@ std::string to_lower(std::string str);
 /**
  * @brief Get information to initialise a device
  *
- * @param handle    Pointer to the comamnd_map dl
+ * @param handle    Pointer to the command_map dl
  * @param lib_name  Device dl name
  */
 int * get_device_init_info(dl_handle_t handle, std::string lib_name);
@@ -250,32 +250,14 @@ print_args_fptr get_print_args_fptr(dl_handle_t handle);
  */
 check_range_fptr get_check_range_fptr(dl_handle_t handle);
 
-/** @brief Get param type name string */
-std::string command_param_type_name(const cmd_param_type_t type);
-
 /** @brief Get read/write type string */
 std::string command_rw_type_name(const cmd_rw_t rw);
 
 /** @brief Check if the right number of arguments has been given for the command */
 control_ret_t check_num_args(const cmd_t * cmd, const size_t args_left);
 
-/** @brief Convert command line argument from string to cmd_param_t */
-cmd_param_t cmd_arg_str_to_val(const cmd_param_type_t type, const char * str);
-
 /** @brief Exit on control_ret_t error */
 void check_cmd_error(std::string cmd_name, std::string rw, control_ret_t ret);
-
-/** @brief Get number of bytes for the particular param type */
-size_t get_num_bytes_from_type(const cmd_param_type_t type);
-
-/** @brief Convert single value from bytes to cmd_param_t */
-cmd_param_t command_bytes_to_value(const cmd_param_type_t type, const uint8_t * data, unsigned index);
-
-/** @brief Convert single value from cmd_param_t to bytes */
-void command_bytes_from_value(const cmd_param_type_t type, uint8_t * data, unsigned index, const cmd_param_t value);
-
-/** @brief Find Levenshtein distance for approximate string matching */
-int Levenshtein_distance(const std::string source, const std::string target);
 
 /** @brief Get current terminal width */
 size_t get_term_width();
@@ -285,4 +267,19 @@ size_t get_term_width();
 */
 bool check_if_cmd_exists(const std::string cmd_name);
 
+/** @brief Get device driver name to load by looking for --use
+ * @note Will decrement argc, if option is present
+ */
+std::string get_device_lib_name(int * argc, char ** argv, opt_t* options, const size_t num_options);
+
+/** @brief Get path of executable
+ * @return string with path with no slash at the end
+*/
+std::string get_executable_path();
+
+/** @brief Look up the string in the option list.
+ * @note If the string is not found, will suggest a possible match and exit.
+ * @note Function is case insensitive
+ */
+opt_t * option_lookup(const std::string str, opt_t* options, const size_t num_options);
 #endif

@@ -1,4 +1,4 @@
-// Copyright 2023 XMOS LIMITED.
+// Copyright 2023-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #include <stdlib.h>
@@ -46,12 +46,12 @@ struct cmd_t
     bool hidden_cmd;
 };
 
-/** 
+/**
  * @brief Structure that keeps information needed to range check a single value
- * 
+ *
  * @note All values are inclusive
  */
-struct val_range_t 
+struct val_range_t
 {
     /** Pointer to the array of intervals */
     cmd_param_t * ranges;
@@ -59,7 +59,7 @@ struct val_range_t
     size_t num_intervals;
 };
 
-#define PI_VALUE  3.14159265358979323846f
+#define PI_VALUE 3.14159265358979323846f
 
 static cmd_t commands[] = {
                         {0, "CMD_FLOAT",   TYPE_FLOAT,   0,  CMD_RW, 20, "This is a test command for testing multiple float reads and writes. Need to keep command descriprion large to test -l option.",   false  },
