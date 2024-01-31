@@ -59,7 +59,7 @@ pipeline {
                                 dir('release/build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive RPI binaries
-                                    sh 'mkdir rpi && cp xvf_host *.so rpi/'
+                                    sh 'mkdir rpi && cp xvf_host xvf_dfu *.so rpi/'
                                     archiveArtifacts artifacts: 'rpi/*', fingerprint: true
                                 }
                                 dir('release/fwk_rtos/modules/sw_services/device_control/api') {

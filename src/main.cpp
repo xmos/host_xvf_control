@@ -1,4 +1,4 @@
-// Copyright 2022-2023 XMOS LIMITED.
+// Copyright 2022-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
 #include "special_commands.hpp"
@@ -15,7 +15,7 @@ int main(int argc, char ** argv)
     }
 
     string command_map_path = get_cmd_map_abs_path(&argc, argv);
-    string device_dl_name = get_device_lib_name(&argc, argv);
+    string device_dl_name = get_device_lib_name(&argc, argv, options, num_options);
     bool bypass_range_check = get_bypass_range_check(&argc, argv);
 
     uint8_t band_index = get_band_option(&argc, argv); // band_index can be present anywhere on the cmd line. Get it first
@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
 
     if(next_cmd[0] == '-')
     {
-        opt = option_lookup(next_cmd);
+        opt = option_lookup(next_cmd, options, num_options);
         if (opt->long_name == "--help")
         {
             return print_help_menu();
@@ -129,6 +129,28 @@ int main(int argc, char ** argv)
             else
             {
                 return special_cmd_nlmodel_buffer(&command, false, band_index, argv[arg_indx]);
+            }
+        }
+        if(opt->long_name == "--get-eq-filter")
+        {
+            if(arg_indx >= argc)
+            {
+                return special_cmd_equalization_filter(&command, true, band_index);
+            }
+            else
+            {
+                return special_cmd_equalization_filter(&command, true, band_index, argv[arg_indx]);
+            }
+        }
+        if(opt->long_name == "--set-eq-filter")
+        {
+            if(arg_indx >= argc)
+            {
+                return special_cmd_equalization_filter(&command, false, band_index);
+            }
+            else
+            {
+                return special_cmd_equalization_filter(&command, false, band_index, argv[arg_indx]);
             }
         }
         if(opt->long_name == "--test-control-interface")
