@@ -29,15 +29,15 @@ control_ret_t Device::device_init()
             if(ret == CONTROL_SUCCESS)
             {
                 device_initialised = true;
-                cout << "Device (USB)::device_init() -- Found device VID: " << device_info[offset+1] << " PID: " << device_info[offset+2] << " interface: " << device_info[offset+3] << endl;
+                cerr << "Device (USB)::device_init() -- Found device VID: " << device_info[offset+1] << " PID: " << device_info[offset+2] << " interface: " << device_info[offset+3] << endl;
                 break;
             }
         }
-        cout << "Device (USB)::device_init() -- No device found" << endl;
+        cerr << "Device (USB)::device_init() -- No device found" << endl;
     }
     else
     {
-        cout << "Device (USB)::device_init() -- Device already initialised" << endl;
+        cerr << "Device (USB)::device_init() -- Device already initialised" << endl;
         ret = CONTROL_SUCCESS;
     }
     return ret;
