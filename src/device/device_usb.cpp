@@ -13,6 +13,7 @@ Device::Device(int * info)
 
 control_ret_t Device::device_init()
 {
+    cerr << "Device (USB)::device_init() -- Enter" << endl;
     control_ret_t ret = CONTROL_ERROR;
     if(!device_initialised)
     {
@@ -41,6 +42,7 @@ control_ret_t Device::device_init()
         cerr << "Device (USB)::device_init() -- Device already initialised" << endl;
         ret = CONTROL_SUCCESS;
     }
+    cerr << "Device (USB)::device_init() -- Exit with value: " << ret << endl;
     return ret;
 }
 
