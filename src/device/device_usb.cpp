@@ -25,6 +25,7 @@ control_ret_t Device::device_init()
         for(int set_idx = 0; set_idx < info_set_count; ++set_idx)
         {
             int offset = set_idx * 3; // Three members per set
+            cerr << "Device (USB)::device_init() -- Attempting to initialise device with VID " << device_info[offset+1] << " PID: " << device_info[offset+2] << " on interface: " << device_info[offset+3] << endl;
             ret = control_init_usb(static_cast<int>(device_info[offset+1]), static_cast<int>(device_info[offset+2]), static_cast<int>(device_info[offset+3]));
             if(ret == CONTROL_SUCCESS)
             {
