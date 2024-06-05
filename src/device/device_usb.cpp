@@ -29,11 +29,11 @@ control_ret_t Device::device_init()
             if(ret == CONTROL_SUCCESS)
             {
                 device_initialised = true;
-                cerr << "Device (USB)::device_init() -- Found device VID: " << device_info[offset+1] << " PID: " << device_info[offset+2] << " interface: " << device_info[offset+3] << endl;
+                cout << "Device (USB)::device_init() -- Found device VID: " << device_info[offset+1] << " PID: " << device_info[offset+2] << " interface: " << device_info[offset+3] << endl;
                 break;
             }
+            cerr << "Device (USB)::device_init() -- No device found" << endl;
         }
-        cerr << "Device (USB)::device_init() -- No device found" << endl;
     }
     else
     {
