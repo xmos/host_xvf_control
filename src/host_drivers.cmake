@@ -55,7 +55,7 @@ target_include_directories(device_i2c
         ${DEVICE_CONTROL_PATH}/host
 )
 target_link_libraries(device_i2c
-    PUBLIC  
+    PUBLIC
         rtos::sw_services::device_control_host_i2c
 )
 target_link_options(device_i2c PRIVATE -fPIC)
@@ -73,7 +73,7 @@ target_include_directories(device_spi
         ${DEVICE_CONTROL_PATH}/host
 )
 target_link_libraries(device_spi
-    PUBLIC  
+    PUBLIC
         rtos::sw_services::device_control_host_spi
 )
 target_link_libraries(device_spi PRIVATE -fPIC)
@@ -98,10 +98,10 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     pkg_check_modules(libusb-1.0 REQUIRED libusb-1.0)
     set(LINK_LIBS usb-1.0)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    add_compile_definitions(nologo WAll WX- O2 EHa)
+    add_compile_definitions(nologo  O2 EHa)
     target_link_directories(framework_rtos_sw_services_device_control_host_usb INTERFACE "${DEVICE_CONTROL_PATH}/host/libusb/Win32")
     set(libusb-1.0_INCLUDE_DIRS "${DEVICE_CONTROL_PATH}/host/libusb/Win32")
-    set(LINK_LIBS libusb)
+    set(LINK_LIBS libusb-1.0)
 endif()
 
 target_sources(framework_rtos_sw_services_device_control_host_usb
@@ -145,7 +145,7 @@ target_link_libraries(device_usb PRIVATE -fPIC)
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     add_custom_command(
         TARGET device_usb
-        POST_BUILD 
+        POST_BUILD
         COMMAND ${CMAKE_INSTALL_NAME_TOOL} -change "/usr/local/lib/libusb-1.0.0.dylib" "@executable_path/libusb-1.0.0.dylib" ${CMAKE_BINARY_DIR}/"libdevice_usb.dylib"
     )
     add_custom_command(

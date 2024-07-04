@@ -22,10 +22,10 @@ add_executable( ${APP_NAME})
 
 # Add options for different compilers
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_compile_options( ${APP_NAME}
-        PRIVATE
-            -WX
-    )
+    #target_compile_options( ${APP_NAME}
+    #    PRIVATE
+    #        -WX
+    #)
 else()
     target_compile_options( ${APP_NAME}
         PRIVATE
