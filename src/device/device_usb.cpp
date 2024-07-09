@@ -33,7 +33,10 @@ control_ret_t Device::device_init()
                 break;
             }
         }
-         cerr << "Device (USB)::device_init() -- No device found" << endl;
+        if (ret != CONTROL_SUCCESS)
+        {
+            cerr << "Device (USB)::device_init() -- No device found" << endl;
+        }
     }
     else
     {
