@@ -19,7 +19,7 @@ Some dependent components are included as git submodules. These can be obtained 
 Requirements
 ************
 
-- CMake 3.10 or later
+- CMake 3.13 or later
 - Visual Studio 2022 Tools (Windows only)
 - Ninja (Windows only)
 
@@ -44,11 +44,11 @@ Build with CMake from the host_xvf_control/ folder:
 
 .. note::
 
-    Windows drivers can only be built with 32-bit tools
+    Windows drivers can only be built with 32-bit tools.
 
 .. note::
 
-    Windows drivers are currently supported only for *Visual Studio 2022 Tools*. If a different toolchain is required, the static ``libusb`` library should be built and linked manually. More details can be found in fwk_rtos//modules/sw_services/device_control/host/libusb/Win32/README.md.
+    Windows drivers are currently supported only for *Visual Studio 2022 Tools*. If a different toolchain is required, the static *libusb* library should be built and linked manually. More details can be found in fwk_rtos//modules/sw_services/device_control/host/libusb/Win32/README.md.
 
 *****
 Using
