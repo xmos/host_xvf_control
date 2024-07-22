@@ -15,11 +15,19 @@ Some dependent components are included as git submodules. These can be obtained 
 
     git clone --recurse-submodules git@github.com:xmos/xvf_host_control.git
 
+************
+Requirements
+************
+
+- CMake 3.13 or later
+- Visual Studio 2022 Tools (Windows only)
+- Ninja (Windows only)
+
 ********
 Building
 ********
 
-Build with cmake from the host_xvf_control/ folder:
+Build with CMake from the host_xvf_control/ folder:
 
 - on Linux and Mac
 
@@ -36,7 +44,11 @@ Build with cmake from the host_xvf_control/ folder:
 
 .. note::
 
-    Windows drivers can only be built with 32-bit tools
+    Windows drivers can only be built with 32-bit tools.
+
+.. note::
+
+    Windows drivers are currently supported only for *Visual Studio 2022 Tools*. If a different toolchain is required, the static *libusb* library should be built and linked manually. More details can be found in fwk_rtos//modules/sw_services/device_control/host/libusb/Win32/README.md.
 
 *****
 Using
