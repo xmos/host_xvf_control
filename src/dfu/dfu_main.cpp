@@ -10,6 +10,7 @@ using namespace std;
 opt_t options[] = {
     {"--help",                    "-h",        "display this information"                                                                                           },
     {"--app-version",             "-av",       "print the version of this application",                                                                             },
+    {"--use",                     "-u",        "use specific hardware protocol, only I2C is currently supported" },
     {"--verbose",                 "-vvv",      "enable debug prints"                                                                                                },
     {"--upload-start",            "-us",       "set the first block transport number for the upload operation. Default is 0. Option valid only with upload commands"},
     {"--version",                 "-v",        "read the version on the device",                                                                                    },
@@ -148,8 +149,13 @@ int main(int argc, char ** argv)
     int* spi_info = new int[2];
     string yaml_file_name;
 
-    // Only I2C is supported
-    string device_dl_name = DEFAULT_DRIVER_NAME;
+    // Check if --use option is used
+    string device_dl_name = get_device_lib_name(&argc, argv, options, num_options);
+    if (device_dl_name != device_i2c_dl_name) {
+        cerr << "Unsupported hardware protocol. Only I2C is available for this operation." << endl;
+        exit(HOST_APP_ERROR);
+    }
+
 
     // Check other optional arguments
     uint8_t is_verbose = check_verbose(&argc, argv);
