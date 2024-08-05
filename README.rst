@@ -15,11 +15,19 @@ Some dependent components are included as git submodules. These can be obtained 
 
     git clone --recurse-submodules git@github.com:xmos/xvf_host_control.git
 
+************
+Requirements
+************
+
+- CMake 3.13 or later
+- Visual Studio 2022 Tools (Windows only)
+- Ninja (Windows only)
+
 ********
 Building
 ********
 
-Build with cmake from the host_xvf_control/ folder:
+Build with CMake from the host_xvf_control/ folder:
 
 - on Linux and Mac
 
@@ -36,13 +44,17 @@ Build with cmake from the host_xvf_control/ folder:
 
 .. note::
 
-    Windows drivers can only be built with 32-bit tools
+    Windows drivers can only be built with 32-bit tools.
+
+.. note::
+
+    Windows drivers are currently supported only for *Visual Studio 2022 Tools*. If a different toolchain is required, the static *libusb* library should be built and linked manually. More details can be found in fwk_rtos//modules/sw_services/device_control/host/libusb/Win32/README.md.
 
 *****
 Using
 *****
 
-In order to use the host control application you should have the following files in the same location:
+In order to use the host control application place the following files in the same location:
 
 - xvf_host(.exe)
 - (lib)command_map.(so/dll/dylib)
@@ -54,7 +66,8 @@ In order to use the host control application you should have the following files
     - Apple dynamic libraries end with ``.dylib``
     - Windows dynamic libraries don't have ``lib`` prefix and end with ``.dll``
 
-The application and the device drivers can be obtained by following the build instructions of this repo. Command map is a part of the firmware code and built separately.
+The application and the device drivers can be obtained by following the build instructions of this repo. 
+The command map is a part of the firmware code and built separately; see relevant documentation for the target for instructions on how to build and combine the command map.
 To find out use cases and more information about the application use:
 
 - on Linux and Mac
@@ -76,7 +89,7 @@ The DFU host application is only supported on Raspbian, and it needs the followi
 - dfu_cmds.yaml
 - transport_config.yaml
 
-If you need to change the settings of the I2C and SPI transport protocols, all the configurable values are listed in *src/dfu/transport_config.yaml*.
+To change the settings of the I2C and SPI transport protocols, edit the configurable values listed in *src/dfu/transport_config.yaml*.
 
 *****************************************
 Supported platforms and control protocols
