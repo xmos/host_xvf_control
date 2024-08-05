@@ -10,7 +10,7 @@ using namespace std;
 opt_t options[] = {
     {"--help",                    "-h",        "display this information"                                                                                           },
     {"--app-version",             "-av",       "print the version of this application",                                                                             },
-    {"--use",                     "-u",        "use specific hardware protocol, I2C, SPI and USB are available to use"                                              },
+    {"--use",                     "-u",        "use specific hardware protocol, only I2C is currently supported" },
     {"--verbose",                 "-vvv",      "enable debug prints"                                                                                                },
     {"--upload-start",            "-us",       "set the first block transport number for the upload operation. Default is 0. Option valid only with upload commands"},
     {"--version",                 "-v",        "read the version on the device",                                                                                    },
@@ -59,8 +59,7 @@ control_ret_t print_help_menu()
     // Please avoid lines which have more than 80 characters
     cout << "usage: xvf_dfu [ -u <protocol> ] command" << endl
     << endl << "Current application version is " << current_host_app_version << "."
-    << endl << "You can use --use or -u option to specify protocol you want to use."
-    << endl << "Default control protocol is I2C."
+    << endl << "Only control over I2C is supported."
     << endl << endl << "Options:" << endl;
     for(opt_t opt : options)
     {
@@ -152,6 +151,11 @@ int main(int argc, char ** argv)
 
     // Check if --use option is used
     string device_dl_name = get_device_lib_name(&argc, argv, options, num_options);
+    if (device_dl_name != device_i2c_dl_name) {
+        cerr << "Unsupported hardware protocol. Only I2C is available for this operation." << endl;
+        exit(HOST_APP_ERROR);
+    }
+
 
     // Check other optional arguments
     uint8_t is_verbose = check_verbose(&argc, argv);

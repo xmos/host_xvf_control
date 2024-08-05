@@ -1,6 +1,14 @@
 Host XVF Control change log
 ===========================
 
+3.0.0
+-----
+
+  * CHANGED: Structure of ``device_info`` array
+  * ADDED: Support for additional sets of USB device information in ``device_info``
+  * CHANGED: Minor CLI documentation updates for ``xvf_dfu``
+  * CHANGED: ``xvf_dfu`` now raises an exception if attempting to use any other protocol than I2C.
+
 2.1.0
 -----
 

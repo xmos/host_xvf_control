@@ -90,7 +90,7 @@ const std::string default_command_map_name = "command_map";
  *
  * @note This will have to be manually changed after the release
  */
-const std::string current_host_app_version = "2.1.0";
+const std::string current_host_app_version = "3.0.0";
 
 /** @brief Convert string to upper case */
 std::string to_upper(std::string str);
