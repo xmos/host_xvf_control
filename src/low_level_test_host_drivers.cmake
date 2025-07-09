@@ -1,6 +1,6 @@
 # Building host device_control drivers here
 # I2C and SPI drivers are only built for PI
-if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL armv7l)
+if((${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7l") OR (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64"))
 
 # Build a wrapper driver for i2c
 

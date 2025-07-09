@@ -1,6 +1,6 @@
 # Building host device_control drivers here
 # I2C and SPI drivers are only built for PI
-if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL armv7l)
+if((${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7l") OR (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64"))
 
 # Build device_control_host for I2C
 add_library(framework_rtos_sw_services_device_control_host_i2c INTERFACE)
@@ -17,12 +17,6 @@ target_include_directories(framework_rtos_sw_services_device_control_host_i2c
 target_compile_definitions(framework_rtos_sw_services_device_control_host_i2c INTERFACE USE_I2C=1 RPI=1)
 add_library(rtos::sw_services::device_control_host_i2c ALIAS framework_rtos_sw_services_device_control_host_i2c)
 
-# Link SPI driver
-set(SPI_DRIVER ${CMAKE_CURRENT_LIST_DIR}/device/spi_driver)
-add_library(bcm2835 STATIC IMPORTED)
-set_property(TARGET bcm2835 PROPERTY IMPORTED_LOCATION ${SPI_DRIVER}/libbcm2835.a)
-target_include_directories(bcm2835 INTERFACE ${SPI_DRIVER})
-
 # Build device_control_host for SPI
 add_library(framework_rtos_sw_services_device_control_host_spi INTERFACE)
 target_sources(framework_rtos_sw_services_device_control_host_spi
@@ -35,8 +29,6 @@ target_include_directories(framework_rtos_sw_services_device_control_host_spi
         ${DEVICE_CONTROL_PATH}/api
         ${DEVICE_CONTROL_PATH}/host
 )
-
-target_link_libraries(framework_rtos_sw_services_device_control_host_spi INTERFACE bcm2835)
 
 target_compile_definitions(framework_rtos_sw_services_device_control_host_spi INTERFACE USE_SPI=1 RPI=1)
 add_library(rtos::sw_services::device_control_host_spi ALIAS framework_rtos_sw_services_device_control_host_spi)
@@ -78,7 +70,7 @@ target_link_libraries(device_spi
 )
 target_link_libraries(device_spi PRIVATE -fPIC)
 
-endif() # armv7l
+endif() # armv7l or aarch64
 
 # Build device_control_host for USB
 

@@ -3,7 +3,6 @@
 
 #include "device.hpp"
 #include "device_control_host.h"
-#include "bcm2835.h"
 
 using namespace std;
 
@@ -20,7 +19,7 @@ control_ret_t Device::device_init()
     if(!device_initialised)
     {
         ret = control_init_spi_pi(static_cast<spi_mode_t>(device_info[0]),
-                                  static_cast<bcm2835SPIClockDivider>(device_info[1]),
+                                  static_cast<uint32_t>(device_info[1]),  // SPI frequency
                                   intertransaction_delay_ns);
         device_initialised = true;
     }
