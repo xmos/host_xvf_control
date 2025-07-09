@@ -13,7 +13,7 @@ Some dependent components are included as git submodules. These can be obtained 
 
 .. code-block:: console
 
-    git clone --recurse-submodules git@github.com:xmos/xvf_host_control.git
+    git clone --recurse-submodules git@github.com:xmos/host_xvf_control.git
 
 ************
 Requirements
