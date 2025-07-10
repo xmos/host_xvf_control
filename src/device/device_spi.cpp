@@ -3,6 +3,7 @@
 
 #include "device.hpp"
 #include "device_control_host.h"
+#include <linux/spi/spi.h>
 
 using namespace std;
 
@@ -18,7 +19,7 @@ control_ret_t Device::device_init()
     control_ret_t ret = CONTROL_SUCCESS;
     if(!device_initialised)
     {
-        ret = control_init_spidev(static_cast<spi_mode_t>(device_info[0]),
+        ret = control_init_spidev(static_cast<int>(device_info[0]),       // SPI mode
                                   static_cast<uint32_t>(device_info[1]),  // SPI frequency
                                   static_cast<int>(device_info[2]),       // spidev bus
                                   static_cast<int>(device_info[3]),       // spidev cs
