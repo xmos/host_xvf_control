@@ -46,7 +46,7 @@ def test_version():
     assert str(version[0]) == open(changelog, 'rt').readlines()[3].strip()
 
 # Run this test only on Raspberry Pi
-if platform.machine() == "armv7l":
+if platform.machine() == "armv7l" or platform.machine() == "aarch64":
     def test_dfu_app():
         test_dir, _, control_protocol, _, dfu_app_bin = test_utils.get_dummy_files()
 
