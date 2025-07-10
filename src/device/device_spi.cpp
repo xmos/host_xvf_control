@@ -20,6 +20,8 @@ control_ret_t Device::device_init()
     {
         ret = control_init_spi_pi(static_cast<spi_mode_t>(device_info[0]),
                                   static_cast<uint32_t>(device_info[1]),  // SPI frequency
+                                  static_cast<int>(device_info[2]),       // spidev bus
+                                  static_cast<int>(device_info[3]),       // spidev cs
                                   intertransaction_delay_ns);
         device_initialised = true;
     }
