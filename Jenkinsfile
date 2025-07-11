@@ -42,7 +42,50 @@ pipeline {
 
         stage ('Cross-platform Builds & Tests') {
             parallel {
-
+                stage ('RPI 64-bit Build & Test') {
+                    agent {
+                        label 'aarch64&&raspi'
+                    }
+                    stages {
+                        stage ('Build') {
+                            steps {
+                                runningOn(env.NODE_NAME)
+                                // unstash release files
+                                unstash "release_source"
+                                // copy test folder into release folder
+                                sh 'mv test release/'
+                                // build
+                                dir('release/build') {
+                                    sh 'cmake -S .. -DTESTING=ON && make -j4'
+                                    // archive RPI binaries
+                                    sh 'mkdir rpi64 && cp xvf_host xvf_dfu *.so rpi64/'
+                                    archiveArtifacts artifacts: 'rpi64/*', fingerprint: true
+                                }
+                                dir('release/fwk_rtos/modules/sw_services/device_control/api') {
+                                    archiveArtifacts artifacts: 'device_control_shared.h', fingerprint: true
+                                }
+                            }
+                        }
+                        stage ('Create Python enviroment') {
+                            steps {
+                                //sh 'python3 -m venv .venv && source .venv/bin/activate && pip3 install -r requirements-dev.txt'
+                                sh 'python3 -m venv .venv && source .venv/bin/activate && pip install pytest && pip install jinja2'
+                            }
+                        }
+                        stage ('Test') {
+                            steps {
+                                dir('release/test') {
+                                    sh 'source ../../.venv/bin/activate && pytest -s'
+                                }
+                            }
+                        }
+                    } // stages
+                    post {
+                        cleanup {
+                             xcoreCleanSandbox()
+                        }
+                    }
+                } // RPI 64-bit Build & Test
                 stage ('RPI Build & Test') {
                     agent {
                         label 'armv7l&&raspian'
