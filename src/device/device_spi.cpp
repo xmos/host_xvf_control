@@ -3,7 +3,6 @@
 
 #include "device.hpp"
 #include "device_control_host.h"
-#include <linux/spi/spi.h>
 
 using namespace std;
 
