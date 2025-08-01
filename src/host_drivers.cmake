@@ -1,6 +1,6 @@
 # Building host device_control drivers here
 # I2C and SPI drivers are only built for PI
-if((${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7l") OR (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64"))
+if((UNIX AND NOT APPLE) AND ((${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7l") OR (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")))
 
 # Build device_control_host for I2C
 add_library(framework_rtos_sw_services_device_control_host_i2c INTERFACE)
