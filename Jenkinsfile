@@ -101,8 +101,8 @@ pipeline {
                                 dir('release/build') {
                                     sh 'cmake -S .. -DTESTING=ON && make -j4'
                                     // archive RPI binaries
-                                    sh 'mkdir rpi && cp xvf_host xvf_dfu *.so rpi/'
-                                    archiveArtifacts artifacts: 'rpi/*', fingerprint: true
+                                    sh 'mkdir rpi32 && cp xvf_host xvf_dfu *.so rpi32/'
+                                    archiveArtifacts artifacts: 'rpi32/*', fingerprint: true
                                 }
                                 dir('release/fwk_rtos/modules/sw_services/device_control/api') {
                                     archiveArtifacts artifacts: 'device_control_shared.h', fingerprint: true
