@@ -83,7 +83,7 @@ def get_dummy_files():
             os.remove(device_path)
         os.rename(device_dummy_path, device_path)
 
-    if platform.machine() == "armv7l":
+    if platform.machine() == "armv7l" or platform.machine() == "aarch64":
         assert (
             dfu_app_bin_path.is_file() or dfu_app_bin_copy.is_file()
         ), f"DFU app binary not found here: {dfu_app_bin}"
